@@ -40,7 +40,7 @@ import {
 } from '@fm-immersion/module-fm';
 import { useQuery } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api/core';
-import { competitionWeight, gameInstructions, gamePlayerInstructions, instructionLoad, isCongested, lineupAdvice, LOAD_WINDOW_DAYS, matchdayPlan, matchResults, matchReview, matchStats, recentLoad, snapshotFixtures, summarize, tacticTodo, teamAdvice, TEAM_INSTRUCTIONS_FM27, type PlayerStats } from '@fm-immersion/module-fm';
+import { competitionWeight, formationOfPositions, formationOfSlots, gameFormationOf, gameInstructions, gameLineup, gamePlayerInstructions, instructionLoad, isCongested, lineupAdvice, LOAD_WINDOW_DAYS, matchdayPlan, matchResults, matchReview, matchStats, recentLoad, snapshotFixtures, summarize, tacticSlots, tacticTodo, teamAdvice, TEAM_INSTRUCTIONS_FM27, type PlayerStats } from '@fm-immersion/module-fm';
 import { GamePiLine, LineupAdviceCard, MatchReviewCard, PhysicalCard, PiState, TeamAdviceBlock, TodoCard } from './FmTacticAdvice';
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -163,7 +163,50 @@ export function ProjectProvider({ players, folder, gameFormation, lineup, gameTa
 const DOT: Record<BalanceCheck['status'], string> = { good: 'bg-eau', warn: 'bg-ambre', bad: 'bg-corail' };
 
 /** Tactique : style conseillé, schéma, onze par rôles, formes avec et sans ballon, équilibre. */
-export function FmTactic({ snap, players, folder, gameFormation, lineup, lineupStatus, go, part, matches }: { matches?: { gameDate: string; data: FmSnapshot }[]; snap?: FmSnapshot; players: FmPlayer[]; folder: string; gameFormation: string | null; lineup: GameSlot[] | null; lineupStatus?: string | null; go?: (view: string) => void; part?: 'lineup' | 'instructions' }) {
+type TacticProps = { matches?: { gameDate: string; data: FmSnapshot }[]; snap?: FmSnapshot; players: FmPlayer[]; folder: string; gameFormation: string | null; lineup: GameSlot[] | null; lineupStatus?: string | null; go?: (view: string) => void; part?: 'lineup' | 'instructions' };
+
+/** Les tactiques enregistrées dans FM27 (trois emplacements) : celle qui est active, et celle que le joueur regarde. */
+interface SlotChoice {
+  names: string[];
+  active: string | null;
+  /** Tactique affichée (l'active, ou une autre retrouvée dans les instantanés). */
+  shown: string | null;
+  /** Date de jeu de l'instantané d'où vient la tactique affichée, quand ce n'est pas l'active. */
+  seen: string | null;
+  /** Tactique demandée que le plugin n'a encore jamais lue (jamais active pendant un instantané). */
+  missing: string | null;
+  pick: (name: string) => void;
+}
+
+/**
+ * Tactique : le plugin ne lit que la tactique active dans FM27. Pour regarder une autre des trois tactiques du joueur,
+ * on reprend le dernier instantané où elle était active (son onze, ses rôles, ses consignes), avec l'effectif d'aujourd'hui.
+ */
+export function FmTactic(props: TacticProps) {
+  const { snap, matches } = props;
+  const [wanted, setWanted] = useState<string | null>(null);
+  const active = typeof snap?.tactic?.name === 'string' ? snap.tactic.name : null;
+  const names = useMemo(() => {
+    const raw = (snap?.tactic as { slotNames?: unknown } | null | undefined)?.slotNames;
+    return Array.isArray(raw) ? [...new Set(raw.filter((n): n is string => typeof n === 'string' && n.trim().length > 0))] : [];
+  }, [snap]);
+  const old = useMemo(() => {
+    if (!wanted || wanted === active || !snap) return null;
+    const hit = [...(matches ?? [])].reverse().find((m) => m.data.tactic?.name === wanted && gameLineup(m.data));
+    if (!hit) return null;
+    const custom = { ...((snap.custom as Record<string, unknown> | undefined) ?? {}), tactique: (hit.data.custom as Record<string, unknown> | undefined)?.tactique };
+    const merged = { ...snap, tactic: hit.data.tactic, lineup: (hit.data as { lineup?: unknown }).lineup, custom } as FmSnapshot;
+    const lineup = gameLineup(merged);
+    const named = gameFormationOf(merged.tactic);
+    const gameFormation = (named && knownFormation(named)) || (lineup ? formationOfPositions(lineup.map((x) => x.pos)) : null) || formationOfSlots(tacticSlots(merged.tactic)) || named;
+    return { snap: merged, lineup, gameFormation, date: hit.gameDate };
+  }, [wanted, active, snap, matches]);
+  const slots: SlotChoice | undefined =
+    names.length > 1 ? { names, active, shown: old ? wanted : active, seen: old?.date ?? null, missing: wanted && wanted !== active && !old ? wanted : null, pick: setWanted } : undefined;
+  return <FmTacticView {...props} {...(old ? { snap: old.snap, lineup: old.lineup, gameFormation: old.gameFormation } : {})} slots={slots} />;
+}
+
+function FmTacticView({ snap, players, folder, gameFormation, lineup, lineupStatus, go, part, matches, slots }: TacticProps & { slots?: SlotChoice }) {
   // Sous-onglet affiché : le onze (et ses consignes d'équipe) ou les consignes individuelles ; les deux sans `part`.
   const showLineup = part !== 'instructions';
   const showPi = part !== 'lineup';
@@ -285,7 +328,18 @@ export function FmTactic({ snap, players, folder, gameFormation, lineup, lineupS
             ))}
           </div>
         )}
-        {fromGame && gameTactic && <span className="text-sm font-bold text-canard">{gameTactic}</span>}
+        {fromGame && slots ? (
+          <div className="flex flex-wrap gap-1" role="tablist" aria-label={t('fm.tac.slots.label')}>
+            {slots.names.map((n) => (
+              <button key={n} type="button" role="tab" aria-selected={n === slots.shown} onClick={() => slots.pick(n)} className={`chip ${n === slots.shown ? 'chip-on' : ''}`}>
+                {n}
+                {n === slots.active && <span className="ml-1.5 text-xs font-normal opacity-80">{t('fm.tac.slots.active')}</span>}
+              </button>
+            ))}
+          </div>
+        ) : (
+          fromGame && gameTactic && <span className="text-sm font-bold text-canard">{gameTactic}</span>
+        )}
         {/* Style et schéma ne se choisissent que pour la proposition de l'appli : ta tactique FM27 a déjà les siens. */}
         {!fromGame && (<>
         <label className="flex items-center gap-2 whitespace-nowrap text-sm font-bold" title={style.summary ?? undefined}>
@@ -339,6 +393,12 @@ export function FmTactic({ snap, players, folder, gameFormation, lineup, lineupS
           </div>
         )}
         {gameFormation && <span className="rounded-md bg-eau/20 px-1.5 py-0.5 text-xs text-canard">{t('fm.tac.inGame', { form: gameFormation })}</span>}
+        {fromGame && slots?.seen && (
+          <p className="w-full rounded-xl bg-orange-clair/60 px-3 py-2 text-sm text-canard">
+            {t('fm.tac.slots.preview', { name: slots.shown ?? '', date: new Date(slots.seen).toLocaleDateString(i18n.resolvedLanguage), active: slots.active ?? '' })}
+          </p>
+        )}
+        {fromGame && slots?.missing && <p className="w-full rounded-xl bg-ambre/20 px-3 py-2 text-sm text-canard">{t('fm.tac.slots.missing', { name: slots.missing, active: slots.active ?? '' })}</p>}
         {local?.ref && <span className="rounded-md bg-eau/20 px-1.5 py-0.5 text-xs text-canard">{t('fm.tac.localRef')}</span>}
         {local?.error && <span className="rounded-md bg-corail/15 px-1.5 py-0.5 text-sm text-canard">{t('fm.tac.localRefError')}</span>}
       </div>

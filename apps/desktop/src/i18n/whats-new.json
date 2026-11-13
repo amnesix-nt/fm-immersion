@@ -1,5 +1,15 @@
 [
   {
+    "version": "0.1.202",
+    "date": "2026-11-13",
+    "fr": [
+      "Dans Tactique, tu peux maintenant passer de l'une à l'autre de tes trois tactiques FM27. Celle qui est active dans le jeu est marquée ; les autres s'affichent telles qu'elles étaient la dernière fois que tu les as jouées, avec ton effectif d'aujourd'hui."
+    ],
+    "en": [
+      "In Tactics, you can now switch between your three FM27 tactics. The one active in the game is marked; the others are shown as they were the last time you played them, with today's squad."
+    ]
+  },
+  {
     "version": "0.1.201",
     "date": "2026-11-13",
     "fr": [

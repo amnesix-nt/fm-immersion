@@ -577,6 +577,12 @@
           "rhythm": "Il doit jouer pour retrouver le rythme, mais pas 90 minutes : prévois de le sortir vers la 60e minute."
         },
         "help": "Le risque de blessure est celui que FM27 affiche pour chaque joueur : il monte avec la fatigue et avec le manque de rythme. Un joueur compte comme « en série » à partir de trois titularisations en {{days}} jours, matchs amicaux compris. La doublure proposée est la mieux notée du poste parmi les joueurs frais, sans risque et qui n'enchaînent pas. En championnat, elle n'est conseillée que si elle vaut presque le titulaire ; en coupe ou quand les matchs se suivent, on accepte un écart plus large. Le choix du onze conseillé tient aussi compte du risque de blessure."
+      },
+      "slots": {
+        "label": "Tes tactiques FM27",
+        "active": "· active",
+        "preview": "Tu regardes « {{name}} » telle que le plugin l'a lue le {{date}}, avec ton effectif d'aujourd'hui. Dans FM27, c'est « {{active}} » qui est active : le reste de l'appli la suit toujours.",
+        "missing": "« {{name}} » n'a pas encore été lue : le plugin ne lit que la tactique active. Sélectionne-la dans FM27 (écran Tactique), avance d'un jour ou clique sur « Actualiser la partie », et l'appli la gardera. En attendant, tu vois « {{active}} »."
       }
     },
     "nav": "Sections de la partie",
