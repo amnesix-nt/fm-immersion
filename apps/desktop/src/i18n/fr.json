@@ -926,7 +926,8 @@
         "keys": "70 % : attributs clés du rôle, pondérés selon leur importance.",
         "base": "20 % : attributs de base du poste (pour un défenseur central : marquage, tacle, jeu de tête, placement…).",
         "engine": "10 % : « moteur de match » (accélération, vitesse, anticipation, décisions), utile à tous les postes de champ.",
-        "foot": "Pied fort : sur un côté, −0,5 point si le pied fort ne correspond pas (−1 s'il n'utilise qu'un pied). Les rôles rentrants veulent le pied opposé au côté."
+        "foot": "Pied fort : sur un côté, −0,5 point si le pied fort ne correspond pas (−1 s'il n'utilise qu'un pied). Les rôles rentrants veulent le pied opposé au côté.",
+        "staff": "Avis de ton staff : pour les joueurs de ton club, la note monte ou baisse selon leurs étoiles de niveau actuel, comparées à la moyenne de l'équipe première (une étoile d'écart = 1,5 point, 2,5 points au plus). Les joueurs des autres clubs restent notés sur leurs seuls attributs."
       },
       "gridTitle": "Adéquation par poste"
     },

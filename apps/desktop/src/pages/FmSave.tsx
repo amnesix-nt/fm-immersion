@@ -17,6 +17,7 @@ import { roleCeiling,
   loanedOutIds,
   nextMatchInDays,
   normalizePlayer,
+  withStaffOpinion,
   squadSnapshot,
   withAbilities,
   withExtended,
@@ -147,7 +148,7 @@ export function FmSave({ page }: { page?: 'home' | 'settings' }) {
   // Effectif sous contrat (hors essais) : salaires, contrats, finances. Les joueurs prêtés ailleurs et ceux de la
   // réserve ou des jeunes (`team`) n'entrent pas dans les compos ni l'analyse : `players` est l'équipe première
   // présente au club.
-  const contracted = useMemo(() => (snapshot ? withAbilities(withExtended(squadSnapshot(snapshot.data))).players.map(normalizePlayer) : []), [snapshot]);
+  const contracted = useMemo(() => (snapshot ? withStaffOpinion(withAbilities(withExtended(squadSnapshot(snapshot.data))).players.map(normalizePlayer)) : []), [snapshot]);
   const players = useMemo(() => {
     const out = snapshot ? loanedOutIds(snapshot.data) : new Set<string>();
     const present = contracted.filter((p) => !p.team && !out.has(p.id));

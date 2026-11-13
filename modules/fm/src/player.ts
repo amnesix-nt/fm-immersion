@@ -65,7 +65,12 @@ export interface FmPlayer {
   /** Pied fort tel qu'écrit par le jeu (« Gauche », « Droit uniquement », « Les deux »…). */
   foot: string | null;
   /** Étoiles de niveau et de potentiel vues par le staff (plugin 0.3.1), sur 5. */
-  stars: { current: number | null; potential: number | null } | null;
+  stars: { current: number | null; potential: number | null; /** Niveau actuel sans arrondi à la demi-étoile (le jeu compte en quarts). */ fine?: number | null } | null;
+  /**
+   * Correction des notes de rôle par l'avis du staff (points sur 20, voir `withStaffOpinion`) ; absente pour un joueur
+   * d'un autre club, noté sur ses seuls attributs.
+   */
+  staffAdj?: number;
   /** Valeurs sur 20 des rôles lues dans le jeu, par poste et phase (libellé FR normalisé → valeur). */
   gameStars: Partial<Record<PosCode, { ip?: Record<string, number>; oop?: Record<string, number> }>> | null;
   /** Familiarité au poste lue dans le jeu (1-20), si le plugin la donne (`positionRatings`). */
@@ -169,4 +174,31 @@ export function unavailable(p: FmPlayer): boolean {
 /** Pose sur chaque joueur le nombre de jours avant le prochain match (null : pas de match connu). */
 export function forNextMatch(players: FmPlayer[], days: number | null): FmPlayer[] {
   return players.map((p) => ({ ...p, matchInDays: days }));
+}
+
+/** Part de l'écart d'étoiles reportée sur les notes de rôle (1 = tout l'écart : une étoile = 2 points sur 20). */
+export const STAFF_WEIGHT = 0.75;
+/** Correction maximale, en points sur 20. */
+export const STAFF_MAX = 2.5;
+
+/**
+ * L'avis du staff dans les notes de l'effectif. Les notes de rôle viennent des attributs clés du rôle ; le jeu, lui,
+ * rapporte aussi ses étoiles de rôle au niveau général du joueur (capacité actuelle). Sans cela, un défenseur à
+ * 3,5 étoiles aux bons attributs clés passait devant des titulaires à 4 et 4,5 étoiles. Chaque joueur du club reçoit
+ * donc une correction selon ses étoiles de niveau actuel, comparées à la moyenne de l'équipe première : au-dessus,
+ * ses notes montent ; en dessous, elles baissent. L'échelle reste celle des attributs (correction moyenne nulle), et
+ * les joueurs des autres clubs, sans étoiles de ton staff, restent notés sur leurs seuls attributs.
+ */
+export function withStaffOpinion(players: FmPlayer[]): FmPlayer[] {
+  const of = (p: FmPlayer) => p.stars?.fine ?? p.stars?.current ?? null;
+  const ref = players.filter((p) => !p.team).map(of).filter((v): v is number => v != null);
+  // Trop peu d'avis pour une moyenne fiable : on ne corrige rien.
+  if (ref.length < 8) return players;
+  const mean = ref.reduce((a, b) => a + b, 0) / ref.length;
+  return players.map((p) => {
+    const v = of(p);
+    if (v == null) return p;
+    const adj = Math.max(-STAFF_MAX, Math.min(STAFF_MAX, STAFF_WEIGHT * 2 * (v - mean)));
+    return { ...p, staffAdj: Math.round(adj * 100) / 100 };
+  });
 }

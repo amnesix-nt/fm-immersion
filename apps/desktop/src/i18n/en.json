@@ -926,7 +926,8 @@
         "keys": "70%: the role's key attributes, weighted by importance.",
         "base": "20%: the position's basic attributes (for a centre-back: marking, tackling, heading, positioning…).",
         "engine": "10%: \"match engine\" attributes (acceleration, pace, anticipation, decisions), useful everywhere outfield.",
-        "foot": "Stronger foot: on a flank, −0.5 if the foot does not match (−1 if one-footed). Inverted roles want the foot opposite to the flank."
+        "foot": "Stronger foot: on a flank, −0.5 if the foot does not match (−1 if one-footed). Inverted roles want the foot opposite to the flank.",
+        "staff": "Your staff's opinion: for your own players, the rating goes up or down with their current-ability stars compared with the first-team average (one star of difference = 1.5 points, 2.5 points at most). Players from other clubs are still rated on attributes alone."
       },
       "gridTitle": "Fit by position"
     },

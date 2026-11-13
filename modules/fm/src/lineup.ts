@@ -249,7 +249,7 @@ export function planFromLineup(engine: TacticEngine, lineup: GameSlot[], players
  * Étoiles du staff : le jeu les donne sur 20 ({MinValue, MaxValue}, quarts d'étoile), affichées sur 5.
  * Une fourchette (avis de recruteur) donne son milieu.
  */
-export function starsOf(v: unknown): number | null {
+export function starsOf(v: unknown, round = true): number | null {
   // Le jeu renvoie -1 pour un joueur non observé : valeur inconnue, pas zéro étoile.
   const n = (x: unknown) => {
     const v = typeof x === 'number' ? x : typeof x === 'string' && x.trim() !== '' && !Number.isNaN(Number(x)) ? Number(x) : null;
@@ -264,7 +264,7 @@ export function starsOf(v: unknown): number | null {
   }
   if (raw == null) return null;
   const five = raw > 5 ? raw / 4 : raw;
-  return Math.round(five * 2) / 2;
+  return round ? Math.round(five * 2) / 2 : five;
 }
 
 const num = (v: unknown) => (typeof v === 'number' ? v : typeof v === 'string' && v.trim() !== '' && !isNaN(+v) ? +v : null);
@@ -355,7 +355,7 @@ export function withExtended(snap: FmSnapshot): FmSnapshot {
         morale: p.morale ?? str(x.moraleText) ?? str(x.morale),
         personality: (p as Raw).personality ?? str(x.personality),
         hierarchy: (p as Raw).hierarchy ?? str(x.hierarchy),
-        stars: { current: starsOf(x.currentStars), potential: starsOf(x.potentialStars) },
+        stars: { current: starsOf(x.currentStars), potential: starsOf(x.potentialStars), fine: starsOf(x.currentStars, false) },
         extended: x,
       };
     }),

@@ -1,5 +1,15 @@
 [
   {
+    "version": "0.1.200",
+    "date": "2026-11-13",
+    "fr": [
+      "Les notes de tes joueurs tiennent maintenant compte de l'avis de ton staff : un joueur mieux étoilé monte, un joueur moins bien étoilé baisse. La compo suggérée, Profondeur et Effectif suivent. Les recrues des autres clubs restent notées sur leurs attributs."
+    ],
+    "en": [
+      "Your players' ratings now take your staff's opinion into account: a player with more stars goes up, one with fewer goes down. The suggested lineup, Depth and Squad follow. Recruits from other clubs are still rated on their attributes."
+    ]
+  },
+  {
     "version": "0.1.199",
     "date": "2026-11-13",
     "fr": [
