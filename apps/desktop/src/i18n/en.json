@@ -3769,6 +3769,28 @@
         "listed": "Transfer listed",
         "clear": "Clear filters"
       }
+    },
+    "gap": {
+      "title": "What your tactic asks, what your squad gives",
+      "help": "For each slot of the XI, the rating of the starter and their backup in both roles (in and out of possession). A slot is weak when the starter is at least half a star below the XI median ({{median}} out of 20). A key attribute of the role (those on the FM27 radar) is missing when it is at least one point below the average level of your outfield starters ({{level}}). Nothing is changed in the game.",
+      "count": {
+        "hole_one": "{{count}} empty slot",
+        "hole_other": "{{count}} empty slots",
+        "weak_one": "{{count}} weak slot",
+        "weak_other": "{{count}} weak slots",
+        "thin_one": "{{count}} thin backup",
+        "thin_other": "{{count}} thin backups"
+      },
+      "verdict": {
+        "hole": "Nobody",
+        "weak": "Weak slot",
+        "thin": "Thin backup",
+        "ok": "Covered"
+      },
+      "sub": "backup:",
+      "missing": "Missing:",
+      "bar": "XI level {{bar}}",
+      "subAhead": "Backup rates higher"
     }
   },
   "modes": {

@@ -1,20 +1,33 @@
-import { setPieceTakers, depthAlerts, depthChart, depthFromPlan, formationKey, POS_LABEL, seasonStart, type DepthEntry, type FmPlayer, type GameSlot, type SquadAt } from '@fm-immersion/module-fm';
+import { setPieceTakers, tacticGap, type GapVerdict, depthAlerts, depthChart, depthFromPlan, formationKey, POS_LABEL, seasonStart, type DepthEntry, type FmPlayer, type GameSlot, type SquadAt } from '@fm-immersion/module-fm';
 import { useMemo, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PosBadge } from './FmFoot';
 import { useTacticChoice } from './FmTactic';
-import { Kpi, Level, Panel, Tag, useNames, PlayerLink } from './FmUi';
+import { Fit, Kpi, Level, Panel, Tag, useNames, PlayerLink } from './FmUi';
 
 /** Titulaires et remplaçants : qui joue à chaque poste, et quelle doublure peut passer devant d'ici deux saisons. */
 export function FmDepth({ players, folder, gameFormation, gameTactic = null, lineup, gameDate, history }: { players: FmPlayer[]; folder: string; gameFormation: string | null; gameTactic?: string | null; lineup: GameSlot[] | null; gameDate: string; history: SquadAt[] }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const names = useNames();
   // Même style, même schéma et même onze que Tactique > Composition ; la formation du jeu n'est qu'une indication.
-  const { plan, style, fromGame } = useTacticChoice(players, folder, gameFormation, lineup, gameTactic);
+  const { engine, plan, style, fromGame } = useTacticChoice(players, folder, gameFormation, lineup, gameTactic);
   const form = plan?.form ?? formationKey(gameFormation);
   const rows = useMemo(() => (plan ? depthFromPlan(plan, players, history) : depthChart(players, form, history)), [plan, players, form, history]);
   const alerts = useMemo(() => depthAlerts(rows), [rows]);
   const thin = rows.filter((r) => !r.subs.length);
+  // Écart poste par poste entre ce que la tactique demande et ce que l'effectif donne.
+  const gap = useMemo(() => (plan ? tacticGap(engine, plan) : null), [engine, plan]);
+  const gapRows = useMemo(() => {
+    if (!gap) return [];
+    const rank: Record<GapVerdict, number> = { hole: 0, weak: 1, thin: 2, ok: 3 };
+    return [...gap.slots].sort((a, b) => rank[a.verdict] - rank[b.verdict] || (b.gap ?? 0) - (a.gap ?? 0));
+  }, [gap]);
+  const en = i18n.resolvedLanguage === 'en';
+  const roleName = (code: string) => {
+    const r = engine.roles.get(code);
+    return (en ? r?.en : r?.fr) ?? r?.fr ?? code;
+  };
+  const nf0 = (v: number) => v.toLocaleString(undefined, { maximumFractionDigits: 0 });
   // Tireurs et capitaine parmi le onze (sinon tout l'effectif disponible).
   const takers = useMemo(() => {
     const xi = plan ? plan.slots.flatMap((sl) => (sl.player ? [sl.player] : [])) : [];
@@ -64,6 +77,65 @@ export function FmDepth({ players, folder, gameFormation, gameTactic = null, lin
           sub={[style && names.style(style), gameFormation && t('fm.tac.inGame', { form: gameFormation })].filter(Boolean).join(' · ') || t('fm.depth.proposed')}
         />
       </div>
+
+      {gap && (
+        <Panel title={t('fm.gap.title')}>
+          <p className="help">{t('fm.gap.help', { median: gap.median != null ? nf1(gap.median) : '–', level: gap.level != null ? nf1(gap.level) : '–' })}</p>
+          <div className="mb-3 flex flex-wrap gap-2 text-sm">
+            {(['hole', 'weak', 'thin'] as const).map((v) => (
+              <Tag key={v} tone={gap.count[v] ? (v === 'thin' ? 'warn' : 'bad') : 'good'}>
+                {t(`fm.gap.count.${v}`, { count: gap.count[v] })}
+              </Tag>
+            ))}
+          </div>
+          <div className="space-y-1">
+            {gapRows.map((g) => (
+              <div key={g.slot} className={`grid grid-cols-[3rem_minmax(0,1fr)] items-center gap-x-3 gap-y-1 border-b border-canard/5 py-1.5 last:border-0 lg:grid-cols-[3rem_minmax(0,1fr)_13rem_16rem_9.5rem] ${g.verdict === 'ok' ? 'opacity-70' : ''}`}>
+                <span>
+                  <PosBadge pos={g.pos} />
+                </span>
+                <span className="min-w-0 text-sm">
+                  <span className="font-bold">{roleName(g.ip)}</span>
+                  {g.oop !== g.ip && <span className="text-brun"> · {roleName(g.oop)}</span>}
+                </span>
+                <span className="col-start-2 flex items-center justify-between gap-1.5 text-sm lg:col-start-auto">
+                  {g.starter ? (
+                    <>
+                      <PlayerLink player={g.starter} /> <Fit value={g.starterFit} />
+                    </>
+                  ) : (
+                    <span className="text-brun">{t('fm.depth.nobody')}</span>
+                  )}
+                </span>
+                <span className="col-start-2 flex items-center justify-between gap-1.5 text-xs text-brun lg:col-start-auto">
+                  {g.sub ? (
+                    <>
+                      <span className="flex min-w-0 items-center gap-1.5 whitespace-nowrap">
+                        {t('fm.gap.sub')} <PlayerLink player={g.sub} />
+                      </span>
+                      <Fit value={g.subFit} />
+                    </>
+                  ) : (
+                    t('fm.depth.noSub')
+                  )}
+                </span>
+                <span className="col-start-2 flex flex-wrap gap-1 lg:col-start-auto lg:justify-end">
+                  <Tag tone={g.verdict === 'ok' ? 'good' : g.verdict === 'thin' ? 'warn' : 'bad'}>{t(`fm.gap.verdict.${g.verdict}`)}</Tag>
+                  {g.subAhead && <Tag tone="info">{t('fm.gap.subAhead')}</Tag>}
+                </span>
+                {g.missing.length > 0 && (
+                  <p className="col-start-2 text-xs text-brun lg:col-span-4 lg:col-start-2">
+                    {t('fm.gap.missing')}{' '}
+                    {g.missing.map((m) => `${t(`fm.attr.${m.key}`, { defaultValue: m.key })} ${nf0(m.value)}`).join(', ')}
+                    {' · '}
+                    {t('fm.gap.bar', { bar: nf1(g.missing[0]!.bar) })}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        </Panel>
+      )}
 
       <Panel title={t('fm.takers.title')}>
         <p className="mb-2 text-sm text-brun">{t('fm.takers.help')}</p>
