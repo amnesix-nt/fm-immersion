@@ -1,5 +1,15 @@
 [
   {
+    "version": "0.1.195",
+    "date": "2026-11-13",
+    "fr": [
+      "Les photos de situation ne se font plus pendant que Football Manager 27 est lancé : ta carte graphique reste au match 3D, et les photos reprennent quand tu fermes le jeu."
+    ],
+    "en": [
+      "Situation photos no longer run while Football Manager 27 is open: your graphics card stays on the 3D match, and photos resume once you close the game."
+    ]
+  },
+  {
     "version": "0.1.194",
     "date": "2026-11-13",
     "fr": [
