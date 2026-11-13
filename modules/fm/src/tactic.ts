@@ -284,7 +284,11 @@ export class TacticEngine {
   roleFit(p: FmPlayer, code: string, phase: Phase, pos?: PosCode): number | null {
     const r = this.roles.get(code);
     if (!r) return null;
-    if (this.raw) return this.computedFit(p, code, phase, pos);
+    if (this.raw) {
+      // Échelle des attributs, corrigée pour les joueurs du club par l'avis du staff (voir withStaffOpinion).
+      const c = this.computedFit(p, code, phase, pos);
+      return c == null || !p.staffAdj ? c : Math.max(1, Math.min(20, c + p.staffAdj));
+    }
     // Valeur lue dans le jeu pour ce joueur, ce poste et cette phase : elle prime sur tout calcul.
     const read = this.readFit(p, r, phase, pos);
     if (read != null) return read;

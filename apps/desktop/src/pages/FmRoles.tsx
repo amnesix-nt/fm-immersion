@@ -126,7 +126,7 @@ export function FmRoles({ players, folder }: { players: FmPlayer[]; folder: stri
 
       <Panel title={t('fm.roles.howTitle')}>
         <ul className="space-y-1 text-sm">
-          {(['keys', 'base', 'engine', 'foot'] as const).map((k) => (
+          {(['keys', 'base', 'engine', 'foot', 'staff'] as const).map((k) => (
             <li key={k}>{t(`fm.roles.how.${k}`)}</li>
           ))}
         </ul>

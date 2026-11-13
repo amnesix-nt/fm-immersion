@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { alertGroups, fmDashboardCard, fmSnapshotSchema, monthsBetween, normalizePlayer, parsePositions, toNumber } from '../src';
+import { alertGroups, fmDashboardCard, fmSnapshotSchema, mergeReference, monthsBetween, normalizePlayer, parsePositions, STAFF_MAX, STAFF_WEIGHT, TacticEngine, toNumber, withStaffOpinion } from '../src';
 
 describe('postes', () => {
   it('lit les libellés français du jeu', () => {
@@ -100,5 +100,32 @@ describe('résumé', () => {
     const { summarize } = await import('../src');
     const snap = fmSnapshotSchema.parse({ schema: 'archivix/1', game: 'FM27', club: 'X', gameDate: '2026-08-29', players: [] });
     expect(summarize(snap, [])).toMatchObject({ wageRoom: null, transferBudget: null, nextMatch: null });
+  });
+});
+
+describe('avis du staff dans les notes', () => {
+  const mk = (id: number, stars: number | null, team?: string) =>
+    normalizePlayer({ id, name: `J${id}`, positions: 'D (C)', attributes: { Marking: 12, Tackling: 12, Heading: 12, Positioning: 12, Strength: 12, JumpingReach: 12, Anticipation: 12 }, ...(stars != null ? { stars: { current: stars, potential: stars } } : {}), ...(team ? { team } : {}) });
+  const engine = new TacticEngine(mergeReference(undefined)).absolute();
+  const cb = [...engine.roles.values()].find((r) => engine.availableAt(r, 'DC', 'ip'))!.code;
+
+  it('monte les joueurs mieux étoilés, baisse les autres, sans toucher aux joueurs sans étoiles', () => {
+    const squad = withStaffOpinion([...Array.from({ length: 8 }, (_, i) => mk(i + 1, 4)), mk(20, 4.5), mk(21, 3.5), mk(22, null), mk(23, 1, 'U19')]);
+    const by = (id: number) => squad.find((p) => p.id === String(id))!;
+    expect(by(1).staffAdj).toBe(0);
+    expect(by(20).staffAdj).toBe(STAFF_WEIGHT);
+    expect(by(21).staffAdj).toBe(-STAFF_WEIGHT);
+    expect(by(22).staffAdj).toBeUndefined();
+    // Un jeune très en dessous : correction bornée.
+    expect(by(23).staffAdj).toBe(-STAFF_MAX);
+    const fit = (id: number) => engine.roleFit(by(id), cb, 'ip', 'DC')!;
+    expect(fit(20) - fit(1)).toBeCloseTo(STAFF_WEIGHT, 5);
+    expect(fit(1) - fit(21)).toBeCloseTo(STAFF_WEIGHT, 5);
+    expect(fit(22)).toBe(fit(1));
+  });
+
+  it('ne corrige rien avec trop peu d’avis', () => {
+    const squad = withStaffOpinion([mk(1, 4), mk(2, 3)]);
+    expect(squad.every((p) => p.staffAdj === undefined)).toBe(true);
   });
 });
