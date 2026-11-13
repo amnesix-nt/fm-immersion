@@ -38,6 +38,7 @@ pub fn run() {
             db::db_query,
             db::db_batch,
             fm::fm_read_snapshot,
+            fm::fm_read_snapshot_since,
             fm::fm_read_reference,
             fm::fm_default_folder,
             fm::fm_list_saves,

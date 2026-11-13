@@ -1,5 +1,17 @@
 [
   {
+    "version": "0.1.196",
+    "date": "2026-11-13",
+    "fr": [
+      "FM Immersion se fait plus discret pendant que tu joues : il ne relit le relevé du plugin que quand il a changé, ne lance plus de petits programmes en arrière-plan pour savoir si FM27 tourne, et ne refait plus chaque minute les calculs de la gazette quand rien n'a bougé.",
+      "La fenêtre ne se fige plus pendant la lecture des gros fichiers de ta carrière."
+    ],
+    "en": [
+      "FM Immersion stays lighter while you play: it only re-reads the plugin's data when it has changed, no longer starts small background programs to check whether FM27 is running, and stops redoing the newspaper's calculations every minute when nothing has moved.",
+      "The window no longer freezes while your career's large files are being read."
+    ]
+  },
+  {
     "version": "0.1.194",
     "date": "2026-11-13",
     "fr": [

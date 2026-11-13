@@ -369,6 +369,30 @@ export function withTimeout<T>(p: Promise<T>, ms: number, fallback: T): Promise<
   });
 }
 
+/**
+ * Calculs sur l'historique gardés tant qu'il n'a pas changé : la tournée passe chaque minute, mais l'historique (un
+ * instantané par jour de jeu, des centaines sur une longue carrière) n'est remplacé qu'à l'import d'un nouveau jour.
+ * Le cache tient à la liste elle-même (`fm-cache` en crée une nouvelle à chaque import) et disparaît avec elle.
+ */
+const derived = new WeakMap<object, Map<string, unknown>>();
+function once<T>(history: object, name: string, make: () => T): T {
+  let m = derived.get(history);
+  if (!m) derived.set(history, (m = new Map()));
+  if (!m.has(name)) m.set(name, make());
+  return m.get(name) as T;
+}
+type History = Awaited<ReturnType<typeof fetchHistory>>;
+const memoIssues = (h: History) => once(h, 'issues', () => gazetteIssues(h));
+const memoBreaking = (h: History) => once(h, 'breaking', () => breakingNews(h));
+const memoLastDate = (h: History) => once(h, 'lastDate', () => h.map((x) => x.gameDate).sort().at(-1));
+/** Couleurs des clubs relevées une seule fois par historique (elles passent par le stockage local). */
+const looksDone = new WeakSet<object>();
+const rememberLooksOnce = (h: History) => {
+  if (looksDone.has(h)) return;
+  looksDone.add(h);
+  rememberClubLooks(h.map((x) => x.data));
+};
+
 /** Petite pause entre deux envois : Discord refuse les rafales sur un même webhook. */
 const pause = () => new Promise((r) => window.setTimeout(r, 1500));
 
@@ -412,15 +436,12 @@ export function useGazetteAuto() {
         // L'instantané du jour et les jours rattrapés sont importés par la lecture du plugin (`useFmSync`, active dans
         // toute l'appli) : ici, on lit seulement l'historique, dans le cache tenu à jour par celle-ci.
         const history = await fetchHistory(qc, saveId);
-        rememberClubLooks(history.map((h) => h.data));
-        const lastDate = history
-          .map((h) => h.gameDate)
-          .sort()
-          .at(-1);
+        rememberLooksOnce(history);
+        const lastDate = memoLastDate(history);
         const lang = i18n.resolvedLanguage;
         // Chaque envoi est isolé (`attempt`) : un envoi refusé ne bloque plus les autres, la gazette d'abord.
         if (gazetteOn) {
-          const issues = issuesWithPress(gazetteIssues(history), await fmData.pressConferences(saveId).catch(() => []));
+          const issues = issuesWithPress([...memoIssues(history)], await fmData.pressConferences(saveId).catch(() => []));
           const sentWeek = (read(SENT_KEY) ?? '').split('|')[0] === saveId ? ((read(SENT_KEY) ?? '').split('|')[1] ?? null) : null;
           const seen = { club: history.at(-1)?.data.club ?? null, gameDate: lastDate ?? null, week: issues[1]?.weekStart ?? null, sentWeek };
           const index = gazetteToSend(issues, saveId, read(SENT_KEY));
@@ -450,7 +471,7 @@ export function useGazetteAuto() {
             await pause();
           }
           // Fin du championnat : numéro spécial, après la gazette de la semaine.
-          const season = seasonToSend(seasonReviews(history), lastDate, (r) => isSeasonSent(saveId, r));
+          const season = seasonToSend(once(history, 'seasons', () => seasonReviews(history)), lastDate, (r) => isSeasonSent(saveId, r));
           if (season) {
             await attempt(
               'season',
@@ -463,7 +484,7 @@ export function useGazetteAuto() {
           // Le coach a quitté son club (autre club, ou sans club d'après le plugin) : hors-série « Flash spécial ».
           // Sans club : seulement une fois le départ confirmé (le jeu a avancé d'au moins un jour sans club).
           const freeSince = freeConfirmed(await fmData.settings(saveId));
-          const exit = farewellToSend(coachExits(history, { freeSince }), lastDate, (x) => isFarewellSent(saveId, x));
+          const exit = farewellToSend(once(history, `exits|${freeSince ?? ''}`, () => coachExits(history, { freeSince })), lastDate, (x) => isFarewellSent(saveId, x));
           if (exit) {
             await attempt(
               'farewell',
@@ -476,7 +497,7 @@ export function useGazetteAuto() {
         }
         // Dépêches, exploits et affiche du choc : elles n'attendent pas la gazette de la semaine.
         if (breakingOn) {
-          for (const n of breakingToSend(breakingNews(history), lastDate, (x) => isBreakingSent(saveId, x))) {
+          for (const n of breakingToSend(memoBreaking(history), lastDate, (x) => isBreakingSent(saveId, x))) {
             // En mode « auto », la photo de situation est faite avant l'envoi (deux à quatre minutes sur la carte graphique).
             await attempt(
               'breaking',
@@ -488,7 +509,7 @@ export function useGazetteAuto() {
             await pause();
           }
           // Exploits du jour (triplé, série, large victoire, fin de disette), avec les mêmes règles que les dépêches.
-          for (const n of breakingToSend(recordNews(history), lastDate, (x) => isRecordSent(saveId, x))) {
+          for (const n of breakingToSend(once(history, 'records', () => recordNews(history)), lastDate, (x) => isRecordSent(saveId, x))) {
             await attempt(
               'record',
               `record|${recordId(saveId, n)}`,
@@ -498,7 +519,7 @@ export function useGazetteAuto() {
             await pause();
           }
           // Affiche du choc, quelques jours avant un match qui compte (une fois par match).
-          const big = bigMatchNow(history);
+          const big = once(history, 'bigMatch', () => bigMatchNow(history));
           if (big && !isBigMatchSent(saveId, big)) {
             await attempt(
               'bigMatch',
@@ -538,15 +559,12 @@ export function useGazetteAuto() {
         const saveId = fmSaves.find((s) => s.id === read(GAZETTE_SAVE_KEY))?.id ?? fmSaves[0]?.id;
         if (!saveId) return;
         const history = await fetchHistory(qc, saveId);
-        const lastDate = history
-          .map((h) => h.gameDate)
-          .sort()
-          .at(-1);
-        const issues = issuesWithPress(gazetteIssues(history), await fmData.pressConferences(saveId).catch(() => []));
+        const lastDate = memoLastDate(history);
+        const issues = issuesWithPress([...memoIssues(history)], await fmData.pressConferences(saveId).catch(() => []));
         const todo: { tag: string; make: () => Promise<unknown>; key: readonly unknown[] }[] = [];
         const une = issues[1];
         if (une) todo.push({ tag: gazetteTag(saveId, une), make: () => gazettePhoto(saveId, une, true), key: ['gazette', 'une-photo', saveId] });
-        for (const n of breakingToSend(breakingNews(history), lastDate, () => false))
+        for (const n of breakingToSend(memoBreaking(history), lastDate, () => false))
           todo.push({ tag: breakingTag(saveId, n), make: () => breakingPhoto(saveId, n, true), key: ['gazette', 'breaking-photo', saveId] });
         let next: (typeof todo)[number] | null = null;
         for (const x of todo) {
