@@ -1,6 +1,6 @@
 [package]
 name = "fm-immersion"
-version = "0.1.196"
+version = "0.1.198"
 description = "FM Immersion — le compagnon de tes parties de Football Manager 27"
 authors = ["FM Immersion"]
 license = "MIT"
@@ -37,8 +37,10 @@ sevenz-rust2 = { version = "0.25", default-features = false }
 [target.'cfg(windows)'.dependencies]
 windows-sys = { version = "0.61", features = [
   "Win32_Foundation",
+  "Win32_Security",
   "Win32_System_Diagnostics_Debug",
   "Win32_System_Diagnostics_ToolHelp",
+  "Win32_System_JobObjects",
   "Win32_System_Threading",
 ] }
 

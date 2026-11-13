@@ -2852,8 +2852,15 @@
       "label": "Squad display",
       "pitch": "Pitch",
       "table": "Table",
-      "help": "Each player at their main natural position, best first. Click a name for their profile.",
-      "empty": "Nobody at: {{list}}."
+      "help": "Starters (amber ring) in their slot, then every other player in the formation slot where they rate best among those they can play. Number: rating out of 20 in the slot's roles, as in Tactic. Click a name for their profile.",
+      "thin": "Nobody behind the starter: {{list}}.",
+      "starter": "Starter",
+      "outside": "Can't play any slot of the formation:",
+      "from": {
+        "game": "Formation of your FM27 tactic {{tactic}} ({{form}}), as in Tactic.",
+        "suggested": "Formation of the suggested lineup in Tactic ({{form}}).",
+        "built": "Formation of the tactic you built in Tactic ({{form}})."
+      }
     },
     "results": {
       "title": "Results",

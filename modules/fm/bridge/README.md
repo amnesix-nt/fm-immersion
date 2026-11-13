@@ -241,3 +241,9 @@ sur le moral ni la réputation. Clé `ConferenceEnJeu` (oui par défaut) pour la
 Affichage : FM27 n'a plus IMGUI (`OnGUI` lève « Method unstripping failed », test du 11/11/2026) ; la fenêtre est faite en
 UI Toolkit, dans un panneau à nous (réglages copiés du panneau FM le plus haut, ordre +100) avec une police SDF du jeu
 (sans police, aucun texte ne s'affiche). Validé en jeu le 11/11/2026 avec un plugin de test.
+
+**0.6.3** : match plus fluide. Une lecture complète lancée juste avant le coup d'envoi continuait pendant le match
+(journal du 13/11/2026 : lecture de 63 s pendant le match, 9,5 s prises au thread du jeu, images jusqu'à 108 ms ; « le
+match 3D rame »). Le direct tient maintenant l'état « match en cours » (`Plugin.InMatch`), regardé toutes les 5 s pendant
+une lecture complète ; dès qu'un match commence, la lecture s'arrête (tranches déjà en file comprises) et repart après
+le coup de sifflet final. Le direct et les petites questions (date, match en cours ?) ne sont pas concernés.

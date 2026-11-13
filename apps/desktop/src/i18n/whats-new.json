@@ -1,6 +1,6 @@
 [
   {
-    "version": "0.1.196",
+    "version": "0.1.198",
     "date": "2026-11-13",
     "fr": [
       "FM Immersion se fait plus discret pendant que tu joues : il ne relit le relevé du plugin que quand il a changé, ne lance plus de petits programmes en arrière-plan pour savoir si FM27 tourne, et ne refait plus chaque minute les calculs de la gazette quand rien n'a bougé.",
@@ -9,6 +9,28 @@
     "en": [
       "FM Immersion stays lighter while you play: it only re-reads the plugin's data when it has changed, no longer starts small background programs to check whether FM27 is running, and stops redoing the newspaper's calculations every minute when nothing has moved.",
       "The window no longer freezes while your career's large files are being read."
+    ]
+  },
+  {
+    "version": "0.1.197",
+    "date": "2026-11-13",
+    "fr": [
+      "Effectif > Terrain suit maintenant ta tactique : même schéma et mêmes postes qu'en Tactique, titulaires cerclés d'ambre, puis chaque autre joueur au poste où il est le mieux noté. Les deux écrans ne se contredisent plus.",
+      "Les postes des joueurs sont mieux lus : les pistons (« AL » dans FM27) ne sont plus oubliés, et le poste principal de chacun est celui où le jeu le dit le plus à l'aise, plus le premier de la liste."
+    ],
+    "en": [
+      "Squad > Pitch now follows your tactic: same formation and slots as in Tactic, starters ringed in amber, then every other player in the slot where they rate best. The two screens no longer disagree.",
+      "Player positions are read better: wing-back positions are no longer missed, and each player's main position is now the one the game says they're most comfortable in, not the first one listed."
+    ]
+  },
+  {
+    "version": "0.1.195",
+    "date": "2026-11-13",
+    "fr": [
+      "Les photos de situation ne se font plus pendant que Football Manager 27 est lancé : ta carte graphique reste au match 3D, et les photos reprennent quand tu fermes le jeu."
+    ],
+    "en": [
+      "Situation photos no longer run while Football Manager 27 is open: your graphics card stays on the 3D match, and photos resume once you close the game."
     ]
   },
   {

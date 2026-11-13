@@ -276,6 +276,7 @@ pub fn start(photos_dir: &Path) -> Result<u16, PhotosError> {
         cmd.creation_flags(CREATE_NO_WINDOW);
     }
     let mut child = cmd.spawn().map_err(|e| PhotosError::Io(format!("lancement de ComfyUI impossible : {e}")))?;
+    tie_to_app(&child);
 
     let started = Instant::now();
     loop {
@@ -294,6 +295,44 @@ pub fn start(photos_dir: &Path) -> Result<u16, PhotosError> {
     *guard = Some(Running { child, port });
     Ok(port)
 }
+
+/// Lie ComfyUI à l'appli : il est rangé dans un « job » Windows fermé avec le processus de l'appli, si bien que
+/// Windows l'arrête même quand l'appli est fermée brutalement (gestionnaire des tâches, plantage), là où
+/// `RunEvent::Exit` n'est pas appelé.
+#[cfg(windows)]
+fn tie_to_app(child: &std::process::Child) {
+    use std::os::windows::io::AsRawHandle;
+    use std::sync::OnceLock;
+    use windows_sys::Win32::System::JobObjects::{
+        AssignProcessToJobObject, CreateJobObjectW, JobObjectExtendedLimitInformation, SetInformationJobObject,
+        JOBOBJECT_EXTENDED_LIMIT_INFORMATION, JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE,
+    };
+    // Le job reste ouvert toute la vie de l'appli (jamais fermé à la main) : sa fermeture par Windows tue le moteur.
+    static JOB: OnceLock<usize> = OnceLock::new();
+    let job = *JOB.get_or_init(|| unsafe {
+        let job = CreateJobObjectW(std::ptr::null(), std::ptr::null());
+        if job.is_null() {
+            return 0;
+        }
+        let mut info: JOBOBJECT_EXTENDED_LIMIT_INFORMATION = std::mem::zeroed();
+        info.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
+        SetInformationJobObject(
+            job,
+            JobObjectExtendedLimitInformation,
+            &info as *const _ as *const core::ffi::c_void,
+            std::mem::size_of::<JOBOBJECT_EXTENDED_LIMIT_INFORMATION>() as u32,
+        );
+        job as usize
+    });
+    if job != 0 {
+        unsafe {
+            AssignProcessToJobObject(job as _, child.as_raw_handle() as _);
+        }
+    }
+}
+
+#[cfg(not(windows))]
+fn tie_to_app(_child: &std::process::Child) {}
 
 /// Arrête ComfyUI s'il tourne (appelé aussi à la fermeture de l'appli).
 pub fn stop() {
@@ -574,9 +613,24 @@ fn gpu_memory() -> Option<(u64, u64)> {
 
 /// La carte graphique est-elle déjà prise par un autre logiciel ? Demandé avant une photo faite toute seule (jamais
 /// avant un clic du joueur) : la photo attend plutôt que de faire planter l'autre travail par manque de mémoire.
-/// Faux quand notre moteur tourne déjà (la mémoire prise est la sienne) ou quand la carte ne répond pas.
+/// Vrai tant que FM27 est lancé : un match 3D prend toute la carte, et le moteur, s'il tourne, est arrêté et le modèle
+/// d'IA de l'appli déchargé d'Ollama pour la lui rendre (les photos reprennent une fois le jeu fermé). Sinon faux
+/// quand notre moteur tourne déjà (la mémoire prise est la sienne) ou quand la carte ne répond pas.
 #[tauri::command]
 pub async fn photos_gpu_busy(app: tauri::AppHandle) -> Result<bool, PhotosError> {
+    let game = tauri::async_runtime::spawn_blocking(|| {
+        let game = crate::fm_bridge::game_running(std::path::Path::new(""));
+        if game {
+            stop();
+            crate::ai::unload_all();
+        }
+        game
+    })
+    .await
+    .map_err(io)?;
+    if game {
+        return Ok(true);
+    }
     if status(&photos_dir(&app)?).running {
         return Ok(false);
     }

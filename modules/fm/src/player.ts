@@ -81,7 +81,14 @@ export interface FmPlayer {
 }
 
 export function normalizePlayer(p: FmPlayerRaw): FmPlayer {
-  const positions = parsePositions(p.positionsText ?? p.positions);
+  const familiarity = familiarityOf(p.positionRatings);
+  // Poste principal en tête : celui que le jeu donne comme meilleur, puis la familiarité lue, puis l'ordre du terrain.
+  // (Le texte du jeu « D/AL/M/MO (G) » suit l'ordre du terrain, pas la préférence : son premier poste n'est pas le meilleur.)
+  const best = typeof p.bestPosition === 'string' ? parsePositions(p.bestPosition) : [];
+  const positions = parsePositions(p.positionsText ?? p.positions)
+    .map((c, i) => ({ c, i, k: best.includes(c) ? 1 : 0, f: familiarity?.[c] ?? 0 }))
+    .sort((a, b) => b.k - a.k || b.f - a.f || a.i - b.i)
+    .map((x) => x.c);
   const isGK = positions[0] === 'GB';
   const skip = isGK ? GK_SKIP : GK_ONLY;
   const attributes: Record<string, number> = {};
@@ -124,7 +131,7 @@ export function normalizePlayer(p: FmPlayerRaw): FmPlayer {
     team: typeof p.team === 'string' ? p.team : null,
     stars: p.stars && typeof p.stars === 'object' ? (p.stars as FmPlayer['stars']) : null,
     attributes,
-    familiarity: familiarityOf(p.positionRatings),
+    familiarity,
     gameStars: p.gameStars && typeof p.gameStars === 'object' ? (p.gameStars as FmPlayer['gameStars']) : null,
     ca: typeof p.ca === 'number' && p.ca > 0 ? p.ca : null,
     pa: typeof p.pa === 'number' && p.pa > 0 ? p.pa : null,

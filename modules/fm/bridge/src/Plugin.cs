@@ -18,7 +18,7 @@ namespace Archivix;
 [BepInPlugin("fr.archivix.bridge", "Archivix Bridge", Version)]
 public class Plugin : BasePlugin
 {
-    public const string Version = "0.6.2";
+    public const string Version = "0.6.3";
     internal static ManualLogSource Log = null!;
     // Dossier où le plugin écrit ses instantanés (réglage BepInEx\config\fr.archivix.bridge.cfg,
     // que FM Immersion renseigne à l'installation ; par défaut le dossier de données FM27 dans Documents).
@@ -26,6 +26,9 @@ public class Plugin : BasePlugin
     internal static bool ReadTactic = true, ReadEffectiveness, ReadLineup, ReadExtended, ReadTargets, WriteDiscovery = true, LocalServer, ReadLive = true, PressInGame = true;
     bool _discovered;
     internal static int RereadSeconds = 300;
+    // 0.6.3 : match en cours (tenu par LiveLoop) et lecture complète en cours. Une lecture complète lancée juste avant le
+    // coup d'envoi continuait pendant le match (13/11/2026 : 63 s de lecture, images jusqu'à 108 ms, « le match 3D rame »).
+    internal static volatile bool InMatch, Reading;
     const string Prefix = "http://localhost:8727/";
     static readonly JsonSerializerOptions Json = new() { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
@@ -152,6 +155,7 @@ public class Plugin : BasePlugin
                     Log.LogInfo($"Lecture incomplète du {date} : nouvelle lecture dans une minute ({retries}/3).");
                 }
             }
+            catch (FmBindingReader.MatchStarted) { lastDate = null; Log.LogInfo("Match commencé : lecture complète arrêtée, elle repartira après le match."); }
             catch (FmBindingReader.GameChanged) { lastDate = null; loadedSince = null; Log.LogInfo("Partie quittée ou changée pendant la lecture : instantané abandonné."); }
             catch (Exception e) { Log.LogWarning($"Instantané impossible : {e.Message}"); }
         }
@@ -219,6 +223,7 @@ public class Plugin : BasePlugin
                 var during = FmBindingReader.DuringMatch();
                 silent = during == null ? silent + 1 : 0;
                 var now = during ?? (was && silent <= 4);
+                InMatch = now;
                 if (now && !was) { gameDate = FmBindingReader.CurrentDate(); last = null; pending = null; Log.LogInfo("Match en cours : direct dans archivix-live.json"); }
                 if (now || was)   // une dernière lecture après la fin du match, pour le résultat final
                 {
@@ -245,7 +250,8 @@ public class Plugin : BasePlugin
                 was = now;
             }
             catch (Exception e) { Log.LogWarning($"Match en direct : {e.Message}"); }
-            Thread.Sleep(was || pending != null ? 15_000 : 20_000);
+            // 0.6.3 : pendant une lecture complète, on regarde toutes les 5 s si un match commence, pour l'arrêter à temps.
+            Thread.Sleep(was || pending != null ? 15_000 : Reading ? 5_000 : 20_000);
         }
     }
 
