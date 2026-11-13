@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { FmOtherSaveError, fmRepo } from '../src/lib/fm';
+import { FmOtherSaveError, fmRepo, freeConfirmed } from '../src/lib/fm';
 import { savesRepo } from '../src/lib/saves';
 import { memoryDb } from './memory-db';
 
@@ -210,8 +210,13 @@ describe('instantanés Football Manager', () => {
     await fm.importSnapshot(save.id, snap('2026-11-01', ['A']));
     expect((await fm.settings(save.id)).fmFreeSince).toBe('2026-11-20');
 
+    // Départ confirmé seulement quand le jeu avance sans club (faux « sans club » pendant un chargement, 13/11/2026).
+    expect(freeConfirmed(await fm.settings(save.id))).toBeNull();
+    await fm.noteStatus(save.id, { schema: 'archivix-status/1', gameDate: '2026-11-21', club: null });
+    expect(freeConfirmed(await fm.settings(save.id))).toBe('2026-11-20');
+
     await fm.importSnapshot(save.id, { ...snap('2026-12-05', ['N']), club: 'Örgryte IS' });
     const st = await fm.settings(save.id);
-    expect([st.fmClub, st.fmFreeSince]).toEqual(['Örgryte IS', undefined]);
+    expect([st.fmClub, st.fmFreeSince, st.fmFreeSeen]).toEqual(['Örgryte IS', undefined, undefined]);
   });
 });
