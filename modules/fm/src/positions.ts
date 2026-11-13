@@ -24,7 +24,9 @@ function codeFor(base: string, side: string): PosCode | null {
       return base;
     case 'D':
       return ({ C: 'DC', G: 'DG', D: 'DD' } as const)[side as 'C'] ?? null;
+    // « AL » (arrière latéral) dans FM27 en français, « DL » dans les versions précédentes : le même poste de piston.
     case 'DL':
+    case 'AL':
       return ({ G: 'DLG', D: 'DLD' } as Record<string, PosCode>)[side] ?? null;
     case 'MD':
       return 'MDF';
