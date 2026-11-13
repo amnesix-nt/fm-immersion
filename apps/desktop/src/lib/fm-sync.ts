@@ -10,7 +10,7 @@ import { FmOtherSaveError } from './fm';
 import { noteImported } from './fm-cache';
 
 /** Relecture des fichiers du plugin (instantané, état du manager). */
-const LIVE_POLL_MS = 10_000;
+const LIVE_POLL_MS = 5_000;
 
 /** Dossier du plugin de la carrière suivie : celui enregistré, sinon celui trouvé sur le PC. */
 export function useFmFolder(saveId: string) {
@@ -21,8 +21,9 @@ export function useFmFolder(saveId: string) {
 
 /**
  * Monté une fois pour toute l'appli : suit la carrière choisie presque en direct, quel que soit l'écran ouvert.
- * Le plugin réécrit son instantané à chaque nouveau jour de jeu (et toutes les 5 minutes) ; on relit le fichier
- * toutes les 10 secondes (lecture locale, rien dans le jeu) et on l'enregistre dès qu'il a changé.
+ * Le plugin réécrit son instantané à chaque nouveau jour de jeu, toutes les 5 minutes, et (plugin 0.6.4) dans les 10 s
+ * qui suivent un changement de compo ou de tactique ; on regarde toutes les 5 secondes si le fichier a changé (taille et
+ * date seulement, lecture locale, rien dans le jeu) et on l'enregistre dès que c'est le cas.
  */
 export function useFmSync() {
   const qc = useQueryClient();

@@ -18,7 +18,7 @@ namespace Archivix;
 [BepInPlugin("fr.archivix.bridge", "Archivix Bridge", Version)]
 public class Plugin : BasePlugin
 {
-    public const string Version = "0.6.3";
+    public const string Version = "0.6.4";
     internal static ManualLogSource Log = null!;
     // Dossier où le plugin écrit ses instantanés (réglage BepInEx\config\fr.archivix.bridge.cfg,
     // que FM Immersion renseigne à l'installation ; par défaut le dossier de données FM27 dans Documents).
@@ -72,6 +72,7 @@ public class Plugin : BasePlugin
         if (PressInGame) { AddComponent<PressWindow>(); PressWindow.StartWatcher(); }
         new Thread(RefreshLoop) { IsBackground = true, Name = "ArchivixRefresh" }.Start();
         new Thread(DateLoop) { IsBackground = true, Name = "ArchivixDate" }.Start();
+        if (ReadLineup || ReadTactic) new Thread(SelectionLoop) { IsBackground = true, Name = "ArchivixCompo" }.Start();
         if (ReadLive) new Thread(LiveLoop) { IsBackground = true, Name = "ArchivixLive" }.Start();
         if (LocalServer) StartServer();
         Log.LogInfo($"Archivix Bridge {Version} : instantanés dans {DataDir}" + (_http != null ? $", serveur local sur {Prefix}" : ""));
@@ -183,6 +184,58 @@ public class Plugin : BasePlugin
                 last = key;
             }
             catch (Exception e) { Log.LogWarning($"Date de jeu : {e.Message}"); }
+        }
+    }
+
+    // Compo et tactique presque en direct (0.6.4) : la lecture complète ne repart qu'à chaque nouveau jour de jeu, ou
+    // toutes les RelectureSecondes (5 minutes) si la date ne bouge pas, et dure une minute. Un changement de onze ou de
+    // tactique dans FM27 n'arrivait donc dans FM Immersion qu'après plusieurs minutes (13/11/2026 : « le refresh de
+    // l'effectif se fait tardivement, ça devrait être quasiment instantané »). Toutes les 10 s, on relit seulement la
+    // compo (11 lignes) et le nom de la tactique ; si l'un des deux a changé depuis le dernier instantané, la tactique
+    // est relue et l'instantané réécrit avec la nouvelle compo, le reste gardé tel quel. Jamais pendant un match, une
+    // lecture complète ou tant que l'écran Tactique est ouvert ; rien si le jour ou le club ne sont plus ceux de
+    // l'instantané (la lecture complète s'en charge).
+    void SelectionLoop()
+    {
+        if (_reader is not FmBindingReader reader) return;
+        string? seen = null;
+        while (true)
+        {
+            Thread.Sleep(10_000);
+            try
+            {
+                Snapshot? last; lock (_lock) last = _last;
+                if (last == null || InMatch || Reading) continue;
+                var (date, club) = FmBindingReader.CurrentDateAndClub();
+                if (date != last.GameDate || club != last.Club) { seen = null; continue; }
+                if (reader.ProbeSelection() is not { } probe) continue;
+                // Compo illisible (le jeu n'a pas répondu) : on ne remplace pas une compo lue par des trous.
+                int Filled(List<Dictionary<string, object?>>? l) => l?.Count(r => r.GetValueOrDefault("playerId") != null) ?? 0;
+                if (ReadLineup && Filled(probe.Lineup) < Math.Min(9, Filled(last.Lineup))) continue;
+                if (probe.Name == null && last.Tactic?.Name != null) continue;
+                string Sig(string? name, List<Dictionary<string, object?>>? l) => name + "|" + JsonSerializer.Serialize(l);
+                var now = Sig(probe.Name, ReadLineup ? probe.Lineup : last.Lineup);
+                if (now == Sig(last.Tactic?.Name, last.Lineup) || now == seen) { seen = now; continue; }
+                // Lecture complète partie entre-temps : elle écrira la nouvelle compo elle-même.
+                if (InMatch || Reading) continue;
+                var mostUsed = last.Tactic?.FormationSource == "MostUsedFormation" ? last.Tactic.Formation : null;
+                var tactic = reader.ReadSelectionTactic(mostUsed) ?? last.Tactic;
+                var collecte = last.Collecte != null ? new Dictionary<string, string>(last.Collecte) : new Dictionary<string, string>();
+                collecte["compoRapide"] = "relue à " + DateTime.Now.ToString("HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
+                var snap = last with { Tactic = tactic, Lineup = ReadLineup ? probe.Lineup : last.Lineup, Collecte = collecte };
+                lock (_lock)
+                {
+                    // Un instantané complet a été écrit pendant la relecture : il est plus récent, on ne l'écrase pas.
+                    if (!ReferenceEquals(_last, last)) continue;
+                    _last = snap;
+                }
+                var json = JsonSerializer.Serialize(snap, Json);
+                WriteAtomic(Path.Combine(DataDir, "archivix-snapshot.json"), json);
+                WriteAtomic(Path.Combine(DataDir, $"archivix-{snap.GameDate}.json"), json);
+                seen = now;
+                Log.LogInfo($"Compo ou tactique changée dans le jeu : instantané du {snap.GameDate} réécrit (« {tactic?.Name} »).");
+            }
+            catch (Exception e) { Log.LogWarning($"Compo rapide : {e.Message}"); }
         }
     }
 

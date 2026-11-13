@@ -1,5 +1,15 @@
 [
   {
+    "version": "0.1.203",
+    "date": "2026-11-13",
+    "fr": [
+      "Ton onze et ta tactique suivent FM27 de bien plus près : avec le plugin FM27 0.6.4, un changement arrive dans l'appli une quinzaine de secondes après avoir quitté l'écran Tactique du jeu, au lieu de plusieurs minutes. Mets le plugin à jour dans « Plugin et réglages », jeu fermé."
+    ],
+    "en": [
+      "Your XI and tactic follow FM27 much more closely: with FM27 plugin 0.6.4, a change reaches the app about fifteen seconds after you leave the game's Tactics screen, instead of several minutes. Update the plugin in \"Plugin & settings\", with the game closed."
+    ]
+  },
+  {
     "version": "0.1.202",
     "date": "2026-11-13",
     "fr": [
