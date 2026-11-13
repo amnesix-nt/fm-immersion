@@ -247,3 +247,12 @@ UI Toolkit, dans un panneau à nous (réglages copiés du panneau FM le plus hau
 match 3D rame »). Le direct tient maintenant l'état « match en cours » (`Plugin.InMatch`), regardé toutes les 5 s pendant
 une lecture complète ; dès qu'un match commence, la lecture s'arrête (tranches déjà en file comprises) et repart après
 le coup de sifflet final. Le direct et les petites questions (date, match en cours ?) ne sont pas concernés.
+
+**0.6.4** : compo et tactique presque en direct. La lecture complète ne repart qu'à chaque nouveau jour de jeu (ou toutes
+les `RelectureSecondes`), si bien qu'un changement de onze ou de tactique dans FM27 mettait plusieurs minutes à arriver
+dans FM Immersion. `SelectionLoop` relit toutes les 10 s les 11 lignes de la compo et le nom de la tactique active
+(une centaine de petites requêtes, par tranches comme le reste) ; si l'un des deux a changé, la tactique est relue et
+`archivix-snapshot.json` (et le fichier daté) réécrit avec la nouvelle compo, le reste de l'instantané gardé tel quel
+(`collecte.compoRapide` donne l'heure). Jamais pendant un match, une lecture complète, ou tant que l'écran Tactique est
+ouvert : le changement arrive une dizaine de secondes après avoir quitté cet écran. Les consignes d'équipe lues par
+`chemins.json` attendent toujours la lecture complète.

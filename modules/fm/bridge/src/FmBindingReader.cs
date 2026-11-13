@@ -694,6 +694,21 @@ public class FmBindingReader : IGameReader
         return res;
     }
 
+    // 0.6.4 : relecture légère de la compo (SelectionLoop). `ProbeSelection` : les 11 lignes de la compo et le nom de la
+    // tactique active, pour voir si quelque chose a changé ; `ReadSelection` : la tactique entière en plus, seulement
+    // quand c'est le cas. Rien n'est lu tant que l'écran Tactique est ouvert ou dans un état inconnu (même règle que
+    // la lecture complète) : null.
+    public (string? Name, List<Dictionary<string, object?>>? Lineup)? ProbeSelection()
+    {
+        if (TacticsScreen.IsOpen() != false) return null;
+        var lineup = Plugin.ReadLineup ? ReadLineup() : null;
+        var v = Batch.Run(new[] { new Req(null, Tactic + "Name"), new Req(null, Tactic + "CurrentTacticSlotName") }, 3000);
+        var name = CleanName(v[0] as string) ?? CleanName(v[1] as string);
+        return (name, lineup);
+    }
+
+    public TacticDto? ReadSelectionTactic(string? mostUsed) => Plugin.ReadTactic && TacticsScreen.IsOpen() == false ? ReadTactic(mostUsed) : null;
+
     // --- Tactique active et efficacité tactique (blocs optionnels : null si le jeu ne répond pas) ---
 
     TacticDto ReadTactic(string? mostUsed)

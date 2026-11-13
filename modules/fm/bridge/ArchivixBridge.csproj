@@ -12,7 +12,7 @@
     <RootNamespace>Archivix</RootNamespace>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
-    <Version>0.6.3</Version>
+    <Version>0.6.4</Version>
     <FMDir Condition="'$(FMDir)' == ''">$(FM27_DIR)</FMDir>
     <FMDir Condition="'$(FMDir)' == ''">C:\Program Files (x86)\Steam\steamapps\common\Football Manager 27</FMDir>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
