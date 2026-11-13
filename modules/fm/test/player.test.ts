@@ -7,6 +7,17 @@ describe('postes', () => {
     expect(parsePositions('DL/M (G), MO (DG), BT')).toEqual(['DLG', 'MG', 'MOD', 'MOG', 'BT']);
     expect(parsePositions(['GB'])).toEqual(['GB']);
     expect(parsePositions('')).toEqual([]);
+    // FM27 en français écrit « AL » pour le piston (arrière latéral).
+    expect(parsePositions('D/AL/M/MO (G)')).toEqual(['DG', 'DLG', 'MG', 'MOG']);
+    expect(parsePositions('AL (G)')).toEqual(['DLG']);
+  });
+
+  it('met le meilleur poste du joueur en tête, pas le premier du texte', () => {
+    const p = normalizePlayer({ id: 1, name: 'K', positionsText: 'D/AL/M/MO (G)', bestPosition: 'AL (G)', positionRatings: { 'D (G)': 18, 'DL (G)': 20, 'M (G)': 15, 'MO (G)': 16 } });
+    expect(p.positions).toEqual(['DLG', 'DG', 'MOG', 'MG']);
+    expect(p.familiarity?.DLG).toBe(20);
+    // Sans familiarité lue : ordre du terrain, comme avant.
+    expect(normalizePlayer({ id: 2, name: 'F', positionsText: 'MD, M/MO (C), BT (C)' }).positions).toEqual(['MDF', 'MC', 'MOC', 'BT']);
   });
 });
 

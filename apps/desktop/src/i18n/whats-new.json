@@ -3,10 +3,12 @@
     "version": "0.1.197",
     "date": "2026-11-13",
     "fr": [
-      "Effectif > Terrain suit maintenant ta tactique : même schéma et mêmes postes qu'en Tactique, titulaires cerclés d'ambre, puis chaque autre joueur au poste où il est le mieux noté. Les deux écrans ne se contredisent plus."
+      "Effectif > Terrain suit maintenant ta tactique : même schéma et mêmes postes qu'en Tactique, titulaires cerclés d'ambre, puis chaque autre joueur au poste où il est le mieux noté. Les deux écrans ne se contredisent plus.",
+      "Les postes des joueurs sont mieux lus : les pistons (« AL » dans FM27) ne sont plus oubliés, et le poste principal de chacun est celui où le jeu le dit le plus à l'aise, plus le premier de la liste."
     ],
     "en": [
-      "Squad > Pitch now follows your tactic: same formation and slots as in Tactic, starters ringed in amber, then every other player in the slot where they rate best. The two screens no longer disagree."
+      "Squad > Pitch now follows your tactic: same formation and slots as in Tactic, starters ringed in amber, then every other player in the slot where they rate best. The two screens no longer disagree.",
+      "Player positions are read better: wing-back positions are no longer missed, and each player's main position is now the one the game says they're most comfortable in, not the first one listed."
     ]
   },
   {
