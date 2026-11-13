@@ -61,6 +61,7 @@ import { recentForm } from '../lib/gazette-une';
 import { getPhotoMode, photosReady } from '../lib/photo-events';
 import { loadFace } from '../lib/player-face';
 import { drawSeason } from '../lib/season-une';
+import { freeConfirmed } from '../lib/fm';
 
 /** Mode Gazette : un journal par semaine de jeu, rédigé à partir des instantanés de la partie. */
 export function Gazette() {
@@ -91,7 +92,8 @@ export function Gazette() {
   }, [history, reviews]);
   // Départs du coach (autre club, ou sans club d'après le plugin) : hors-série « Flash spécial ».
   const { data: settings } = useQuery({ queryKey: ['fm', saveId, 'settings'], queryFn: () => fmData.settings(saveId), enabled: !!saveId });
-  const exits = useMemo(() => coachExits(history, { freeSince: settings?.fmFreeSince ?? null }), [history, settings?.fmFreeSince]);
+  const freeSince = settings ? freeConfirmed(settings) : null;
+  const exits = useMemo(() => coachExits(history, { freeSince }), [history, freeSince]);
   // Hors-série en tête tant que le départ est récent (45 jours de jeu), sinon en bas avec les bilans de saison.
   const lastDate = history.reduce((a, e) => (e.gameDate > a ? e.gameDate : a), '');
   const exitFresh = !!exits[0] && (Date.parse(lastDate.slice(0, 10) || exits[0].end) - Date.parse(exits[0].end.slice(0, 10))) / 86_400_000 <= 45;

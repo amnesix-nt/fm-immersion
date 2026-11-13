@@ -20,6 +20,11 @@ export interface FmSaveSettings {
   fmClub?: string;
   /** Date de jeu depuis laquelle le manager est sans club (lue dans l'état écrit par le plugin). */
   fmFreeSince?: string;
+  /**
+   * Dernière date de jeu vue sans club. Le départ n'est confirmé (hors-série envoyé sur Discord) que lorsque le jeu a
+   * avancé sans club (`freeConfirmed`) : le plugin peut écrire un état « sans club » isolé pendant un chargement.
+   */
+  fmFreeSeen?: string;
   /** Lire le CA/PA réels de l'effectif dans la mémoire du jeu (lecture seule) à chaque nouvelle date. Désactivé par défaut. */
   fmReadAbilities?: boolean;
   /** Joueurs signalés partants par le coach, par identifiant FM27. */
@@ -33,6 +38,15 @@ export interface FmSaveSettings {
   careerCountries?: Record<string, string>;
   /** Clubs écartés de « Ma carrière » par le joueur (jours importés d'une autre sauvegarde, test…), par nom. */
   careerHidden?: string[];
+}
+
+/**
+ * Date de départ du coach sans club, seulement s'il a été vu sans club à une date de jeu plus tardive. Le 13/11/2026
+ * (partie « New One »), un état « sans club » écrit par le plugin pendant le chargement de la sauvegarde a envoyé sur
+ * Discord un faux hors-série de départ, alors que le coach était toujours en poste : un vrai départ dure, lui.
+ */
+export function freeConfirmed(s: Pick<FmSaveSettings, 'fmFreeSince' | 'fmFreeSeen'>): string | null {
+  return s.fmFreeSince && s.fmFreeSeen && s.fmFreeSeen > s.fmFreeSince ? s.fmFreeSince : null;
 }
 
 /** Fichier .fm listé par Rust (métadonnées seulement). */
@@ -141,7 +155,8 @@ export function fmRepo(db: Db) {
       // Un ancien instantané (d'avant le départ) ne met pas fin à la période sans club, et un jour plus ancien que le
       // dernier (ancien club importé depuis « Ma carrière ») ne change pas le club suivi par la partie.
       const older = !!prev && parsed.gameDate < prev.gameDate;
-      if ((settings.fmClub !== parsed.club && !older) || newJob) await this.updateSettings(saveId, { fmClub: parsed.club, ...(newJob ? { fmFreeSince: undefined } : {}) });
+      if ((settings.fmClub !== parsed.club && !older) || newJob)
+        await this.updateSettings(saveId, { fmClub: parsed.club, ...(newJob ? { fmFreeSince: undefined, fmFreeSeen: undefined } : {}) });
       let snap = carryRoleStars(parsed, prev?.club === parsed.club ? prev?.data : undefined);
       // CA/PA lus en mémoire pour cette date : le plugin réécrit l'instantané, on les garde.
       if (!snap.abilities && prev?.gameDate === snap.gameDate && prev.club === snap.club && prev.data.abilities) snap = { ...snap, abilities: prev.data.abilities };
@@ -283,7 +298,8 @@ export function fmRepo(db: Db) {
       const status = fmStatusSchema.parse(raw);
       if (status.club) return status;
       const [settings, prev] = await Promise.all([this.settings(saveId), this.latest(saveId)]);
-      if (!settings.fmFreeSince && (!prev || status.gameDate >= prev.gameDate)) await this.updateSettings(saveId, { fmFreeSince: status.gameDate });
+      if (!settings.fmFreeSince && (!prev || status.gameDate >= prev.gameDate)) await this.updateSettings(saveId, { fmFreeSince: status.gameDate, fmFreeSeen: status.gameDate });
+      else if (settings.fmFreeSince && status.gameDate > (settings.fmFreeSeen ?? settings.fmFreeSince)) await this.updateSettings(saveId, { fmFreeSeen: status.gameDate });
       return status;
     },
 

@@ -1,6 +1,6 @@
 [package]
 name = "fm-immersion"
-version = "0.1.193"
+version = "0.1.194"
 description = "FM Immersion — le compagnon de tes parties de Football Manager 27"
 authors = ["FM Immersion"]
 license = "MIT"
