@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import type { FmPlayer } from './player';
 import { lineOf, POS_ORDER, type PosCode } from './positions';
-import { assignMax, FORMATIONS, formationOfPositions, phaseXY, readiness, shapeOf, sideOf, slotContexts, type BalanceCheck, type FormationPlan, type Phase, type RoleRef, type Slot, type StyleRef, type TacticEngine } from './tactic';
+import { assignMax, FORMATIONS, formationOfPositions, oopFit, phaseXY, readiness, shapeOf, sideOf, slotContexts, type BalanceCheck, type FormationPlan, type Phase, type RoleRef, type Slot, type StyleRef, type TacticEngine } from './tactic';
 import { checkTeamInstructions, MENTALITIES_FM27, TEAM_INSTRUCTIONS_FM27, teamInstructionOf, type TeamInstructionDef } from './team-instructions-fm27';
 import type { TacticSlot } from './tactic-slots';
 import type { GameInstructions } from './game-instructions';
@@ -629,7 +629,7 @@ export function squadFit(engine: TacticEngine, t: BuiltTactic, players: FmPlayer
   const fitOf = (p: FmPlayer, i: number) => {
     const s = S[i]!;
     const a = engine.roleFit(p, s.ip, 'ip', s.pos) ?? 0;
-    const b = engine.roleFit(p, s.oop, 'oop', s.posOOP) ?? 0;
+    const b = oopFit(engine, p, s.oop, s.pos, s.posOOP) ?? 0;
     return (a + b) / 2;
   };
   const ok = (p: FmPlayer, i: number) => engine.canPlay(p, S[i]!.pos);
@@ -672,7 +672,7 @@ export function builtStyle(t: BuiltTactic): StyleRef {
  */
 export function builtPlan(engine: TacticEngine, t: BuiltTactic, players: FmPlayer[], reserve: FmPlayer[] = []): FormationPlan {
   const S = t.slots;
-  const fitOf = (p: FmPlayer, i: number) => ((engine.roleFit(p, S[i]!.ip, 'ip', S[i]!.pos) ?? 0) + (engine.roleFit(p, S[i]!.oop, 'oop', S[i]!.posOOP) ?? 0)) / 2;
+  const fitOf = (p: FmPlayer, i: number) => ((engine.roleFit(p, S[i]!.ip, 'ip', S[i]!.pos) ?? 0) + (oopFit(engine, p, S[i]!.oop, S[i]!.pos, S[i]!.posOOP) ?? 0)) / 2;
   const ok = (p: FmPlayer, i: number) => engine.canPlay(p, S[i]!.pos);
   const pick = (list: FmPlayer[], open: number[]) => {
     const value = open.map((i) => list.map((p) => (ok(p, i) ? fitOf(p, i) + readiness(p) : null)));

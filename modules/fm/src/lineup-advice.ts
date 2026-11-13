@@ -1,6 +1,6 @@
 import type { FmPlayer } from './player';
 import type { PosCode } from './positions';
-import { balancePenalty, readiness, readinessParts, slotContexts, slotFit, type FormationPlan, type Phase, type Slot, type TacticEngine } from './tactic';
+import { balancePenalty, oopFit, readiness, readinessParts, slotContexts, slotFit, type FormationPlan, type Phase, type Slot, type TacticEngine } from './tactic';
 
 /*
  * L'avis de l'adjoint sur un onze (celui du jeu, celui calculé, ou celui d'une tactique construite) :
@@ -100,13 +100,14 @@ export function betterRoles(engine: TacticEngine, plan: FormationPlan): RoleAdvi
     if (!p) return;
     for (const ph of ['ip', 'oop'] as const) {
       const pos = posFor(sl, ph);
-      const cur = engine.roleFit(p, sl[ph], ph, pos);
+      const fitAt = (code: string) => (ph === 'oop' ? oopFit(engine, p, code, sl.pos, sl.posOOP) : engine.roleFit(p, code, ph, pos));
+      const cur = fitAt(sl[ph]);
       if (cur == null) continue;
       // Poste sans ballon différent : le créneau n'est plus « excentré » au sens du poste avec ballon.
       const ctx = pos === sl.pos ? ctxs[i] : { wide: false, cbs: ctxs[i]!.cbs };
       for (const r of engine.ref.roles) {
         if (r.code === sl[ph] || !engine.availableAt(r, pos, ph, ctx)) continue;
-        const f = engine.roleFit(p, r.code, ph, pos);
+        const f = fitAt(r.code);
         if (f != null && f - cur >= ROLE_GAIN) cands.push({ slot: i, player: p, phase: ph, from: sl[ph], to: r.code, fromFit: cur, toFit: f, gain: f - cur });
       }
     }

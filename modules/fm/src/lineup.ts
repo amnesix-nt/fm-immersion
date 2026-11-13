@@ -4,7 +4,7 @@ import type { FmSnapshot } from './snapshot';
 import { snapshotRoleStars, type RoleStars } from './game-stars';
 import { otherTeamOf } from './teams';
 import { tacticSlots } from './tactic-slots';
-import { FORMATIONS, balancePenalty, readiness, slotContexts, slotFit, type FormationPlan, type RoleRef, type Slot, type SlotCtx, type TacticEngine } from './tactic';
+import { FORMATIONS, balancePenalty, oopFit, readiness, slotContexts, slotFit, type FormationPlan, type RoleRef, type Slot, type SlotCtx, type TacticEngine } from './tactic';
 
 /*
  * Compo réelle lue dans FM27 (bloc « lineup » de l'instantané, plugin 0.3 et suivants) :
@@ -221,7 +221,7 @@ export function planFromLineup(engine: TacticEngine, lineup: GameSlot[], players
     const ip = roleFor(s.roleIP, p, s.pos, 'ip', ctxs[i]!);
     const oop = roleFor(s.roleOOP, p, posOOP ?? s.pos, 'oop', posOOP ? { wide: false, cbs: ctxs[i]!.cbs } : ctxs[i]!);
     const a = p ? engine.roleFit(p, ip, 'ip', s.pos) : null;
-    const b = p ? engine.roleFit(p, oop, 'oop', posOOP ?? s.pos) : null;
+    const b = p ? oopFit(engine, p, oop, s.pos, posOOP) : null;
     return { pos: s.pos, ...(posOOP ? { posOOP } : {}), x, y, ip, oop, player: p, fit: a != null && b != null ? (a + b) / 2 : (a ?? b), game: { custom: s.custom, instructions: s.instructions } };
   });
   const xi = new Set(slots.flatMap((s) => (s.player ? [s.player.id] : [])));
