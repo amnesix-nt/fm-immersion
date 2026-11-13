@@ -289,7 +289,23 @@ public class FmBindingReader : IGameReader
     /// <summary>La partie a été quittée ou remplacée pendant une lecture : on abandonne l'instantané.</summary>
     public sealed class GameChanged : Exception { }
 
+    /// <summary>0.6.3 : un match a commencé pendant une lecture complète : on l'abandonne, elle repartira après le match.</summary>
+    public sealed class MatchStarted : Exception { }
+
+    // Lecture complète en cours sur ce thread (RefreshLoop) : elle seule s'arrête quand un match commence. Le direct
+    // (ReadLive) et les petites questions (date, match en cours ?) passent par Batch.Run sur d'autres threads.
+    [ThreadStatic] static bool _fullRead;
+    static void StopIfMatch() { if (_fullRead && Plugin.InMatch) throw new MatchStarted(); }
+
     public Snapshot Read()
+    {
+        _fullRead = true;
+        Plugin.Reading = true;
+        try { return ReadAll(); }
+        finally { _fullRead = false; Plugin.Reading = false; }
+    }
+
+    Snapshot ReadAll()
     {
         // 0.5.9 : durée de la lecture et temps pris au thread du jeu, écrits dans collecte.duree.
         var clock = System.Diagnostics.Stopwatch.StartNew();
@@ -1139,6 +1155,7 @@ public class FmBindingReader : IGameReader
             int depth = states.Length == 0 ? 0 : states.Max(s => s.Segs.Length);
             for (int level = 0; level < depth; level++)
             {
+                StopIfMatch();
                 var active = states.Where(s => !s.Failed && s.Segs.Length > level).ToArray();
                 if (active.Length == 0) break;
                 var late = Send(active, level, root, timeoutMs);
@@ -1149,6 +1166,7 @@ public class FmBindingReader : IGameReader
                     bool several = late.Count > RetryChunk;
                     for (int i = 0; i < late.Count; i += RetryChunk)
                     {
+                        StopIfMatch();
                         var chunk = late.Skip(i).Take(RetryChunk).ToArray();
                         var lost = Send(chunk, level, root, timeoutMs);
                         // 0.5.8 : un paquet resté entièrement sans réponse (jeu occupé, ex. pendant un match) est renvoyé
@@ -1178,8 +1196,11 @@ public class FmBindingReader : IGameReader
             for (int off = 0; off < active.Length; off += FrameSlice)
             {
             int lo = off, hi = Math.Min(active.Length, off + FrameSlice);
+            bool full = _fullRead;
             MainThread.Enqueue(() =>
             {
+                // 0.6.3 : match commencé pendant une lecture complète : les tranches déjà en file ne partent plus.
+                if (full && Plugin.InMatch) { for (int idx = lo; idx < hi; idx++) Sig(); return; }
                 var b = GameSubsystems.Get<BindingSubsystem>();
                 _owner ??= new Il2CppSystem.Object();
                 for (int idx = lo; idx < hi; idx++)
