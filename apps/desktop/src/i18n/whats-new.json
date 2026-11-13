@@ -1,12 +1,22 @@
 [
   {
-    "version": "0.1.192",
+    "version": "0.1.194",
     "date": "2026-11-13",
     "fr": [
       "Le « Flash spécial » de départ du coach ne part plus par erreur quand tu recharges ta partie : il attend que tu sois vraiment sans club depuis au moins un jour de jeu."
     ],
     "en": [
       "The coach's farewell \"Special flash\" no longer goes out by mistake when you reload your save: it waits until you have really been without a club for at least one game day."
+    ]
+  },
+  {
+    "version": "0.1.193",
+    "date": "2026-11-13",
+    "fr": [
+      "Nouveau dans Tactique > Profondeur : « Ce que ta tactique demande, ce que ton effectif donne ». Poste par poste, tu vois la note de ton titulaire et de sa doublure dans les rôles de ta tactique, les postes fragiles et les attributs clés qui manquent."
+    ],
+    "en": [
+      "New in Tactic > Depth: \"What your tactic asks, what your squad gives\". Slot by slot, you see how your starter and their backup rate in your tactic's roles, the weak slots and the key attributes that are missing."
     ]
   },
   {
