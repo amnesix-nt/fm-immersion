@@ -22,6 +22,7 @@ import { roleCeiling,
   withExtended,
   firstTeamSnapshot,
   type FmPlayer,
+  type GameSlot,
   type FmSnapshot,
   type Line,
   type SquadAt,
@@ -194,7 +195,7 @@ export function FmSave({ page }: { page?: 'home' | 'settings' }) {
           />
         );
       case 'squad':
-        return <SquadViews players={players} folder={folder} gameDate={snapshot.gameDate} />;
+        return <SquadViews players={players} folder={folder} gameDate={snapshot.gameDate} gameFormation={gameFormation} lineup={lineup} gameTactic={typeof snapshot.data.tactic?.name === 'string' ? snapshot.data.tactic.name : null} />;
       case 'analysis':
         return <FmAnalysis players={players} gameDate={snapshot.gameDate} />;
       case 'stats':
@@ -725,7 +726,7 @@ function ViewHeader({ view, part }: { view: string; part: string }) {
 }
 
 /** Effectif : tableau détaillé (par défaut, comme la maquette) ou vue terrain par poste ; le choix est gardé d'une visite à l'autre. */
-function SquadViews({ players, folder, gameDate }: { players: FmPlayer[]; folder: string; gameDate: string }) {
+function SquadViews({ players, folder, gameDate, gameFormation, lineup, gameTactic }: { players: FmPlayer[]; folder: string; gameDate: string; gameFormation: string | null; lineup: GameSlot[] | null; gameTactic: string | null }) {
   const { t } = useTranslation();
   const [mode, setMode] = useState<'pitch' | 'table'>(() => {
     try {
@@ -758,7 +759,7 @@ function SquadViews({ players, folder, gameDate }: { players: FmPlayer[]; folder
           </button>
         ))}
       </div>
-      {mode === 'pitch' ? <FmSquadPitch players={players} /> : <SquadTable players={players} folder={folder} gameDate={gameDate} />}
+      {mode === 'pitch' ? <FmSquadPitch players={players} folder={folder} gameFormation={gameFormation} lineup={lineup} gameTactic={gameTactic} /> : <SquadTable players={players} folder={folder} gameDate={gameDate} />}
     </div>
   );
 }

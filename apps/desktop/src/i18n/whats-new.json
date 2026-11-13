@@ -1,5 +1,15 @@
 [
   {
+    "version": "0.1.197",
+    "date": "2026-11-13",
+    "fr": [
+      "Effectif > Terrain suit maintenant ta tactique : même schéma et mêmes postes qu'en Tactique, titulaires cerclés d'ambre, puis chaque autre joueur au poste où il est le mieux noté. Les deux écrans ne se contredisent plus."
+    ],
+    "en": [
+      "Squad > Pitch now follows your tactic: same formation and slots as in Tactic, starters ringed in amber, then every other player in the slot where they rate best. The two screens no longer disagree."
+    ]
+  },
+  {
     "version": "0.1.195",
     "date": "2026-11-13",
     "fr": [

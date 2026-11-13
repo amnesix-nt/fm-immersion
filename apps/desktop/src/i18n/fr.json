@@ -2852,8 +2852,15 @@
       "label": "Affichage de l'effectif",
       "pitch": "Terrain",
       "table": "Tableau",
-      "help": "Chaque joueur à son poste naturel principal, du meilleur au moins bon. Clique un nom pour sa fiche.",
-      "empty": "Personne au poste : {{list}}."
+      "help": "Les titulaires (cerclés d'ambre) à leur poste, puis chaque autre joueur au poste du schéma où il est le mieux noté parmi ceux qu'il sait tenir. Chiffre : note sur 20 dans les rôles du poste, comme en Tactique. Clique un nom pour sa fiche.",
+      "thin": "Personne derrière le titulaire : {{list}}.",
+      "starter": "Titulaire",
+      "outside": "Ne tiennent aucun poste du schéma :",
+      "from": {
+        "game": "Schéma de ta tactique FM27 {{tactic}} ({{form}}), comme en Tactique.",
+        "suggested": "Schéma de la compo suggérée en Tactique ({{form}}).",
+        "built": "Schéma de ta tactique construite en Tactique ({{form}})."
+      }
     },
     "results": {
       "title": "Résultats",
