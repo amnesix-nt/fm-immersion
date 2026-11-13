@@ -76,22 +76,10 @@ fn installed_version(game: &Path) -> Option<String> {
     v.get("version")?.as_str().map(str::to_owned)
 }
 
-/// FM27 tourne-t-il ? (liste des processus Windows, sans fenêtre de console)
-#[cfg(windows)]
+/// FM27 tourne-t-il ? Liste des processus lue directement (Toolhelp32) : plus de `tasklist` lancé toutes les 15 s,
+/// qui coûtait un processus et un passage par WMI pendant que le jeu tourne.
 pub(crate) fn game_running(_game: &Path) -> bool {
-    use std::os::windows::process::CommandExt;
-    const CREATE_NO_WINDOW: u32 = 0x0800_0000;
-    std::process::Command::new("tasklist")
-        .args(["/FI", "IMAGENAME eq fm.exe", "/NH", "/FO", "CSV"])
-        .creation_flags(CREATE_NO_WINDOW)
-        .output()
-        .map(|o| String::from_utf8_lossy(&o.stdout).to_lowercase().contains("\"fm.exe\""))
-        .unwrap_or(false)
-}
-
-#[cfg(not(windows))]
-pub(crate) fn game_running(_game: &Path) -> bool {
-    false
+    crate::fm_memory::game_process_running()
 }
 
 pub fn status(game: &Path) -> BridgeStatus {
@@ -241,9 +229,15 @@ pub fn install(game: &Path, data_dir: &Path) -> Result<BridgeStatus, BridgeError
     Ok(status(game))
 }
 
+/// Hors du fil principal : appelée toutes les 15 s, elle ne doit jamais faire attendre la fenêtre.
 #[tauri::command]
-pub fn fm_bridge_status(game_dir: String) -> BridgeStatus {
-    status(Path::new(&game_dir))
+pub async fn fm_bridge_status(game_dir: String) -> BridgeStatus {
+    tauri::async_runtime::spawn_blocking(move || status(Path::new(&game_dir))).await.unwrap_or(BridgeStatus {
+        game_found: false,
+        bepinex: false,
+        running: false,
+        installed_version: None,
+    })
 }
 
 /// Dernière version publiée (réseau : uniquement quand le joueur ouvre la carte du plugin).
@@ -280,9 +274,16 @@ pub fn steam_libraries(vdf: &str) -> Vec<PathBuf> {
         .collect()
 }
 
-/// Dossier d'installation de Steam déclaré dans le registre (`SteamPath`, ex. « g:/steam »).
+/// Dossier d'installation de Steam déclaré dans le registre (`SteamPath`, ex. « g:/steam »). Lu une fois par
+/// session : il était relu (un `reg.exe` lancé) à chaque visage ou logo affiché.
 #[cfg(windows)]
 fn registry_steam_path() -> Option<PathBuf> {
+    static STEAM: std::sync::OnceLock<Option<PathBuf>> = std::sync::OnceLock::new();
+    STEAM.get_or_init(registry_steam_path_now).clone()
+}
+
+#[cfg(windows)]
+fn registry_steam_path_now() -> Option<PathBuf> {
     use std::os::windows::process::CommandExt;
     const CREATE_NO_WINDOW: u32 = 0x0800_0000;
     let out = std::process::Command::new("reg")

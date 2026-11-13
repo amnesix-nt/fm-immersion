@@ -30,6 +30,8 @@ export function useFmSync() {
   const folder = useFmFolder(saveId);
   const setSync = useCareerStore((s) => s.setSync);
   const lastText = useRef<string | null>(null);
+  /** Repère (taille, date) de l'instantané déjà traité : tant qu'il ne change pas, le fichier n'est pas relu. */
+  const lastStamp = useRef<string | null>(null);
   const abilitiesDate = useRef<string | null>(null);
   const abilitiesTry = useRef(0);
   const historyTry = useRef(0);
@@ -39,6 +41,7 @@ export function useFmSync() {
     if (!folder || !saveId) return;
     const key = ['fm', saveId] as const;
     lastText.current = null;
+    lastStamp.current = null;
     let stop = false;
     const tick = async () => {
       // État du manager (club entraîné ou sans club), écrit par le plugin depuis la version qui le gère.
@@ -56,20 +59,31 @@ export function useFmSync() {
         /* fichier absent ou en cours d'écriture */
       }
       try {
-        const text = await invoke<string>('fm_read_snapshot', { folder });
-        if (!stop && text !== lastText.current) {
+        // Lu seulement s'il a changé (taille ou date du fichier) : plus de relecture de plusieurs centaines de Ko
+        // toutes les 10 s quand le plugin n'a rien réécrit.
+        const read = await invoke<{ stamp: string | null; text: string | null }>('fm_read_snapshot_since', { folder, since: lastStamp.current });
+        const text = read.text;
+        if (!stop && text != null && text === lastText.current) lastStamp.current = read.stamp;
+        else if (!stop && text != null) {
           const snap = JSON.parse(text);
           rememberClubLooks([snap]);
-          const imported = await fmData.importSnapshot(saveId, snap);
-          // Retenu seulement une fois importé : un import raté est retenté au passage suivant.
-          lastText.current = text;
-          setSync({ other: null });
-          noteImported(qc, saveId, imported);
-          qc.invalidateQueries({ queryKey: ['saves'] });
+          try {
+            const imported = await fmData.importSnapshot(saveId, snap);
+            // Retenu seulement une fois importé : un import raté est retenté au passage suivant.
+            lastText.current = text;
+            lastStamp.current = read.stamp;
+            setSync({ other: null });
+            noteImported(qc, saveId, imported);
+            qc.invalidateQueries({ queryKey: ['saves'] });
+          } catch (e) {
+            // Autre sauvegarde chargée : signalée, et ce même fichier n'est plus relu tant que le plugin ne l'a pas réécrit.
+            if (e instanceof FmOtherSaveError) lastStamp.current = read.stamp;
+            throw e;
+          }
         }
       } catch (e) {
-        // Autre sauvegarde chargée : on le signale (sans relire ce même fichier toutes les 10 s) ; sinon fichier absent,
-        // en cours d'écriture ou import raté, nouvel essai au prochain passage.
+        // Autre sauvegarde chargée : on le signale ; sinon fichier absent, en cours d'écriture ou import raté, nouvel
+        // essai au prochain passage.
         if (e instanceof FmOtherSaveError && !stop) setSync({ other: e });
       }
       // Historique : les jours de jeu passés pendant que l'appli était fermée sont rattrapés depuis les fichiers
@@ -77,8 +91,9 @@ export function useFmSync() {
       try {
         if (!stop && Date.now() - historyTry.current >= 60_000) {
           historyTry.current = Date.now();
-          const latest = await fmData.latest(saveId);
-          const n = await importMissingHistory(saveId, folder, (await fmData.settings(saveId)).fmClub ?? latest?.club ?? null);
+          // Le dernier instantané (plusieurs centaines de Ko) n'est relu que si le club n'est pas déjà dans les réglages.
+          const club = (await fmData.settings(saveId)).fmClub ?? (await fmData.latest(saveId))?.club ?? null;
+          const n = await importMissingHistory(saveId, folder, club);
           if (n && !stop) {
             qc.invalidateQueries({ queryKey: key });
             qc.invalidateQueries({ queryKey: ['saves'] });

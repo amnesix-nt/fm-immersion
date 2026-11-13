@@ -1157,7 +1157,7 @@ mod win {
         }
     }
 
-    fn game_pid() -> Option<u32> {
+    pub(crate) fn game_pid() -> Option<u32> {
         unsafe {
             let snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
             if snap == INVALID_HANDLE_VALUE {
@@ -1246,6 +1246,17 @@ mod win {
 
 /// Points d'entrée retrouvés pour un fichier donné (taille + date), pour ne pas relire 400 Mo à chaque fois.
 static GLOBALS_CACHE: Mutex<Option<((PathBuf, u64, u128), Globals)>> = Mutex::new(None);
+
+/// FM27 tourne-t-il ? Liste des processus en mémoire (Toolhelp32) : ni processus lancé, ni accès au jeu.
+#[cfg(windows)]
+pub(crate) fn game_process_running() -> bool {
+    win::game_pid().is_some()
+}
+
+#[cfg(not(windows))]
+pub(crate) fn game_process_running() -> bool {
+    false
+}
 
 pub(crate) fn globals_for(path: &Path) -> Result<Globals, MemError> {
     let meta = std::fs::metadata(path)?;
