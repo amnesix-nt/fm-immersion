@@ -577,6 +577,12 @@
           "rhythm": "He needs to play to get his sharpness back, but not 90 minutes: plan to take him off around the 60th minute."
         },
         "help": "The injury risk is the one FM27 shows for each player: it rises with fatigue and with a lack of match sharpness. A player counts as on a run from three starts in {{days}} days, friendlies included. The suggested backup is the best rated for the position among players who are fresh, not at risk and not on a run themselves. In the league, he is only advised if he is nearly as good as the starter; in cups or when matches come thick and fast, a wider gap is accepted. The advised XI also takes injury risk into account."
+      },
+      "slots": {
+        "label": "Your FM27 tactics",
+        "active": "· active",
+        "preview": "You are looking at \"{{name}}\" as the plugin read it on {{date}}, with today's squad. In FM27, \"{{active}}\" is the active one: the rest of the app still follows it.",
+        "missing": "\"{{name}}\" has not been read yet: the plugin only reads the active tactic. Select it in FM27 (Tactics screen), advance a day or click \"Refresh the game\", and the app will keep it. Meanwhile you see \"{{active}}\"."
       }
     },
     "nav": "Save sections",
