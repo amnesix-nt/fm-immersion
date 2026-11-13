@@ -222,13 +222,23 @@ function thresholdFactor(p: FmPlayer, gameCode: string): number {
 /** Points retirés (sur 20) par point de rythme de match sous 90 %. */
 export const SHARPNESS_WEIGHT = 0.025;
 
+/** Risque de blessure du jeu : valeur normale, seuils « accru » et « élevé ». */
+export const RISK_NORMAL = 100;
+export const RISK_RAISED = 150;
+export const RISK_HIGH = 250;
+/** Points retirés (sur 20) par tranche de 100 de risque au-dessus de la normale, et plafond. */
+export const RISK_WEIGHT = 0.3;
+export const RISK_MAX = 0.9;
+/** Rythme de match sous lequel un risque de blessure vient du manque de rythme plutôt que de la fatigue. */
+export const RUSTY_SHARPNESS = 70;
+
 export function readiness(p: FmPlayer): number {
   const r = readinessParts(p);
-  return r.condition + r.sharpness + r.morale + r.leader;
+  return r.condition + r.sharpness + r.morale + r.leader + r.risk;
 }
 
 /** Détail de la forme du jour, pour dire pourquoi un joueur est écarté (fatigue, manque de rythme, moral). */
-export function readinessParts(p: FmPlayer): { condition: number; sharpness: number; morale: number; leader: number } {
+export function readinessParts(p: FmPlayer): { condition: number; sharpness: number; morale: number; leader: number; risk: number } {
   const condition = p.condition != null && p.condition < 95 ? -(95 - p.condition) * 0.1 : 0;
   // Le rythme se regagne en jouant : il départage deux joueurs proches, il ne doit pas écarter un joueur nettement
   // meilleur (à 0,05 par point, un joueur à 55 % perdait 1,75 point, soit presque une étoile, et ne rejouait jamais).
@@ -237,7 +247,12 @@ export function readinessParts(p: FmPlayer): { condition: number; sharpness: num
   const morale = m == null ? 0 : ([-1.2, -0.7, -0.3, 0, 0.2, 0.4] as const)[m]!;
   // Faire jouer les leaders du vestiaire soutient le moral du groupe.
   const leader = /leader|meneur|chef/i.test(p.hierarchy ?? '') ? 0.2 : /influen/i.test(p.hierarchy ?? '') ? 0.1 : 0;
-  return { condition, sharpness, morale, leader };
+  // Risque de blessure donné par le jeu : aligner un joueur à risque, c'est risquer de le perdre des semaines.
+  // Un joueur frais mais à court de rythme a lui aussi un risque élevé : c'est déjà compté dans le rythme, et il
+  // ne le fera baisser qu'en jouant (sinon il ne rejoue jamais).
+  const rusty = p.sharpness != null && p.sharpness < RUSTY_SHARPNESS && (p.condition ?? 100) >= 92;
+  const risk = !rusty && p.injuryRisk != null && p.injuryRisk > RISK_NORMAL ? -Math.min(RISK_MAX, ((p.injuryRisk - RISK_NORMAL) / 100) * RISK_WEIGHT) : 0;
+  return { condition, sharpness, morale, leader, risk };
 }
 
 export class TacticEngine {

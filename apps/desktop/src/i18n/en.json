@@ -400,7 +400,8 @@
         "restedWhy": {
           "sharpness": "{{pos}}: {{better}} ({{betterFit}}) rates higher than {{starter}} ({{starterFit}}), but he lacks match sharpness ({{value}}%). Give him late minutes or a reserve match.",
           "condition": "{{pos}}: {{better}} ({{betterFit}}) rates higher than {{starter}} ({{starterFit}}), but he is tired ({{value}}%). He takes his place back once rested.",
-          "morale": "{{pos}}: {{better}} ({{betterFit}}) rates higher than {{starter}} ({{starterFit}}), but his morale is low ({{morale}}). A chat or playing time can lift him."
+          "morale": "{{pos}}: {{better}} ({{betterFit}}) rates higher than {{starter}} ({{starterFit}}), but his morale is low ({{morale}}). A chat or playing time can lift him.",
+          "risk": "{{pos}}: {{better}} ({{betterFit}}) rates higher than {{starter}} ({{starterFit}}), but the game gives him a high injury risk. He takes his place back once rested."
         }
       },
       "tiAdvice": {
@@ -546,6 +547,36 @@
         "match": "Against {{name}}",
         "balance": "Balance and instructions",
         "balanceFold": "Team balance, in detail"
+      },
+      "physical": {
+        "title": "Fitness and rotation",
+        "none": "No starter needs protecting before the next match: nobody is tired, at risk of injury or playing too many matches in a row.",
+        "level": {
+          "rest": "Protect",
+          "rotate": "Rotate",
+          "dose": "Limit minutes"
+        },
+        "why": {
+          "risk": {
+            "fatigue": "High injury risk according to the game (condition {{pct}}%).",
+            "rhythm": "High injury risk because he lacks match sharpness ({{sharpness}}%)."
+          },
+          "riskRaised": {
+            "fatigue": "Raised injury risk according to the game (condition {{pct}}%).",
+            "rhythm": "Raised injury risk because he lacks match sharpness ({{sharpness}}%)."
+          },
+          "tired": "Tired: condition at {{pct}}%.",
+          "worn": "Worn ({{pct}}%) before a match where you can rotate.",
+          "chained": "He keeps playing: {{starts}} starts in {{days}} days ({{minutes}} minutes). That is when injuries happen."
+        },
+        "do": {
+          "swap": "Play {{sub}} ({{subFit}}) instead: {{gap}} lower in these roles, a fair price.",
+          "swapEven": "Play {{sub}} ({{subFit}}) instead: he rates just as well in these roles.",
+          "keep": "{{sub}} ({{subFit}}) is too far behind him ({{fit}}) for this match: keep him, but take him off around the 60th minute.",
+          "noSub": "No backup in good shape for this position: take him off around the 60th minute if the score allows.",
+          "rhythm": "He needs to play to get his sharpness back, but not 90 minutes: plan to take him off around the 60th minute."
+        },
+        "help": "The injury risk is the one FM27 shows for each player: it rises with fatigue and with a lack of match sharpness. A player counts as on a run from three starts in {{days}} days, friendlies included. The suggested backup is the best rated for the position among players who are fresh, not at risk and not on a run themselves. In the league, he is only advised if he is nearly as good as the starter; in cups or when matches come thick and fast, a wider gap is accepted. The advised XI also takes injury risk into account."
       }
     },
     "nav": "Save sections",
@@ -2774,7 +2805,9 @@
       "changesHint": "Your XI in FM is not changed: make the change in the game's line-up.",
       "why": {
         "unavailable": "unavailable",
-        "condition": "condition {{pct}}%"
+        "condition": "condition {{pct}}%",
+        "risk": "injury risk",
+        "chained": "too many matches in a row"
       }
     },
     "matchSheet": {

@@ -400,7 +400,8 @@
         "restedWhy": {
           "sharpness": "{{pos}} : {{better}} ({{betterFit}}) est mieux noté que {{starter}} ({{starterFit}}), mais il manque de rythme ({{value}} %). Donne-lui des fins de match ou un match avec la réserve.",
           "condition": "{{pos}} : {{better}} ({{betterFit}}) est mieux noté que {{starter}} ({{starterFit}}), mais il est fatigué ({{value}} %). Il reprend sa place une fois reposé.",
-          "morale": "{{pos}} : {{better}} ({{betterFit}}) est mieux noté que {{starter}} ({{starterFit}}), mais son moral est bas ({{morale}}). Une discussion ou du temps de jeu peut le relancer."
+          "morale": "{{pos}} : {{better}} ({{betterFit}}) est mieux noté que {{starter}} ({{starterFit}}), mais son moral est bas ({{morale}}). Une discussion ou du temps de jeu peut le relancer.",
+          "risk": "{{pos}} : {{better}} ({{betterFit}}) est mieux noté que {{starter}} ({{starterFit}}), mais le jeu lui donne un risque de blessure élevé. Il reprend sa place une fois reposé."
         }
       },
       "tiAdvice": {
@@ -546,6 +547,36 @@
         "match": "Contre {{name}}",
         "balance": "Équilibre et consignes",
         "balanceFold": "Équilibre de l'équipe, en détail"
+      },
+      "physical": {
+        "title": "Physique et rotation",
+        "none": "Aucun titulaire à ménager avant le prochain match : personne n'est fatigué, à risque de blessure ou en train d'enchaîner les matchs.",
+        "level": {
+          "rest": "À ménager",
+          "rotate": "À faire tourner",
+          "dose": "À doser"
+        },
+        "why": {
+          "risk": {
+            "fatigue": "Risque de blessure élevé d'après le jeu (condition {{pct}} %).",
+            "rhythm": "Risque de blessure élevé parce qu'il manque de rythme ({{sharpness}} %)."
+          },
+          "riskRaised": {
+            "fatigue": "Risque de blessure accru d'après le jeu (condition {{pct}} %).",
+            "rhythm": "Risque de blessure accru parce qu'il manque de rythme ({{sharpness}} %)."
+          },
+          "tired": "Fatigué : condition à {{pct}} %.",
+          "worn": "Entamé ({{pct}} %) avant un match où tu peux faire tourner.",
+          "chained": "Il enchaîne : {{starts}} titularisations en {{days}} jours ({{minutes}} minutes). C'est là que les blessures arrivent."
+        },
+        "do": {
+          "swap": "Fais jouer {{sub}} ({{subFit}}) à sa place : {{gap}} de moins dans ces rôles, un prix raisonnable.",
+          "swapEven": "Fais jouer {{sub}} ({{subFit}}) à sa place : il est aussi bien noté dans ces rôles.",
+          "keep": "{{sub}} ({{subFit}}) est trop loin de lui ({{fit}}) pour ce match : garde-le, mais sors-le vers la 60e minute.",
+          "noSub": "Pas de doublure en bon état à ce poste : sors-le vers la 60e minute si le score le permet.",
+          "rhythm": "Il doit jouer pour retrouver le rythme, mais pas 90 minutes : prévois de le sortir vers la 60e minute."
+        },
+        "help": "Le risque de blessure est celui que FM27 affiche pour chaque joueur : il monte avec la fatigue et avec le manque de rythme. Un joueur compte comme « en série » à partir de trois titularisations en {{days}} jours, matchs amicaux compris. La doublure proposée est la mieux notée du poste parmi les joueurs frais, sans risque et qui n'enchaînent pas. En championnat, elle n'est conseillée que si elle vaut presque le titulaire ; en coupe ou quand les matchs se suivent, on accepte un écart plus large. Le choix du onze conseillé tient aussi compte du risque de blessure."
       }
     },
     "nav": "Sections de la partie",
@@ -2774,7 +2805,9 @@
       "changesHint": "Ton onze dans FM n'est pas changé : fais-le dans la composition du jeu.",
       "why": {
         "unavailable": "absent",
-        "condition": "condition {{pct}} %"
+        "condition": "condition {{pct}} %",
+        "risk": "risque de blessure",
+        "chained": "enchaîne les matchs"
       }
     },
     "matchSheet": {

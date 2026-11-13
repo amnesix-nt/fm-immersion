@@ -40,8 +40,8 @@ import {
 } from '@fm-immersion/module-fm';
 import { useQuery } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api/core';
-import { gameInstructions, gamePlayerInstructions, instructionLoad, lineupAdvice, matchReview, matchStats, tacticTodo, teamAdvice, TEAM_INSTRUCTIONS_FM27, type PlayerStats } from '@fm-immersion/module-fm';
-import { GamePiLine, LineupAdviceCard, MatchReviewCard, PiState, TeamAdviceBlock, TodoCard } from './FmTacticAdvice';
+import { competitionWeight, gameInstructions, gamePlayerInstructions, instructionLoad, isCongested, lineupAdvice, LOAD_WINDOW_DAYS, matchdayPlan, matchResults, matchReview, matchStats, recentLoad, snapshotFixtures, summarize, tacticTodo, teamAdvice, TEAM_INSTRUCTIONS_FM27, type PlayerStats } from '@fm-immersion/module-fm';
+import { GamePiLine, LineupAdviceCard, MatchReviewCard, PhysicalCard, PiState, TeamAdviceBlock, TodoCard } from './FmTacticAdvice';
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LINE_COLOR, Pitch, PosBadge } from './FmFoot';
@@ -204,6 +204,13 @@ export function FmTactic({ snap, players, folder, gameFormation, lineup, lineupS
   const load = useMemo(() => instructionLoad(snap), [snap]);
   // L'avis de l'adjoint porte sur le onze de base (équipe A) : rôles à revoir, titulaires, joueurs à relancer, doublures.
   const advice = useMemo(() => (planA ? lineupAdvice(engine, planA, avail, built ? 'built' : fromGame ? 'game' : 'suggested') : null), [engine, planA, avail, built, fromGame]);
+  // Physique et rotation : titulaires à ménager avant le prochain match (risque de blessure, condition, matchs enchaînés).
+  const physical = useMemo(() => {
+    if (!planA || !snap) return null;
+    const next = summarize(snap, players).nextMatch;
+    const rotate = competitionWeight(next?.competition, { congested: isCongested(snapshotFixtures(snap), snap.gameDate) }).rotate;
+    return matchdayPlan(engine, planA, players, { rotate, inDays: next?.inDays ?? null, load: recentLoad(matchResults(matches ?? []), snap.gameDate) }).watch;
+  }, [engine, planA, players, snap, matches]);
   // Onze du jeu : on part des consignes réglées dans FM27, pas de celles d'un style que le joueur n'a pas choisi.
   const tiBase: 'style' | 'game' = fromGame && gameTi && Object.keys(gameTi.ti).length > 0 ? 'game' : 'style';
   // Ce que les derniers matchs disent de la tactique jouée, et les stats de la saison de chaque joueur.
@@ -502,6 +509,7 @@ export function FmTactic({ snap, players, folder, gameFormation, lineup, lineupS
                 </div>
               </section>
               {team === 'A' && advice && planA && <LineupAdviceCard advice={advice} plan={planA} engine={engine} />}
+              {team === 'A' && physical && planA && <PhysicalCard watch={physical} plan={planA} windowDays={LOAD_WINDOW_DAYS} />}
               </>
             ),
           },

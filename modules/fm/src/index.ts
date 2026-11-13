@@ -81,6 +81,7 @@ export * from './trading';
 export * from './scouting';
 export * from './briefing';
 export * from './matchday';
+export * from './rotation';
 export * from './challenges';
 export * from './glory-hunter';
 export * from './cups';
