@@ -1,5 +1,17 @@
 [
   {
+    "version": "0.1.199",
+    "date": "2026-11-13",
+    "fr": [
+      "Notes plus justes en Tactique : un joueur que ta tactique déplace sans ballon (un meneur qui défend en pointe, par exemple) n'est plus noté comme s'il jouait hors de son poste.",
+      "La compo suggérée écarte moins les joueurs à court de rythme : un joueur nettement meilleur n'est plus laissé sur le banc pour ça."
+    ],
+    "en": [
+      "Fairer ratings in Tactic: a player your tactic moves out of possession (a playmaker defending up front, for instance) is no longer rated as if playing out of position.",
+      "The suggested lineup is less harsh on players short of match sharpness: a clearly better player is no longer benched for it."
+    ]
+  },
+  {
     "version": "0.1.198",
     "date": "2026-11-13",
     "fr": [

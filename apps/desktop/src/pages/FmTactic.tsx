@@ -23,6 +23,7 @@ import {
   tactAbility,
   shapeOf,
   slotPos,
+  oopFit,
   spreadXY,
   unavailable,
   styleBlock,
@@ -463,7 +464,7 @@ export function FmTactic({ snap, players, folder, gameFormation, lineup, lineupS
                           {rows.map((i) => {
                             const sl = plan.slots[i]!;
                             const p = sl.player;
-                            const fitOf = (ph: Phase) => (p ? engine.roleFit(p, ph === 'ip' ? sl.ip : sl.oop, ph, slotPos(sl, ph)) : null);
+                            const fitOf = (ph: Phase) => (p ? (ph === 'ip' ? engine.roleFit(p, sl.ip, 'ip', sl.pos) : oopFit(engine, p, sl.oop, sl.pos, sl.posOOP)) : null);
                             return (
                               <tr key={i} className={hover === i ? 'bg-creme/70' : ''} onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)}>
                                 <td>

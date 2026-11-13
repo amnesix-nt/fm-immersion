@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { builtPlan, GAP_WEAK, mergeReference, newBuiltTactic, roleKeys, TacticEngine, tacticGap } from '../src';
+import { builtPlan, GAP_WEAK, mergeReference, oopFit, newBuiltTactic, roleKeys, TacticEngine, tacticGap } from '../src';
 import { normalizePlayer } from '../src/player';
 
 const engine = new TacticEngine(mergeReference(undefined));
@@ -52,5 +52,20 @@ describe('écart entre tactique et effectif', () => {
     const row = tacticGap(engine, plan).slots[bt]!;
     expect(row.subAhead).toBe(true);
     expect(row.subFit! - row.starterFit!).toBeGreaterThanOrEqual(0.5);
+  });
+});
+
+describe('rôle sans ballon à un autre poste', () => {
+  it('ne retire pas plus de familiarité qu’au poste avec ballon', () => {
+    // Meneur à l'aise en MO (C), que la tactique fait défendre en pointe : il n'est pas avant-centre (familiarité 1).
+    const p = normalizePlayer({ id: 1, name: 'Z', positions: 'M (C), MO (C)', attributes: Object.fromEntries(ATTRS.map((k) => [k, 12])), positionRatings: { 'M (C)': 20, 'MO (C)': 17, 'BT (C)': 1 } });
+    const raw = engine.absolute();
+    const oop = [...raw.roles.values()].find((r) => raw.availableAt(r, 'BT', 'oop'))!.code;
+    const away = raw.roleFit(p, oop, 'oop', 'BT')!;
+    const home = raw.roleFit(p, oop, 'oop', 'MOC')!;
+    expect(away).toBeLessThan(home - 3);
+    expect(oopFit(raw, p, oop, 'MOC', 'BT')).toBe(home);
+    // Même poste dans les deux phases : rien ne change.
+    expect(oopFit(raw, p, oop, 'BT')).toBe(away);
   });
 });

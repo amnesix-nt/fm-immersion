@@ -1,5 +1,5 @@
 import type { Project, ProjectSlot } from './project';
-import type { TacticEngine } from './tactic';
+import { oopFit, type TacticEngine } from './tactic';
 import type { FmPlayer } from './player';
 import type { Target } from './targets';
 
@@ -71,7 +71,7 @@ export function teamPlan(engine: TacticEngine, project: Project, pool: Target[],
   const n = slots.length || 11;
   const fitOf = (p: FmPlayer, sl: ProjectSlot) => {
     const a = engine.roleFit(p, sl.ip, 'ip', sl.pos);
-    const b = engine.roleFit(p, sl.oop, 'oop', sl.posOOP ?? sl.pos);
+    const b = oopFit(engine, p, sl.oop, sl.pos, sl.posOOP);
     return a == null || b == null ? null : (a + b) / 2;
   };
   const xiAvg = slots.reduce((s, sl) => s + (sl.fit ?? 0), 0) / n;
@@ -180,7 +180,7 @@ export function bestSlotFit(engine: TacticEngine, project: Project, p: FmPlayer)
   for (const sl of project.slots) {
     if (!p.positions.includes(sl.pos)) continue;
     const a = engine.roleFit(p, sl.ip, 'ip', sl.pos);
-    const b = engine.roleFit(p, sl.oop, 'oop', sl.posOOP ?? sl.pos);
+    const b = oopFit(engine, p, sl.oop, sl.pos, sl.posOOP);
     if (a == null || b == null) continue;
     const fit = (a + b) / 2;
     if (!best || fit > best.fit) best = { slot: sl, fit };

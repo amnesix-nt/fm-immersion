@@ -219,6 +219,9 @@ function thresholdFactor(p: FmPlayer, gameCode: string): number {
  * (sous 90 %), moral et place de leader pèsent sur le choix du titulaire, sans changer
  * l'adéquation au rôle affichée.
  */
+/** Points retirés (sur 20) par point de rythme de match sous 90 %. */
+export const SHARPNESS_WEIGHT = 0.025;
+
 export function readiness(p: FmPlayer): number {
   const r = readinessParts(p);
   return r.condition + r.sharpness + r.morale + r.leader;
@@ -227,7 +230,9 @@ export function readiness(p: FmPlayer): number {
 /** Détail de la forme du jour, pour dire pourquoi un joueur est écarté (fatigue, manque de rythme, moral). */
 export function readinessParts(p: FmPlayer): { condition: number; sharpness: number; morale: number; leader: number } {
   const condition = p.condition != null && p.condition < 95 ? -(95 - p.condition) * 0.1 : 0;
-  const sharpness = p.sharpness != null && p.sharpness < 90 ? -(90 - p.sharpness) * 0.05 : 0;
+  // Le rythme se regagne en jouant : il départage deux joueurs proches, il ne doit pas écarter un joueur nettement
+  // meilleur (à 0,05 par point, un joueur à 55 % perdait 1,75 point, soit presque une étoile, et ne rejouait jamais).
+  const sharpness = p.sharpness != null && p.sharpness < 90 ? -(90 - p.sharpness) * SHARPNESS_WEIGHT : 0;
   const m = moraleLevel(p.morale);
   const morale = m == null ? 0 : ([-1.2, -0.7, -0.3, 0, 0.2, 0.4] as const)[m]!;
   // Faire jouer les leaders du vestiaire soutient le moral du groupe.
@@ -834,10 +839,23 @@ export interface Slot {
   game?: { custom: boolean; instructions: { ip: string[]; oop: string[] } };
 }
 
+/**
+ * Note d'un joueur dans le rôle sans ballon d'un créneau. Quand la tactique le déplace sans ballon (un MO (C) qui
+ * défend en pointe, un MD (C) qui monte en M (C)), il reste le joueur de son poste avec ballon : c'est la tactique qui
+ * le place là, pas un changement de poste. On ne lui retire donc pas plus de familiarité qu'à son poste avec ballon
+ * (sinon un meneur à l'aise en MO (C) tombait à 2,5 sur 20 parce qu'il n'est pas avant-centre).
+ */
+export function oopFit(engine: TacticEngine, p: FmPlayer, code: string, pos: PosCode, posOOP?: PosCode | null): number | null {
+  const at = engine.roleFit(p, code, 'oop', posOOP ?? pos);
+  if (!posOOP || posOOP === pos) return at;
+  const home = engine.roleFit(p, code, 'oop', pos);
+  return at == null ? home : home == null ? at : Math.max(at, home);
+}
+
 /** Adéquation moyenne d'un joueur aux deux rôles d'un créneau (le rôle sans ballon jugé à son poste sans ballon), sur 20. */
 export function slotFit(engine: TacticEngine, p: FmPlayer, sl: Pick<Slot, 'pos' | 'posOOP' | 'ip' | 'oop'>): number | null {
   const a = engine.roleFit(p, sl.ip, 'ip', sl.pos);
-  const b = engine.roleFit(p, sl.oop, 'oop', sl.posOOP ?? sl.pos);
+  const b = oopFit(engine, p, sl.oop, sl.pos, sl.posOOP);
   return a != null && b != null ? (a + b) / 2 : (a ?? b);
 }
 
