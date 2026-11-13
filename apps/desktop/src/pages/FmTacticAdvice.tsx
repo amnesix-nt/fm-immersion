@@ -6,6 +6,7 @@ import {
   type FormationPlan,
   type LineupAdvice,
   type MatchReview,
+  type PhysicalWatch,
   type PlayerInstruction,
   type TacticEngine,
   type TeamAdvice,
@@ -13,7 +14,7 @@ import {
 } from '@fm-immersion/module-fm';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { fitPct, More } from './FmUi';
+import { fitGap, fitPct, More } from './FmUi';
 
 /*
  * Mon onze : ce que les derniers matchs disent de la tactique jouée, ce que l'adjoint dit du onze affiché (rôles à revoir, titulaires, joueurs à relancer, doublures),
@@ -88,6 +89,50 @@ export function LineupAdviceCard({ advice, plan, engine }: { advice: LineupAdvic
         </div>
       )}
       <More>{t('fm.tac.advice.help')}</More>
+    </section>
+  );
+}
+
+/**
+ * Physique et rotation : les titulaires à ménager avant le prochain match (risque de blessure affiché par le jeu,
+ * condition, matchs enchaînés), avec la doublure en bon état et ce que le changement coûte dans les rôles.
+ */
+export function PhysicalCard({ watch, plan, windowDays }: { watch: PhysicalWatch[]; plan: FormationPlan; windowDays: number }) {
+  const { t } = useTranslation();
+  const why = (w: PhysicalWatch) => {
+    const vals = { pct: Math.round(w.player.condition ?? 0), sharpness: Math.round(w.player.sharpness ?? 0), starts: w.load?.starts ?? 0, minutes: Math.round(w.load?.minutes ?? 0), days: windowDays };
+    const r = w.strain.reason;
+    return t(r === 'risk' || r === 'riskRaised' ? `fm.tac.physical.why.${r}.${w.strain.cause}` : `fm.tac.physical.why.${r}`, vals);
+  };
+  const action = (w: PhysicalWatch) => {
+    if (w.strain.cause === 'rhythm') return t('fm.tac.physical.do.rhythm');
+    if (!w.sub) return t('fm.tac.physical.do.noSub');
+    const vals = { sub: w.sub.name, subFit: fitPct(w.subFit), fit: fitPct(w.fit), gap: fitGap(Math.max(0, w.drop ?? 0)) };
+    if (w.swapped) return t((w.drop ?? 0) <= 0 ? 'fm.tac.physical.do.swapEven' : 'fm.tac.physical.do.swap', vals);
+    return t('fm.tac.physical.do.keep', vals);
+  };
+  return (
+    <section className="card">
+      <h2 className="text-xl font-semibold">{t('fm.tac.physical.title')}</h2>
+      {watch.length === 0 ? (
+        <p className="mt-2 rounded-xl bg-eau/15 px-3 py-2 text-sm">{t('fm.tac.physical.none')}</p>
+      ) : (
+        <ul className="mt-3 space-y-1.5 text-sm">
+          {watch.map((w) => (
+            <li key={w.slot} className="flex items-start gap-3 rounded-xl bg-creme/50 px-3 py-2">
+              <span className={`mt-0.5 shrink-0 whitespace-nowrap rounded-md px-1.5 py-0.5 text-xs font-bold text-canard ${w.strain.level === 'rest' && w.strain.cause !== 'rhythm' ? 'bg-corail/20' : 'bg-ambre/30'}`}>{t(`fm.tac.physical.level.${w.strain.cause === 'rhythm' ? 'dose' : w.strain.level}`)}</span>
+              <span>
+                <b className="text-canard">
+                  {w.player.name} <span className="font-normal text-brun">· {POS_LABEL[plan.slots[w.slot]!.pos]}</span>
+                </b>
+                <span className="block">{why(w)}</span>
+                <span className="block text-xs text-brun">{action(w)}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+      <More>{t('fm.tac.physical.help', { days: windowDays })}</More>
     </section>
   );
 }

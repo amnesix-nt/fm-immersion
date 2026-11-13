@@ -71,6 +71,11 @@ export interface FmPlayer {
    * d'un autre club, noté sur ses seuls attributs.
    */
   staffAdj?: number;
+  /**
+   * Risque de blessure global donné par le jeu (`tracking.injuryRisk`) : 100 = normal, 180 = accru, 300 = élevé,
+   * au-delà très élevé. Il monte avec la fatigue et le manque de rythme. null si le plugin ne le donne pas.
+   */
+  injuryRisk?: number | null;
   /** Valeurs sur 20 des rôles lues dans le jeu, par poste et phase (libellé FR normalisé → valeur). */
   gameStars: Partial<Record<PosCode, { ip?: Record<string, number>; oop?: Record<string, number> }>> | null;
   /** Familiarité au poste lue dans le jeu (1-20), si le plugin la donne (`positionRatings`). */
@@ -137,6 +142,7 @@ export function normalizePlayer(p: FmPlayerRaw): FmPlayer {
     stars: p.stars && typeof p.stars === 'object' ? (p.stars as FmPlayer['stars']) : null,
     attributes,
     familiarity,
+    injuryRisk: injuryRiskOf(p),
     gameStars: p.gameStars && typeof p.gameStars === 'object' ? (p.gameStars as FmPlayer['gameStars']) : null,
     ca: typeof p.ca === 'number' && p.ca > 0 ? p.ca : null,
     pa: typeof p.pa === 'number' && p.pa > 0 ? p.pa : null,
@@ -148,6 +154,13 @@ export function withAbilities<S extends { players: { id: string | number }[]; ab
   const ab = snap.abilities;
   if (!ab || !Object.keys(ab).length) return snap;
   return { ...snap, players: snap.players.map((p) => (ab[String(p.id)] ? { ...p, ...ab[String(p.id)] } : p)) };
+}
+
+/** Risque de blessure du jeu : valeurs sous 100 ou absentes = inconnu. */
+function injuryRiskOf(p: unknown): number | null {
+  const t = (p as { tracking?: { injuryRisk?: unknown } }).tracking;
+  const n = toNumber(t?.injuryRisk as never);
+  return n != null && n >= 100 ? n : null;
 }
 
 function familiarityOf(raw: unknown): Partial<Record<PosCode, number>> | null {

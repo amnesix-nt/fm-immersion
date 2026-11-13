@@ -1,5 +1,17 @@
 [
   {
+    "version": "0.1.201",
+    "date": "2026-11-13",
+    "fr": [
+      "Nouveau dans Tactique : « Physique et rotation ». L'appli te dit quels titulaires ménager avant le prochain match (risque de blessure affiché par FM27, fatigue, matchs enchaînés) et qui peut les relayer sans trop perdre.",
+      "La compo suggérée et le onze du prochain match évitent maintenant de faire enchaîner un joueur à risque quand sa doublure tient la route."
+    ],
+    "en": [
+      "New in Tactics: \"Fitness and rotation\". The app tells you which starters to protect before the next match (injury risk shown by FM27, fatigue, too many matches in a row) and who can step in without losing much.",
+      "The suggested lineup and the XI for the next match now avoid running a player at risk into the ground when his backup is good enough."
+    ]
+  },
+  {
     "version": "0.1.200",
     "date": "2026-11-13",
     "fr": [

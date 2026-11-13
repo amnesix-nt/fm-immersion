@@ -155,6 +155,7 @@ export function FmHome({
         lineup={lineup}
         gameTactic={gameTactic}
         go={go}
+        matches={entries}
         afterHero={
           <div className={`grid gap-4 ${staff ? 'lg:grid-cols-2' : ''}`}>
             <StaffPoint players={players} />

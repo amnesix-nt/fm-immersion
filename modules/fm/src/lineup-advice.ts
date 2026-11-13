@@ -47,7 +47,7 @@ export interface StarterAdvice {
   gain: number;
 }
 
-export type RestedReason = 'sharpness' | 'condition' | 'morale';
+export type RestedReason = 'sharpness' | 'condition' | 'morale' | 'risk';
 
 export interface RestedAdvice {
   slot: number;
@@ -178,7 +178,7 @@ export function restedPlayers(engine: TacticEngine, plan: FormationPlan, players
       const bFit = slotFit(engine, b, sl);
       if (bFit == null || bFit - sFit < ROLE_GAIN || readiness(b) >= readiness(s)) continue;
       const r = readinessParts(b);
-      const worst = ([['sharpness', r.sharpness], ['condition', r.condition], ['morale', r.morale]] as [RestedReason, number][]).sort((x, y) => x[1] - y[1])[0]!;
+      const worst = ([['sharpness', r.sharpness], ['condition', r.condition], ['morale', r.morale], ['risk', r.risk]] as [RestedReason, number][]).sort((x, y) => x[1] - y[1])[0]!;
       if (worst[1] >= 0) continue;
       const value = worst[0] === 'sharpness' ? (b.sharpness ?? null) : worst[0] === 'condition' ? (b.condition ?? null) : null;
       cands.push({ slot: i, starter: s, better: b, starterFit: sFit, betterFit: bFit, reason: worst[0], value, gap: bFit - sFit });

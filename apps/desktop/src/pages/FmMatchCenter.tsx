@@ -10,6 +10,8 @@ import {
   liveCoachState,
   liveSubs,
   matchdayPlan,
+  matchResults,
+  recentLoad,
   matchTweaks,
   plannedSubs,
   ruleChecks,
@@ -45,6 +47,7 @@ export function FmMatchCenter({
   lineup,
   gameTactic,
   go,
+  matches,
   aside,
   asideAfter,
   afterHero,
@@ -56,6 +59,8 @@ export function FmMatchCenter({
   lineup: GameSlot[] | null;
   gameTactic: string | null;
   go: (view: string) => void;
+  /** Instantanés de la partie, pour compter les matchs enchaînés. */
+  matches?: { gameDate: string; data: FmSnapshot }[];
   /** Colonne de gauche, à côté du onze probable (le briefing de l'adjoint). */
   aside?: ReactNode;
   /** Sous la colonne de gauche (prochains matchs). */
@@ -72,8 +77,10 @@ export function FmMatchCenter({
   const rules = competitionRules(s.nextMatch?.competition);
   // Poids du match : coupe ou calendrier chargé = faire tourner, championnat / Europe = meilleur onze.
   const weight = competitionWeight(s.nextMatch?.competition, { congested: isCongested(fixtures, snap.gameDate) });
+  // Matchs enchaînés : titularisations des derniers jours, d'après les instantanés.
+  const load = useMemo(() => recentLoad(matchResults(matches ?? []), snap.gameDate), [matches, snap.gameDate]);
   // Onze du prochain match : le onze de base corrigé de la condition (et de la rotation en coupe ou calendrier chargé).
-  const matchday = useMemo(() => (basePlan ? matchdayPlan(engine, basePlan, players, { rotate: weight.rotate, inDays: s.nextMatch?.inDays ?? null }) : null), [engine, basePlan, players, weight.rotate, s.nextMatch?.inDays]);
+  const matchday = useMemo(() => (basePlan ? matchdayPlan(engine, basePlan, players, { rotate: weight.rotate, inDays: s.nextMatch?.inDays ?? null, load }) : null), [engine, basePlan, players, weight.rotate, s.nextMatch?.inDays, load]);
   const plan = matchday?.plan ?? basePlan;
   const changes = matchday?.changes ?? [];
   const subs = useMemo(() => (plan ? substitutionPlan(plan, plannedSubs(rules)) : []), [plan, rules]);
@@ -239,7 +246,7 @@ export function FmMatchCenter({
                   <li key={c.slot} className="text-canard">
                     <b>{last(c.out.name)}</b> → {c.in ? <b>{last(c.in.name)}</b> : t('fm.tac.nobody')}{' '}
                     <span className="text-brun">
-                      ({c.reason === 'unavailable' ? t('fm.mc.why.unavailable') : t('fm.mc.why.condition', { pct: Math.round(c.out.condition ?? 0) })})
+                      ({c.reason === 'unavailable' || c.reason === 'risk' || c.reason === 'chained' ? t(`fm.mc.why.${c.reason}`) : t('fm.mc.why.condition', { pct: Math.round(c.out.condition ?? 0) })})
                     </span>
                   </li>
                 ))}
