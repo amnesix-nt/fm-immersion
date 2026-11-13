@@ -3769,6 +3769,28 @@
         "listed": "Sur la liste des transferts",
         "clear": "Effacer les filtres"
       }
+    },
+    "gap": {
+      "title": "Ce que ta tactique demande, ce que ton effectif donne",
+      "help": "Pour chaque poste du onze, la note du titulaire et de sa doublure dans les deux rôles (avec et sans ballon). Un poste est fragile quand le titulaire est au moins une demi-étoile sous la médiane du onze ({{median}} sur 20). Un attribut clé du rôle (ceux du radar de FM27) manque quand il est au moins un point sous le niveau moyen de tes titulaires de champ ({{level}}). Rien n'est changé dans le jeu.",
+      "count": {
+        "hole_one": "{{count}} poste vide",
+        "hole_other": "{{count}} postes vides",
+        "weak_one": "{{count}} poste fragile",
+        "weak_other": "{{count}} postes fragiles",
+        "thin_one": "{{count}} doublure trop juste",
+        "thin_other": "{{count}} doublures trop justes"
+      },
+      "verdict": {
+        "hole": "Personne",
+        "weak": "Poste fragile",
+        "thin": "Doublure trop juste",
+        "ok": "Tenu"
+      },
+      "sub": "doublure :",
+      "missing": "Il manque :",
+      "bar": "niveau du onze {{bar}}",
+      "subAhead": "Doublure au-dessus"
     }
   },
   "modes": {
