@@ -27,6 +27,7 @@ import { rememberClubLooks } from './club-look';
 import { bigMatchPayload, drawBigMatch } from './bigmatch-page';
 import { breakingPayload, drawBreaking } from './breaking-page';
 import { fmData, savesData } from './data';
+import { freeConfirmed } from './fm';
 import { getWebhook, isWebhook, sendDiscordImage } from './discord';
 import { fetchHistory } from './fm-cache';
 import { drawFarewell } from './farewell-page';
@@ -460,7 +461,8 @@ export function useGazetteAuto() {
             await pause();
           }
           // Le coach a quitté son club (autre club, ou sans club d'après le plugin) : hors-série « Flash spécial ».
-          const freeSince = (await fmData.settings(saveId)).fmFreeSince ?? null;
+          // Sans club : seulement une fois le départ confirmé (le jeu a avancé d'au moins un jour sans club).
+          const freeSince = freeConfirmed(await fmData.settings(saveId));
           const exit = farewellToSend(coachExits(history, { freeSince }), lastDate, (x) => isFarewellSent(saveId, x));
           if (exit) {
             await attempt(

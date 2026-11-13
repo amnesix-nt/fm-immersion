@@ -1,5 +1,15 @@
 [
   {
+    "version": "0.1.192",
+    "date": "2026-11-13",
+    "fr": [
+      "Le « Flash spécial » de départ du coach ne part plus par erreur quand tu recharges ta partie : il attend que tu sois vraiment sans club depuis au moins un jour de jeu."
+    ],
+    "en": [
+      "The coach's farewell \"Special flash\" no longer goes out by mistake when you reload your save: it waits until you have really been without a club for at least one game day."
+    ]
+  },
+  {
     "version": "0.1.191",
     "date": "2026-11-13",
     "fr": [
