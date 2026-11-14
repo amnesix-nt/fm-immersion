@@ -1,6 +1,6 @@
 [
   {
-    "version": "0.1.204",
+    "version": "0.1.205",
     "date": "2026-11-14",
     "fr": [
       "Nouveau dans « Ma carrière » : la partie « Hors terrain ». Note le salaire de chaque club et vois ce que ta carrière t'a rapporté, après impôts et dépenses du foyer.",
@@ -9,6 +9,16 @@
     "en": [
       "New in \"My career\": the \"Off the pitch\" part. Enter the salary for each club and see what your career has earned you, after tax and household spending.",
       "Add your family (partner, children who grow up with the game date, photo) and find your big moments in the life journal. Your titles now sit in a trophy cabinet."
+    ]
+  },
+  {
+    "version": "0.1.204",
+    "date": "2026-11-14",
+    "fr": [
+      "Nouvel onglet « Académie » dans Effectif : ta réserve et tes U19 en un coup d'œil. Pour chaque équipe, le nombre de joueurs et l'âge moyen, les décisions à prendre (espoir prêt pour l'équipe première, contrat à prolonger, joueur trop âgé pour sa catégorie, place à libérer), tes meilleurs espoirs et l'effectif complet avec potentiel et fin de contrat."
+    ],
+    "en": [
+      "New \"Academy\" tab in Squad: your reserve and U19s at a glance. For each team, player count and average age, the decisions to make (prospect ready for the first team, contract to extend, player too old for his age group, spot to free up), your best prospects and the full squad with potential and contract end."
     ]
   },
   {

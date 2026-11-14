@@ -626,7 +626,8 @@
       "staff": "Staff",
       "numbers": "Numéros",
       "playtime": "Temps de jeu",
-      "builder": "Construire"
+      "builder": "Construire",
+      "academy": "Académie"
     },
     "home": {
       "todo": "À traiter",
@@ -1862,7 +1863,8 @@
       "diagnosis": "Les titulaires sous la moyenne du onze, et ce qui l'explique.",
       "numbers": "Une proposition de numéros pour la saison : 1 à 11 pour les titulaires selon leur poste, la doublure de chaque poste juste derrière.",
       "staff": "Les notes de tes entraîneurs par domaine : qui doit s'occuper de quoi, et quel entraîneur libre comblerait un manque.",
-      "builder": "Ta tactique de zéro : postes et rôles avec et sans ballon, style, et ce qui tient ou coince."
+      "builder": "Ta tactique de zéro : postes et rôles avec et sans ballon, style, et ce qui tient ou coince.",
+      "academy": "La réserve et les équipes de jeunes : bilan, décisions à prendre et meilleurs espoirs."
     },
     "nextStep": "Étape suivante : {{view}}",
     "opp": {
@@ -2664,7 +2666,8 @@
       "targets": "Cibles",
       "finances": "Finances",
       "wages": "Salaires",
-      "contracts": "Contrats"
+      "contracts": "Contrats",
+      "academy": "Académie"
     },
     "subtabs": {
       "squad": "Joueurs",
@@ -3838,6 +3841,44 @@
       "missing": "Il manque :",
       "bar": "niveau du onze {{bar}}",
       "subAhead": "Doublure au-dessus"
+    },
+    "academy": {
+      "title": "Académie",
+      "none": "Aucun joueur de la réserve ni des équipes de jeunes n'est lu pour l'instant. Le plugin les lit dès que ta partie est chargée dans FM27.",
+      "noAttributes_one": "{{count}} joueur de la réserve ou des jeunes est lu, mais pas encore ses attributs : recharge la partie dans FM27.",
+      "noAttributes_other": "{{count}} joueurs de la réserve et des jeunes sont lus, mais pas encore leurs attributs : recharge la partie dans FM27.",
+      "players_one": "{{count}} joueur",
+      "players_other": "{{count}} joueurs",
+      "avgAge": "{{age}} ans de moyenne",
+      "todo_one": "{{count}} décision à prendre",
+      "todo_other": "{{count}} décisions à prendre",
+      "noAlert": "Rien à décider pour l'instant : pas de contrat qui finit, personne de trop âgé pour sa catégorie.",
+      "alert": {
+        "promote": "Prêt pour l'équipe première",
+        "contract": "Contrat à prolonger",
+        "ageOut": "Dernière saison dans sa catégorie",
+        "release": "Place à libérer"
+      },
+      "alertText": {
+        "promote": "{{team}} : déjà au niveau de tes titulaires pour son rôle. Fais-le s'entraîner avec l'équipe première.",
+        "contract": "{{team}} : contrat jusqu'au {{date}}. Du potentiel, ne le laisse pas partir libre.",
+        "ageOut": "{{team}} : {{age}} ans, il n'aura plus l'âge (moins de {{limit}} ans) la saison prochaine. Prévois de le monter en réserve ou en équipe première, de le prêter ou de le libérer.",
+        "release": "{{team}} : {{age}} ans et peu de potentiel. Il prend la place d'un jeune plus prometteur.",
+        "releaseContract": "{{team}} : contrat jusqu'au {{date}} et peu de potentiel. Tu peux le laisser partir à la fin de son contrat."
+      },
+      "prospects": "Meilleurs espoirs",
+      "squad": "Effectif par équipe",
+      "soon": "Bientôt fini",
+      "col": {
+        "team": "Équipe",
+        "now": "Niveau",
+        "ceiling": "Plafond",
+        "status": "Statut au club",
+        "stars": "Étoiles (actuel → potentiel)",
+        "contract": "Contrat"
+      },
+      "help": "Joueurs de la réserve et des équipes de jeunes de ton club, lus par le plugin (les joueurs prêtés sont dans l'onglet Prêts). Niveau actuel et potentiel : étoiles de ton staff. Niveau et plafond des meilleurs espoirs : adéquation sur 20 au rôle de ton projet de jeu où le joueur est le plus adapté, aujourd'hui et ce qu'il peut atteindre (d'après son âge et son potentiel). « À faire » compare son adéquation à celle des titulaires de ton équipe première. Contrat bientôt fini : 6 mois ou moins. La limite d'âge vient du nom de l'équipe (U19 = 19 ans) ; dans le jeu, elle se compte au début de la saison.",
+      "starsHint": "Niveau actuel puis potentiel, en étoiles, d'après ton staff."
     }
   },
   "modes": {
