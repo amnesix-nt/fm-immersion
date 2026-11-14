@@ -6448,7 +6448,8 @@
       "tax": "Impôts et charges",
       "costs": "Dépenses du foyer par mois",
       "missing_one": "Un club n'a pas encore de salaire : il ne compte pas dans les totaux.",
-      "missing_other": "{{count}} clubs n'ont pas encore de salaire : ils ne comptent pas dans les totaux."
+      "missing_other": "{{count}} clubs n'ont pas encore de salaire : ils ne comptent pas dans les totaux.",
+      "choices": "Dont logement {{housing}}, voiture {{car}}, choix du téléphone {{oneOff}}, diplômes {{badges}}."
     },
     "home": {
       "title": "Le foyer",
@@ -6468,7 +6469,20 @@
       "remove": "Retirer",
       "childName": "Prénom",
       "childBorn": "Date de naissance",
-      "addChild": "Ajouter"
+      "addChild": "Ajouter",
+      "housing": {
+        "studio": "Studio",
+        "flat": "Appartement",
+        "house": "Maison",
+        "villa": "Villa"
+      },
+      "car": {
+        "city": "Citadine",
+        "saloon": "Berline",
+        "sports": "Sportive"
+      },
+      "noHousing": "Pas encore de logement choisi",
+      "noCar": "Pas de voiture"
     },
     "stage": {
       "baby": "tout-petit",
@@ -6486,6 +6500,162 @@
       "trophy": "{{trophy}} avec {{club}} ({{season}})",
       "partner": "Début de la vie commune avec {{name}}",
       "birth": "Naissance de {{name}}"
+    },
+    "phone": {
+      "title": "Téléphone",
+      "empty": "Pas de nouveau message. Les prochains arriveront avec les grands moments de ta carrière : arrivée dans un club, titre, fin de saison, départ.",
+      "note": "Tes réponses restent dans l'appli : elles changent tes finances, ton foyer et tes jauges, pas ta partie FM27.",
+      "someone": "ta moitié",
+      "perMonth": "{{amount}}/mois",
+      "harmony": "Foyer {{n}}",
+      "morale": "Moral {{n}}",
+      "startsBadge": "lance un diplôme",
+      "from": {
+        "agent": "Agent immobilier",
+        "partner": "{{name}}",
+        "dealer": "Concessionnaire",
+        "friend": "Un vieil ami",
+        "assistant": "Ton adjoint"
+      }
+    },
+    "gauges": {
+      "title": "Ta vie perso",
+      "harmony": "Harmonie du foyer",
+      "morale": "Moral du coach",
+      "note_one": "D'après ta réponse au téléphone.",
+      "note_other": "D'après tes {{count}} réponses au téléphone.",
+      "note_zero": "Réponds aux messages du téléphone pour faire bouger les jauges.",
+      "harmonyMood": {
+        "high": "Tout va bien à la maison.",
+        "ok": "La vie de famille tient le coup.",
+        "low": "Ça tire un peu à la maison : pense à eux.",
+        "crisis": "Le foyer est en crise : il est temps de lever le pied."
+      },
+      "moraleMood": {
+        "high": "Tu es au sommet de ta forme.",
+        "ok": "Le moral est correct.",
+        "low": "Le moral est en baisse.",
+        "crisis": "Tu es à bout."
+      }
+    },
+    "badges": {
+      "title": "Diplômes d'entraîneur",
+      "help": "Payés de ta poche, un à la fois, même sans club. Le prix part de tes économies.",
+      "level": {
+        "c": "Licence C",
+        "b": "Licence B",
+        "a": "Licence A",
+        "pro": "Licence Pro"
+      },
+      "done": "obtenue le {{date}}",
+      "until": "en cours, fin le {{date}}",
+      "start": "Commencer la {{level}} ({{cost}}, {{months}} mois)",
+      "all": "Tu as tous les diplômes.",
+      "note": "Dans FM27, pense à lancer la formation depuis ton profil de manager : l'appli ne l'inscrit pas dans le jeu."
+    },
+    "scene": {
+      "arrival": {
+        "text": "Bienvenue à {{club}} ! J'ai quelques biens à te proposer pour t'installer. Qu'est-ce qui te tente ?",
+        "choice": {
+          "studio": "Un studio",
+          "flat": "Un appartement",
+          "house": "Une maison",
+          "villa": "Une villa"
+        },
+        "done": {
+          "studio": "Installé dans un studio à {{club}}",
+          "flat": "Installé dans un appartement à {{club}}",
+          "house": "Installé dans une maison à {{club}}",
+          "villa": "Installé dans une villa à {{club}}"
+        }
+      },
+      "move": {
+        "text": "Alors c'est {{club}}… On déménage encore ? Il faut qu'on en parle.",
+        "choice": {
+          "together": "Toute la famille déménage",
+          "distance": "Relation à distance",
+          "weekends": "Je rentre chaque week-end"
+        },
+        "done": {
+          "together": "Toute la famille a suivi à {{club}}",
+          "distance": "Relation à distance pendant l'aventure à {{club}}",
+          "weekends": "Allers-retours chaque week-end depuis {{club}}"
+        }
+      },
+      "car": {
+        "text": "Nouveau poste, nouvelle voiture ? J'ai ce qu'il te faut pour tes trajets jusqu'à {{club}}.",
+        "choice": {
+          "city": "Une citadine",
+          "saloon": "Une berline",
+          "sports": "Une sportive"
+        },
+        "done": {
+          "city": "Achat d'une citadine",
+          "saloon": "Achat d'une berline",
+          "sports": "Achat d'une sportive"
+        }
+      },
+      "sacked": {
+        "text": "J'ai vu la nouvelle pour {{club}}. Ça va aller ? Qu'est-ce que tu comptes faire maintenant ?",
+        "choice": {
+          "holiday": "Partir en vacances en famille",
+          "work": "Me remettre au travail tout de suite",
+          "badge": "Passer un diplôme"
+        },
+        "done": {
+          "holiday": "Vacances en famille après {{club}}",
+          "work": "Retour au travail sans attendre après {{club}}",
+          "badge": "Retour sur les bancs de l'école après {{club}}"
+        }
+      },
+      "left": {
+        "text": "Le staff de {{club}} veut t'organiser un pot de départ. On fait quelque chose ?",
+        "choice": {
+          "party": "Un vrai pot de départ",
+          "quiet": "Partir discrètement"
+        },
+        "done": {
+          "party": "Pot de départ à {{club}}",
+          "quiet": "Départ discret de {{club}}"
+        }
+      },
+      "trophy": {
+        "text": "{{trophy}} avec {{club}} ! Le vestiaire est en feu. Comment tu fêtes ça ?",
+        "choice": {
+          "party": "Grande fête avec le staff",
+          "family": "Week-end en famille",
+          "focus": "On reste concentrés"
+        },
+        "done": {
+          "party": "Grande fête avec le staff de {{club}}",
+          "family": "Week-end en famille pour fêter le titre",
+          "focus": "Titre fêté sobrement, déjà tourné vers la suite"
+        }
+      },
+      "birth": {
+        "text": "{{name}} est né(e) ! Tu peux prendre quelques jours ?",
+        "choice": {
+          "leave": "Prendre quelques jours",
+          "stay": "Rester au club"
+        },
+        "done": {
+          "leave": "Quelques jours à la maison pour la naissance de {{name}}",
+          "stay": "Resté au club à la naissance de {{name}}"
+        }
+      },
+      "summer": {
+        "text": "La saison {{season}} est finie ! On part où cet été ?",
+        "choice": {
+          "beach": "Les plages au soleil",
+          "roadtrip": "Un road trip",
+          "work": "Je prépare la saison"
+        },
+        "done": {
+          "beach": "Vacances au soleil après la saison {{season}}",
+          "roadtrip": "Road trip après la saison {{season}}",
+          "work": "Été passé à préparer la saison, après {{season}}"
+        }
+      }
     }
   }
 }

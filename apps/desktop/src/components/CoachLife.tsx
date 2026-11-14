@@ -1,6 +1,6 @@
-import { ageAt, CURRENCIES, DEFAULT_TAX, lifeEvents, lifeFinances, schoolStage, trophyCabinet, type CareerSpell, type CoachLife as Life } from '@fm-immersion/module-fm';
+import { ageAt, CAR_COST, CURRENCIES, DEFAULT_TAX, HOUSING_COST, lifeEvents, lifeFinances, sceneState, schoolStage, trophyCabinet, type CareerSpell, type CoachLife as Life, type Scene, type SceneChoice, type SceneState } from '@fm-immersion/module-fm';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { coachPhotoSource } from '../lib/coach-photo';
 import { fmData } from '../lib/data';
@@ -60,25 +60,178 @@ function Cup({ big }: { big: boolean }) {
 /** « Hors terrain » : finances perso, foyer et journal de vie du coach, saisis par le joueur. */
 export function CoachLifeSection({ saveId, life, spells, gameDate }: { saveId: string; life: Life | undefined; spells: CareerSpell[]; gameDate: string | null }) {
   const { t } = useTranslation();
+  const st = useMemo(() => sceneState(spells, life, gameDate), [spells, life, gameDate]);
   return (
     <section className="mt-10">
       <h2 className="text-2xl font-semibold">{t('coachLife.title')}</h2>
       <p className="help mt-1">{t('coachLife.intro')}</p>
-      <div className="mt-4 grid gap-6 xl:grid-cols-2">
-        <Finances saveId={saveId} life={life} spells={spells} />
-        <Household saveId={saveId} life={life} gameDate={gameDate} />
+      <div className="mt-4 grid gap-6 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+        <Phone saveId={saveId} st={st} gameDate={gameDate} life={life} />
+        <Gauges st={st} />
       </div>
-      <Journal life={life} spells={spells} gameDate={gameDate} />
+      <div className="mt-6 grid gap-6 xl:grid-cols-2">
+        <Finances saveId={saveId} life={life} spells={spells} st={st} />
+        <Household saveId={saveId} life={life} gameDate={gameDate} st={st} />
+      </div>
+      <Badges saveId={saveId} st={st} gameDate={gameDate} life={life} />
+      <Journal life={life} spells={spells} gameDate={gameDate} st={st} />
     </section>
   );
 }
 
-function Finances({ saveId, life, spells }: { saveId: string; life: Life | undefined; spells: CareerSpell[] }) {
+const fromIcon: Record<Scene['from'], string> = { agent: '🏠', partner: '❤️', dealer: '🚗', friend: '📱', assistant: '📋' };
+
+/** Effets d'un choix, affichés sous le bouton : dépense, loyer, harmonie, moral. */
+function ChoiceEffects({ c, money }: { c: SceneChoice; money: Intl.NumberFormat }) {
+  const { t } = useTranslation();
+  const chips: { text: string; bad: boolean }[] = [];
+  if (c.cost) chips.push({ text: `−${money.format(c.cost)}`, bad: true });
+  if (c.housing) chips.push({ text: t('coachLife.phone.perMonth', { amount: money.format(HOUSING_COST[c.housing]) }), bad: false });
+  if (c.car) chips.push({ text: t('coachLife.phone.perMonth', { amount: money.format(CAR_COST[c.car]) }), bad: false });
+  if (c.harmony) chips.push({ text: t('coachLife.phone.harmony', { n: c.harmony > 0 ? `+${c.harmony}` : `${c.harmony}` }), bad: c.harmony < 0 });
+  if (c.morale) chips.push({ text: t('coachLife.phone.morale', { n: c.morale > 0 ? `+${c.morale}` : `${c.morale}` }), bad: c.morale < 0 });
+  if (c.badge) chips.push({ text: t('coachLife.phone.startsBadge'), bad: false });
+  return (
+    <span className="mt-1 flex flex-wrap justify-center gap-1">
+      {chips.map((ch, i) => (
+        <span key={i} className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${ch.bad ? 'bg-corail/10 text-corail' : 'bg-eau/15 text-canard'}`}>
+          {ch.text}
+        </span>
+      ))}
+    </span>
+  );
+}
+
+/** Téléphone : les messages qui attendent une réponse, tirés des vrais moments de la carrière. */
+function Phone({ saveId, st, gameDate, life }: { saveId: string; st: SceneState; gameDate: string | null; life: Life | undefined }) {
+  const { t, i18n } = useTranslation();
+  const save = useSaveLife(saveId);
+  const money = new Intl.NumberFormat(i18n.resolvedLanguage, { style: 'currency', currency: life?.currency ?? 'EUR', maximumFractionDigits: 0 });
+  const dateFmt = new Intl.DateTimeFormat(i18n.resolvedLanguage, { dateStyle: 'medium' });
+  const answer = (sc: Scene, choice: string) =>
+    save.mutate((cur) => ({ answers: { ...(cur.answers ?? {}), [sc.id]: { choice, date: gameDate ?? sc.date } } }));
+  return (
+    <div className="card bg-canard text-white">
+      <h3 className="flex items-center gap-2 text-xl font-semibold">
+        <span aria-hidden>📱</span> {t('coachLife.phone.title')}
+        {!!st.pending.length && <span className="rounded-full bg-orange px-2 py-0.5 text-xs font-extrabold text-canard">{st.pending.length}</span>}
+      </h3>
+      {!st.pending.length ? (
+        <p className="mt-3 text-sm text-white/70">{t('coachLife.phone.empty')}</p>
+      ) : (
+        <ul className="mt-4 space-y-5">
+          {st.pending.map((sc) => {
+            const params = { club: sc.club, name: sc.name ?? t('coachLife.phone.someone'), season: sc.season, trophy: trophyName(t, { season: sc.season ?? '', competition: sc.competition ?? null }) };
+            return (
+              <li key={sc.id}>
+                <p className="text-xs font-bold text-white/60">
+                  <span aria-hidden>{fromIcon[sc.from]}</span> {t(`coachLife.phone.from.${sc.from}`, { name: sc.name ?? '' })} · {dateFmt.format(new Date(sc.date))}
+                </p>
+                <p className="mt-1 max-w-xl rounded-2xl rounded-tl-sm bg-white px-4 py-3 text-sm text-canard">{t(`coachLife.scene.${sc.kind}.text`, params)}</p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {sc.choices.map((c) => (
+                    <button
+                      key={c.key}
+                      type="button"
+                      disabled={save.isPending}
+                      onClick={() => answer(sc, c.key)}
+                      className="flex min-w-[9rem] flex-col items-center rounded-xl bg-orange-clair px-3 py-2 text-sm font-bold text-canard hover:bg-orange disabled:opacity-60"
+                    >
+                      {t(`coachLife.scene.${sc.kind}.choice.${c.key}`, params)}
+                      <ChoiceEffects c={c} money={money} />
+                    </button>
+                  ))}
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+      <p className="mt-4 text-xs text-white/60">{t('coachLife.phone.note')}</p>
+    </div>
+  );
+}
+
+function Gauge({ label, value, help }: { label: string; value: number; help: string }) {
+  const color = value >= 60 ? 'bg-eau-soutenu' : value >= 35 ? 'bg-ambre' : 'bg-corail';
+  return (
+    <div>
+      <div className="flex items-baseline justify-between">
+        <span className="font-bold">{label}</span>
+        <span className="font-display text-lg font-semibold tabular-nums">{value}</span>
+      </div>
+      <div className="mt-1 h-2.5 overflow-hidden rounded-full bg-canard/10" role="meter" aria-valuemin={0} aria-valuemax={100} aria-valuenow={value} aria-label={label}>
+        <div className={`h-full ${color}`} style={{ width: `${value}%` }} />
+      </div>
+      <p className="mt-1 text-xs text-brun">{help}</p>
+    </div>
+  );
+}
+
+function Gauges({ st }: { st: SceneState }) {
+  const { t } = useTranslation();
+  const mood = (v: number) => (v >= 75 ? 'high' : v >= 50 ? 'ok' : v >= 30 ? 'low' : 'crisis');
+  return (
+    <div className="card space-y-5">
+      <h3 className="text-xl font-semibold">{t('coachLife.gauges.title')}</h3>
+      <Gauge label={t('coachLife.gauges.harmony')} value={st.harmony} help={t(`coachLife.gauges.harmonyMood.${mood(st.harmony)}`)} />
+      <Gauge label={t('coachLife.gauges.morale')} value={st.morale} help={t(`coachLife.gauges.moraleMood.${mood(st.morale)}`)} />
+      <p className="text-xs text-brun">{t('coachLife.gauges.note', { count: st.answered.length })}</p>
+    </div>
+  );
+}
+
+/** Diplômes d'entraîneur payés de sa poche : un à la fois, dans l'ordre. */
+function Badges({ saveId, st, gameDate, life }: { saveId: string; st: SceneState; gameDate: string | null; life: Life | undefined }) {
+  const { t, i18n } = useTranslation();
+  const save = useSaveLife(saveId);
+  const money = new Intl.NumberFormat(i18n.resolvedLanguage, { style: 'currency', currency: life?.currency ?? 'EUR', maximumFractionDigits: 0 });
+  const dateFmt = new Intl.DateTimeFormat(i18n.resolvedLanguage, { dateStyle: 'medium' });
+  const next = st.nextBadge;
+  return (
+    <div className="card mt-6">
+      <h3 className="text-xl font-semibold">{t('coachLife.badges.title')}</h3>
+      <p className="mt-1 text-sm text-brun">{t('coachLife.badges.help')}</p>
+      {!!st.badges.length && (
+        <ul className="mt-3 space-y-3 text-sm">
+          {st.badges.map((b) => (
+            <li key={b.level}>
+              <div className="flex flex-wrap items-baseline gap-2">
+                <span className="font-bold">{t(`coachLife.badges.level.${b.level}`)}</span>
+                <span className="text-brun">
+                  {b.done ? t('coachLife.badges.done', { date: dateFmt.format(new Date(b.end)) }) : t('coachLife.badges.until', { date: dateFmt.format(new Date(b.end)) })}
+                </span>
+              </div>
+              <div className="mt-1 h-2 overflow-hidden rounded-full bg-canard/10">
+                <div className={`h-full ${b.done ? 'bg-eau-soutenu' : 'bg-orange'}`} style={{ width: `${Math.round(b.progress * 100)}%` }} />
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+      {next ? (
+        <button
+          type="button"
+          className="btn-primary mt-4 px-4 py-2 text-sm"
+          disabled={!gameDate || save.isPending}
+          onClick={() => gameDate && save.mutate((cur) => ({ badges: [...(cur.badges ?? []), { level: next.level, start: gameDate }] }))}
+        >
+          {t('coachLife.badges.start', { level: t(`coachLife.badges.level.${next.level}`), cost: money.format(next.cost), months: next.months })}
+        </button>
+      ) : (
+        st.badges.length > 0 && st.badges.every((b) => b.done) && <p className="mt-3 text-sm font-bold text-eau-fonce">{t('coachLife.badges.all')}</p>
+      )}
+      <p className="mt-3 text-xs text-brun">{t('coachLife.badges.note')}</p>
+    </div>
+  );
+}
+
+function Finances({ saveId, life, spells, st }: { saveId: string; life: Life | undefined; spells: CareerSpell[]; st: SceneState }) {
   const { t, i18n } = useTranslation();
   const save = useSaveLife(saveId);
   const currency = life?.currency ?? 'EUR';
   const money = new Intl.NumberFormat(i18n.resolvedLanguage, { style: 'currency', currency, maximumFractionDigits: 0 });
-  const f = lifeFinances(spells, life);
+  const f = lifeFinances(spells, life, st.spending.total);
   const set = save.mutate;
   const setWage = (club: string, v: string) => {
     const n = num(v);
@@ -164,6 +317,16 @@ function Finances({ saveId, life, spells }: { saveId: string; life: Life | undef
           />
         </label>
       </div>
+      {st.spending.total > 0 && (
+        <p className="mt-3 text-xs text-brun">
+          {t('coachLife.money.choices', {
+            housing: money.format(st.spending.housing),
+            car: money.format(st.spending.car),
+            oneOff: money.format(st.spending.oneOff),
+            badges: money.format(st.spending.badges),
+          })}
+        </p>
+      )}
       {f.missing > 0 && <p className="mt-3 text-xs text-brun">{t('coachLife.money.missing', { count: f.missing })}</p>}
     </div>
   );
@@ -178,7 +341,7 @@ function Stat({ label, value, warn }: { label: string; value: string; warn?: boo
   );
 }
 
-function Household({ saveId, life, gameDate }: { saveId: string; life: Life | undefined; gameDate: string | null }) {
+function Household({ saveId, life, gameDate, st }: { saveId: string; life: Life | undefined; gameDate: string | null; st: SceneState }) {
   const { t } = useTranslation();
   const save = useSaveLife(saveId);
   const file = useRef<HTMLInputElement>(null);
@@ -245,6 +408,11 @@ function Household({ saveId, life, gameDate }: { saveId: string; life: Life | un
           {photoError && <p className="text-xs text-corail">{t('coachLife.home.photoError')}</p>}
         </div>
       </div>
+      <p className="mt-4 text-sm">
+        <span aria-hidden>🏠</span> {st.housing ? t(`coachLife.home.housing.${st.housing}`) : t('coachLife.home.noHousing')}
+        <span className="mx-2 text-brun">·</span>
+        <span aria-hidden>🚗</span> {st.car ? t(`coachLife.home.car.${st.car}`) : t('coachLife.home.noCar')}
+      </p>
       <h4 className="mt-5 text-sm font-extrabold uppercase tracking-wider text-canard/60">{t('coachLife.home.children')}</h4>
       {children.length ? (
         <ul className="mt-2 space-y-1.5 text-sm">
@@ -287,29 +455,44 @@ function Household({ saveId, life, gameDate }: { saveId: string; life: Life | un
   );
 }
 
-function Journal({ life, spells, gameDate }: { life: Life | undefined; spells: CareerSpell[]; gameDate: string | null }) {
+function Journal({ life, spells, gameDate, st }: { life: Life | undefined; spells: CareerSpell[]; gameDate: string | null; st: SceneState }) {
   const { t, i18n } = useTranslation();
   const dateFmt = new Intl.DateTimeFormat(i18n.resolvedLanguage, { dateStyle: 'medium' });
-  const events = lifeEvents(spells, life, gameDate);
-  if (!events.length) return null;
   const icon = { arrival: '✍️', exit: '🚪', trophy: '🏆', partner: '💍', birth: '👶' } as const;
+  const items = [
+    ...lifeEvents(spells, life, gameDate).map((e) => ({
+      date: e.date,
+      icon: icon[e.kind],
+      text:
+        e.kind === 'arrival'
+          ? t('coachLife.journal.arrival', { club: e.club })
+          : e.kind === 'exit'
+            ? t(e.reason === 'sacked' ? 'coachLife.journal.sacked' : 'coachLife.journal.left', { club: e.club })
+            : e.kind === 'trophy'
+              ? t('coachLife.journal.trophy', { trophy: trophyName(t, e), club: e.club, season: e.season })
+              : e.kind === 'partner'
+                ? t('coachLife.journal.partner', { name: e.name })
+                : t('coachLife.journal.birth', { name: e.name }),
+    })),
+    // Les choix du téléphone, juste après le moment qui les a amenés.
+    ...st.answered.map(({ scene: sc, choice }) => ({
+      date: sc.date,
+      icon: fromIcon[sc.from],
+      text: t(`coachLife.scene.${sc.kind}.done.${choice.key}`, { club: sc.club, name: sc.name ?? '', season: sc.season }),
+    })),
+  ].sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
+  if (!items.length) return null;
   return (
     <div className="card mt-6">
       <h3 className="text-xl font-semibold">{t('coachLife.journal.title')}</h3>
-      <ol className="mt-3 space-y-2 border-l-2 border-orange/40 pl-4 text-sm">
-        {events.map((e, i) => (
-          <li key={i} className="relative">
-            <span className="absolute -left-[1.6rem] top-0" aria-hidden>
-              {icon[e.kind]}
+      <ol className="mt-3 space-y-2 text-sm">
+        {items.map((e, i) => (
+          <li key={i} className="flex gap-3">
+            <span className="w-5 shrink-0 text-center" aria-hidden>
+              {e.icon}
             </span>
-            <span className="text-xs font-bold text-brun">{dateFmt.format(new Date(e.date))}</span>
-            <span className="ml-2">
-              {e.kind === 'arrival' && t('coachLife.journal.arrival', { club: e.club })}
-              {e.kind === 'exit' && t(e.reason === 'sacked' ? 'coachLife.journal.sacked' : 'coachLife.journal.left', { club: e.club })}
-              {e.kind === 'trophy' && t('coachLife.journal.trophy', { trophy: trophyName(t, e), club: e.club, season: e.season })}
-              {e.kind === 'partner' && t('coachLife.journal.partner', { name: e.name })}
-              {e.kind === 'birth' && t('coachLife.journal.birth', { name: e.name })}
-            </span>
+            <span className="w-28 shrink-0 text-xs font-bold leading-5 text-brun">{dateFmt.format(new Date(e.date))}</span>
+            <span>{e.text}</span>
           </li>
         ))}
       </ol>

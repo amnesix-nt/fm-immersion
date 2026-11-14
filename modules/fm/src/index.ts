@@ -90,6 +90,7 @@ export * from './club-look';
 export * from './countries';
 export * from './career';
 export * from './coach-life';
+export * from './coach-scenes';
 export * from './press';
 export * from './match-review';
 export * from './tactic-todo';

@@ -1,5 +1,17 @@
 [
   {
+    "version": "0.1.206",
+    "date": "2026-11-14",
+    "fr": [
+      "Ton coach a maintenant un téléphone dans « Ma carrière » : à chaque grand moment (arrivée dans un club, titre, fin de saison, limogeage, naissance), un proche t'écrit et tu choisis quoi faire. Tes choix coûtent de l'argent et font bouger l'harmonie du foyer et ton moral.",
+      "Choisis ton logement et ta voiture, et paie-toi des diplômes d'entraîneur avec tes économies. Rien n'est changé dans ta partie FM27."
+    ],
+    "en": [
+      "Your coach now has a phone in \"My career\": at every big moment (joining a club, a title, the end of a season, getting sacked, a birth), someone close writes to you and you choose what to do. Your choices cost money and move your family harmony and your morale.",
+      "Pick your home and your car, and pay for coaching badges out of your savings. Nothing is changed in your FM27 save."
+    ]
+  },
+  {
     "version": "0.1.205",
     "date": "2026-11-14",
     "fr": [

@@ -17,13 +17,17 @@ export interface CoachLife {
   children?: { name: string; born: string }[];
   /** Photo de famille choisie par le joueur (image réduite, data URL). */
   familyPhoto?: string | null;
+  /** Réponses du coach aux scènes du téléphone (identifiant de scène → choix et date de jeu de la réponse). */
+  answers?: Record<string, { choice: string; date: string }>;
+  /** Diplômes d'entraîneur payés de sa poche, avec la date de jeu du début de la formation. */
+  badges?: { level: string; start: string }[];
 }
 
 export const CURRENCIES = ['EUR', 'GBP', 'USD', 'CHF', 'SEK', 'NOK', 'DKK', 'PLN', 'CZK', 'BRL'] as const;
 export const DEFAULT_TAX = 30;
 
 const DAY = 86_400_000;
-const days = (from: string, to: string) => Math.max(0, Math.round((Date.parse(to.slice(0, 10)) - Date.parse(from.slice(0, 10))) / DAY) + 1);
+export const days = (from: string, to: string) => Math.max(0, Math.round((Date.parse(to.slice(0, 10)) - Date.parse(from.slice(0, 10))) / DAY) + 1);
 
 export interface SpellPay {
   club: string;
@@ -38,7 +42,7 @@ export interface LifeFinances {
   /** Brut gagné sur les passages dont le salaire est connu. */
   gross: number;
   net: number;
-  /** Dépenses du foyer sur toute la carrière (mois de 30,44 jours). */
+  /** Dépenses du foyer sur toute la carrière (mois de 30,44 jours), plus les dépenses venues des choix du téléphone. */
   costs: number;
   /** Net moins dépenses : ce qui reste de côté. */
   savings: number;
@@ -50,7 +54,7 @@ export interface LifeFinances {
 }
 
 /** Ce que la carrière a rapporté, d'après les salaires saisis et le nombre de jours passés dans chaque club. */
-export function lifeFinances(spells: CareerSpell[], life: CoachLife | undefined): LifeFinances {
+export function lifeFinances(spells: CareerSpell[], life: CoachLife | undefined, extraCosts = 0): LifeFinances {
   const taxRate = Math.min(90, Math.max(0, life?.taxRate ?? DEFAULT_TAX));
   const rows: SpellPay[] = spells.map((s) => {
     const w = life?.wages?.[s.club];
@@ -61,7 +65,7 @@ export function lifeFinances(spells: CareerSpell[], life: CoachLife | undefined)
   const gross = rows.reduce((a, r) => a + (r.gross ?? 0), 0);
   const net = Math.round(gross * (1 - taxRate / 100));
   const allDays = rows.reduce((a, r) => a + r.days, 0);
-  const costs = Math.round(((life?.monthlyCosts ?? 0) * allDays) / 30.44);
+  const costs = Math.round(((life?.monthlyCosts ?? 0) * allDays) / 30.44 + extraCosts);
   const now = spells.at(-1);
   const nowWeekly = now?.current ? rows.at(-1)?.weekly ?? null : null;
   return {
@@ -106,7 +110,7 @@ export type LifeEvent =
   | { kind: 'birth'; date: string; name: string };
 
 /** Date approximative d'un titre : fin de la saison (« 2026/27 » → 30 juin 2027, « 2027 » → 31 décembre 2027). */
-function seasonEnd(season: string, fallback: string): string {
+export function seasonEnd(season: string, fallback: string): string {
   const two = /^(\d{4})\D+(\d{2,4})$/.exec(season);
   if (two) {
     const y = two[2]!.length === 2 ? `${two[1]!.slice(0, 2)}${two[2]}` : two[2]!;
