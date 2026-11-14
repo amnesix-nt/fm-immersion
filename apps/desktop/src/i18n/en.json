@@ -6448,7 +6448,8 @@
       "tax": "Tax and charges",
       "costs": "Household spending per month",
       "missing_one": "One club has no salary yet: it isn't counted in the totals.",
-      "missing_other": "{{count}} clubs have no salary yet: they aren't counted in the totals."
+      "missing_other": "{{count}} clubs have no salary yet: they aren't counted in the totals.",
+      "choices": "Including housing {{housing}}, car {{car}}, phone choices {{oneOff}}, badges {{badges}}."
     },
     "home": {
       "title": "Family",
@@ -6468,7 +6469,20 @@
       "remove": "Remove",
       "childName": "First name",
       "childBorn": "Date of birth",
-      "addChild": "Add"
+      "addChild": "Add",
+      "housing": {
+        "studio": "Studio",
+        "flat": "Flat",
+        "house": "House",
+        "villa": "Villa"
+      },
+      "car": {
+        "city": "City car",
+        "saloon": "Saloon",
+        "sports": "Sports car"
+      },
+      "noHousing": "No home chosen yet",
+      "noCar": "No car"
     },
     "stage": {
       "baby": "toddler",
@@ -6486,6 +6500,162 @@
       "trophy": "{{trophy}} with {{club}} ({{season}})",
       "partner": "Moved in with {{name}}",
       "birth": "{{name}} was born"
+    },
+    "phone": {
+      "title": "Phone",
+      "empty": "No new messages. More will come with the big moments of your career: joining a club, a title, the end of a season, leaving.",
+      "note": "Your answers stay in the app: they change your finances, your family and your gauges, not your FM27 save.",
+      "someone": "your partner",
+      "perMonth": "{{amount}}/month",
+      "harmony": "Family {{n}}",
+      "morale": "Morale {{n}}",
+      "startsBadge": "starts a badge",
+      "from": {
+        "agent": "Estate agent",
+        "partner": "{{name}}",
+        "dealer": "Car dealer",
+        "friend": "An old friend",
+        "assistant": "Your assistant"
+      }
+    },
+    "gauges": {
+      "title": "Your personal life",
+      "harmony": "Family harmony",
+      "morale": "Coach morale",
+      "note_one": "Based on your phone answer.",
+      "note_other": "Based on your {{count}} phone answers.",
+      "note_zero": "Answer the phone messages to move the gauges.",
+      "harmonyMood": {
+        "high": "All is well at home.",
+        "ok": "Family life is holding up.",
+        "low": "Things are a bit tense at home: think of them.",
+        "crisis": "Your family is in crisis: time to slow down."
+      },
+      "moraleMood": {
+        "high": "You're at the top of your game.",
+        "ok": "Morale is fine.",
+        "low": "Morale is dropping.",
+        "crisis": "You're exhausted."
+      }
+    },
+    "badges": {
+      "title": "Coaching badges",
+      "help": "Paid out of your own pocket, one at a time, even without a club. The cost comes out of your savings.",
+      "level": {
+        "c": "C Licence",
+        "b": "B Licence",
+        "a": "A Licence",
+        "pro": "Pro Licence"
+      },
+      "done": "earned on {{date}}",
+      "until": "in progress, ends {{date}}",
+      "start": "Start the {{level}} ({{cost}}, {{months}} months)",
+      "all": "You have every badge.",
+      "note": "In FM27, remember to start the course from your manager profile: the app doesn't put it in the game."
+    },
+    "scene": {
+      "arrival": {
+        "text": "Welcome to {{club}}! I have a few places to show you. What do you fancy?",
+        "choice": {
+          "studio": "A studio",
+          "flat": "A flat",
+          "house": "A house",
+          "villa": "A villa"
+        },
+        "done": {
+          "studio": "Moved into a studio at {{club}}",
+          "flat": "Moved into a flat at {{club}}",
+          "house": "Moved into a house at {{club}}",
+          "villa": "Moved into a villa at {{club}}"
+        }
+      },
+      "move": {
+        "text": "So it's {{club}}… Are we moving again? We need to talk.",
+        "choice": {
+          "together": "The whole family moves",
+          "distance": "Long-distance",
+          "weekends": "I come home every weekend"
+        },
+        "done": {
+          "together": "The whole family followed to {{club}}",
+          "distance": "Long-distance during the {{club}} adventure",
+          "weekends": "Weekend trips home from {{club}}"
+        }
+      },
+      "car": {
+        "text": "New job, new car? I've got just what you need for the drive to {{club}}.",
+        "choice": {
+          "city": "A city car",
+          "saloon": "A saloon",
+          "sports": "A sports car"
+        },
+        "done": {
+          "city": "Bought a city car",
+          "saloon": "Bought a saloon",
+          "sports": "Bought a sports car"
+        }
+      },
+      "sacked": {
+        "text": "I saw the news about {{club}}. Are you OK? What are you going to do now?",
+        "choice": {
+          "holiday": "Family holiday",
+          "work": "Get back to work right away",
+          "badge": "Take a coaching badge"
+        },
+        "done": {
+          "holiday": "Family holiday after {{club}}",
+          "work": "Straight back to work after {{club}}",
+          "badge": "Back to school after {{club}}"
+        }
+      },
+      "left": {
+        "text": "The {{club}} staff want to throw you a leaving do. Shall we?",
+        "choice": {
+          "party": "A proper leaving do",
+          "quiet": "Leave quietly"
+        },
+        "done": {
+          "party": "Leaving do at {{club}}",
+          "quiet": "Quiet exit from {{club}}"
+        }
+      },
+      "trophy": {
+        "text": "{{trophy}} with {{club}}! The dressing room is on fire. How do you celebrate?",
+        "choice": {
+          "party": "Big party with the staff",
+          "family": "Family weekend",
+          "focus": "Stay focused"
+        },
+        "done": {
+          "party": "Big party with the {{club}} staff",
+          "family": "Family weekend to celebrate the title",
+          "focus": "Low-key celebration, already looking ahead"
+        }
+      },
+      "birth": {
+        "text": "{{name}} is born! Can you take a few days off?",
+        "choice": {
+          "leave": "Take a few days",
+          "stay": "Stay at the club"
+        },
+        "done": {
+          "leave": "A few days at home for {{name}}'s birth",
+          "stay": "Stayed at the club when {{name}} was born"
+        }
+      },
+      "summer": {
+        "text": "The {{season}} season is over! Where are we going this summer?",
+        "choice": {
+          "beach": "Sunny beaches",
+          "roadtrip": "A road trip",
+          "work": "I'll prepare the season"
+        },
+        "done": {
+          "beach": "Sunny holiday after the {{season}} season",
+          "roadtrip": "Road trip after the {{season}} season",
+          "work": "Summer spent preparing, after {{season}}"
+        }
+      }
     }
   }
 }
