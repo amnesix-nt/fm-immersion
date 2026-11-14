@@ -288,7 +288,9 @@ function FmTacticView({ snap, players, folder, gameFormation, lineup, lineupStat
     return tacticTodo({ team: tiBase === 'game' ? tiAdvice : null, lineup: advice, players, budget });
   })();
   // Terrain de la préparation du match (paysage, maillots + noms) : plus d'écart vertical entre les joueurs.
-  const prepShown = spreadXY(plan.slots.map((s) => phaseXY(s, phase, block)), 19, 17).map(([x, y]) => [Math.min(88, Math.max(12, x)), Math.min(91, Math.max(9, y))] as [number, number]);
+  // Par défaut la formation de base (les latéraux en défense) ; avec ou sans ballon sur demande.
+  const prepAt = (l: 'base' | Phase) =>
+    spreadXY(plan.slots.map((s) => (l === 'base' ? ([s.x, s.y] as [number, number]) : phaseXY(s, l, block))), 19, 17).map(([x, y]) => [Math.min(88, Math.max(12, x)), Math.min(91, Math.max(9, y))] as [number, number]);
   // Remplaçants : la première doublure de chaque poste, sans doublon, avec les postes qu'elle couvre (banc de 9 au plus).
   const bench = (() => {
     const out = new Map<string, { player: FmPlayer; covers: PosCode[] }>();
@@ -449,7 +451,7 @@ function FmTacticView({ snap, players, folder, gameFormation, lineup, lineupStat
                 fixtures={upcoming}
                 form={team === 'B' ? plan.form : form}
                 plan={plan}
-                positions={prepShown}
+                positionsFor={prepAt}
                 numbers={numbers}
                 swapAt={team === 'A' ? swapAt : new Map()}
                 items={team === 'A' && fromGame ? todo : null}

@@ -2907,7 +2907,8 @@
         "game": "Schéma de ta tactique FM27 {{tactic}} ({{form}}), comme en Tactique.",
         "suggested": "Schéma de la compo suggérée en Tactique ({{form}}).",
         "built": "Schéma de ta tactique construite en Tactique ({{form}})."
-      }
+      },
+      "board": "Vestiaire"
     },
     "results": {
       "title": "Résultats",
@@ -3899,7 +3900,38 @@
       "xi": "Le onze",
       "bench": "Remplaçants",
       "toStart": "à titulariser",
-      "noBench": "Pas de remplaçant dans l'effectif."
+      "noBench": "Pas de remplaçant dans l'effectif.",
+      "formation": "Formation",
+      "movesLegend": "Flèche : où le joueur monte quand ton équipe a le ballon"
+    },
+    "squadBoard": {
+      "title": "Effectif professionnel",
+      "count_one": "{{count}} joueur",
+      "count_other": "{{count}} joueurs",
+      "line": {
+        "all": "Tous",
+        "GB": "Gardiens",
+        "DEF": "Défenseurs",
+        "MIL": "Milieux",
+        "ATT": "Attaquants"
+      },
+      "table": "Tableau détaillé",
+      "col": {
+        "num": "N°",
+        "player": "Joueur",
+        "pos": "Poste",
+        "form": "Forme",
+        "last": "Dernière note"
+      },
+      "age_one": "{{count}} an",
+      "age_other": "{{count}} ans",
+      "apps": "matchs",
+      "goals": "buts",
+      "avg": "note moy.",
+      "lastRatings": "Dernières notes",
+      "noRatings": "Pas encore de note relevée en match officiel.",
+      "sheet": "Fiche du joueur",
+      "compare": "Comparer"
     }
   },
   "modes": {
@@ -6680,5 +6712,15 @@
         }
       }
     }
+  },
+  "topbar": {
+    "office": "Bureau",
+    "club": "Club",
+    "competitions": "Compétitions",
+    "media": "Médias",
+    "career": "Carrière",
+    "screens": "Écrans",
+    "coach": "Ma carrière et mon coach",
+    "coachShort": "Moi"
   }
 }

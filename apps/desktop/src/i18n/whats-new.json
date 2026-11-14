@@ -3,12 +3,16 @@
     "version": "0.1.209",
     "date": "2026-11-14",
     "fr": [
+      "Nouvelle allure : l'appli passe en sombre, avec le menu en haut (Bureau, Club, Compétitions, Médias, Carrière).",
       "Les écrans de Mon club sont plus courts : trois onglets à chaque fois, le reste dans « Plus ».",
-      "Sur Tactique, la préparation du match façon bureau de coach : l'affiche avec les logos de ton pack, ton onze en maillots numérotés, le brief de l'adjoint à cocher et les trois prochains matchs."
+      "Sur Tactique, la préparation du match façon bureau de coach : l'affiche avec les logos de ton pack, ton onze en maillots numérotés, le brief de l'adjoint à cocher et les trois prochains matchs.",
+      "Effectif façon vestiaire : la forme de chaque joueur sur ses cinq derniers matchs, et sa fiche à droite avec ses dernières notes."
     ],
     "en": [
+      "New look: the app goes dark, with the menu at the top (Office, Club, Competitions, Media, Career).",
       "My club screens are shorter: three tabs each, the rest under \"More\".",
-      "On Tactics, a coach's-office match preparation: the fixture with your logo pack's crests, your XI in numbered shirts, the assistant's brief to tick off and the next three fixtures."
+      "On Tactics, a coach's-office match preparation: the fixture with your logo pack's crests, your XI in numbered shirts, the assistant's brief to tick off and the next three fixtures.",
+      "Squad as a dressing room: each player's form over his last five matches, with his profile and last ratings on the right."
     ]
   },
   {

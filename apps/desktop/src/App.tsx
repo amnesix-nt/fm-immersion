@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Navigate, Route, Routes, useParams } from 'react-router-dom';
 import { QuickSearch } from './components/QuickSearch';
-import { Sidebar } from './components/Sidebar';
+import { TopBar } from './components/TopBar';
 import { UpdateGate } from './components/UpdateGate';
 import { WhatsNew } from './components/WhatsNew';
 import { useCareer, useCareerStore } from './lib/career';
@@ -32,11 +32,11 @@ export function App() {
   useAutoBackups();
   return (
     <UpdateGate>
-      <div className="flex min-h-screen">
-        <Sidebar />
+      <div className="min-h-screen">
+        <TopBar />
         <QuickSearch />
         <WhatsNew />
-        <main className="min-w-0 flex-1">
+        <main className="min-w-0">
           <Routes>
             <Route path="/" element={<Today />} />
             <Route path="/club/:view" element={<CareerOnly><FmSave /></CareerOnly>} />

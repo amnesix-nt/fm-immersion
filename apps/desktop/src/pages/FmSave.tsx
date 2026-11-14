@@ -34,12 +34,14 @@ import { roleCeiling,
 } from '@fm-immersion/module-fm';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api/core';
+import { createPortal } from 'react-dom';
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useUi } from '../lib/ui-store';
 import { TodayCards } from '../components/TodayCards';
 import { shownGameDate, useCareer, useCareerStore } from '../lib/career';
+import { TOPBAR_ACTIONS } from '../components/TopBar';
 import { CLUB_PAGES, clubPath, MAIN_TABS, moreTabs, pageOf, PARTS, TABS, type ClubPage } from '../lib/club-nav';
 import { fmData } from '../lib/data';
 import { useHistory } from '../lib/fm-cache';
@@ -72,6 +74,7 @@ import { FmStaff } from './FmStaff';
 import { FmStats } from './FmStats';
 import { FmResults } from './FmResults';
 import { FmDiagnosis } from './FmDiagnosis';
+import { SquadBoard } from './FmSquadBoard';
 import { FmStyle } from './FmStyle';
 import { FmBuilder } from './FmBuilder';
 import { FmAcademy } from './FmAcademy';
@@ -197,7 +200,7 @@ export function FmSave({ page }: { page?: 'home' | 'settings' }) {
           />
         );
       case 'squad':
-        return <SquadViews players={players} folder={folder} gameDate={snapshot.gameDate} gameFormation={gameFormation} lineup={lineup} gameTactic={typeof snapshot.data.tactic?.name === 'string' ? snapshot.data.tactic.name : null} />;
+        return <SquadViews players={players} folder={folder} snap={snapshot.data} history={(all ?? []) as { gameDate: string; data: FmSnapshot }[]} club={snapshot.data.club ?? ''} onCompare={() => go('compare')} gameDate={snapshot.gameDate} gameFormation={gameFormation} lineup={lineup} gameTactic={typeof snapshot.data.tactic?.name === 'string' ? snapshot.data.tactic.name : null} />;
       case 'analysis':
         return <FmAnalysis players={players} gameDate={snapshot.gameDate} />;
       case 'stats':
@@ -326,46 +329,41 @@ export function FmSave({ page }: { page?: 'home' | 'settings' }) {
     onError: (e) => useCareerStore.getState().setSync({ other: e instanceof FmOtherSaveError ? e : null }),
   });
   const other = sync.other;
+  // Emplacement des actions dans le menu du haut (créé par TopBar, rendu avant cet écran).
+  const [topSlot, setTopSlot] = useState<HTMLElement | null>(null);
+  useEffect(() => setTopSlot(document.getElementById(TOPBAR_ACTIONS)), []);
   const position = (snapshot?.data as { custom?: { equipe?: { classementTexte?: unknown } } } | undefined)?.custom?.equipe?.classementTexte;
 
   if (!saveId) return null;
   return (
     <div className="fm min-h-screen">
-      {/* En-tête de la carrière : club, date de jeu, état de la lecture du plugin, lecture à la demande. */}
-      <header className="sticky top-0 z-40 flex flex-wrap items-center gap-x-4 gap-y-1 border-b border-canard/10 bg-white px-6 py-3 xl:px-10">
-        {snapshot ? (
+      {/* Actions de la carrière dans le menu du haut (le club et la date y sont déjà) : état du jeu, dernière lecture, « Actualiser ». */}
+      {topSlot &&
+        createPortal(
           <>
-            <span className="font-extrabold">{snapshot.club}</span>
-            <span className="text-sm text-brun">
-              {typeof position === 'string' && position ? `${position} · ` : ''}
-              {dateFmt.format(new Date(shownGameDate(snapshot, sync.now) ?? snapshot.gameDate))}
-            </span>
-          </>
-        ) : (
-          <span className="font-extrabold">{save?.name}</span>
+            {freeSince && (
+              <span className="inline-flex items-center gap-1.5 rounded-md bg-white/10 px-2 py-0.5 text-sm font-bold">
+                <span className="inline-block h-2 w-2 rounded-full bg-ambre" aria-hidden />
+                {t('fm.saveFile.free', { date: dateFmt.format(new Date(freeSince)) })}
+              </span>
+            )}
+            {typeof position === 'string' && position && <span className="font-cond text-lg font-semibold text-orange">{position}</span>}
+            <GameState />
+            {snapshot && (
+              <span className="hidden items-center gap-1.5 text-xs text-white/60 lg:flex" title={t('fm.autoImport')}>
+                <span className={`h-2 w-2 rounded-full ${importSnap.isError && !other ? 'bg-corail' : 'bg-eau'}`} aria-hidden />
+                {t('fm.sync', { time: stampFmt.format(new Date(snapshot.importedAt)) })}
+              </span>
+            )}
+            <button type="button" className="inline-flex items-center gap-1.5 rounded-md bg-orange px-3 py-1 text-sm font-bold text-canard hover:brightness-105 disabled:opacity-50" disabled={importSnap.isPending || !folder} onClick={() => importSnap.mutate({})}>
+              <svg viewBox="0 0 24 24" className={`h-4 w-4 fill-none stroke-current ${importSnap.isPending ? 'animate-spin motion-reduce:animate-none' : ''}`} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <path d="M20 11a8 8 0 00-14.3-4.9L4 8M4 4v4h4M4 13a8 8 0 0014.3 4.9L20 16M20 20v-4h-4" />
+              </svg>
+              {t('layout.readNow')}
+            </button>
+          </>,
+          topSlot,
         )}
-        {freeSince && (
-          <span className="inline-flex items-center gap-1.5 rounded-md bg-creme px-2 py-0.5 text-sm font-bold">
-            <span className="inline-block h-2 w-2 rounded-full bg-ambre" aria-hidden />
-            {t('fm.saveFile.free', { date: dateFmt.format(new Date(freeSince)) })}
-          </span>
-        )}
-        <div className="ml-auto flex items-center gap-3">
-          <GameState />
-          {snapshot && (
-            <span className="flex items-center gap-1.5 text-xs text-brun" title={t('fm.autoImport')}>
-              <span className={`h-2 w-2 rounded-full ${importSnap.isError && !other ? 'bg-corail' : 'bg-eau'}`} aria-hidden />
-              {t('fm.sync', { time: stampFmt.format(new Date(snapshot.importedAt)) })}
-            </span>
-          )}
-          <button type="button" className="btn-secondary inline-flex items-center gap-1.5 px-3 py-1 text-sm" disabled={importSnap.isPending || !folder} onClick={() => importSnap.mutate({})}>
-            <svg viewBox="0 0 24 24" className={`h-4 w-4 fill-none stroke-current ${importSnap.isPending ? 'animate-spin motion-reduce:animate-none' : ''}`} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-              <path d="M20 11a8 8 0 00-14.3-4.9L4 8M4 4v4h4M4 13a8 8 0 0014.3 4.9L20 16M20 20v-4h-4" />
-            </svg>
-            {t('layout.readNow')}
-          </button>
-        </div>
-      </header>
 
       <div className="mx-auto w-full max-w-[96rem] px-6 py-5 xl:px-10">
         {other && (
@@ -675,7 +673,7 @@ function PageParts({ page, current, go, render }: { page: ClubPage; current: str
       role="tab"
       aria-selected={v === active}
       onClick={() => go(v)}
-      className={`rounded-md px-3 py-1.5 text-sm font-bold ${v === active ? 'bg-canard text-white' : 'bg-white text-canard ring-1 ring-canard/10 hover:bg-orange-clair'}`}
+      className={`rounded-md px-3 py-1.5 text-sm font-bold ${v === active ? 'bg-orange text-canard' : 'bg-white/5 text-white ring-1 ring-white/10 hover:bg-white/10'}`}
     >
       {t(`fm.tabNames.${v}`)}
     </button>
@@ -683,7 +681,7 @@ function PageParts({ page, current, go, render }: { page: ClubPage; current: str
   return (
     <>
       {all.length > 1 && (
-        <div className="sticky top-[3.25rem] z-30 -mx-1 mb-4 flex flex-wrap items-center gap-1.5 bg-creme px-1 py-2" role="tablist" aria-label={t('fm.onThisPage')}>
+        <div className="sticky top-[6.25rem] z-30 -mx-1 mb-4 flex flex-wrap items-center gap-1.5 bg-creme px-1 py-2" role="tablist" aria-label={t('fm.onThisPage')}>
           {main.map(pill)}
           {more.includes(active) && pill(active)}
           {more.length > 0 && (
@@ -783,20 +781,23 @@ function ViewHeader({ view, part }: { view: string; part: string }) {
   );
 }
 
-/** Effectif : tableau détaillé (par défaut, comme la maquette) ou vue terrain par poste ; le choix est gardé d'une visite à l'autre. */
-function SquadViews({ players, folder, gameDate, gameFormation, lineup, gameTactic }: { players: FmPlayer[]; folder: string; gameDate: string; gameFormation: string | null; lineup: GameSlot[] | null; gameTactic: string | null }) {
+type SquadMode = 'board' | 'pitch' | 'table';
+
+/** Effectif : vestiaire et fiche du joueur (par défaut, maquette du 14/11/2026), vue terrain par poste ou tableau détaillé ; le choix est gardé d'une visite à l'autre. */
+function SquadViews({ players, folder, snap, history, club, onCompare, gameDate, gameFormation, lineup, gameTactic }: { players: FmPlayer[]; folder: string; snap: FmSnapshot; history: { gameDate: string; data: FmSnapshot }[]; club: string; onCompare: () => void; gameDate: string; gameFormation: string | null; lineup: GameSlot[] | null; gameTactic: string | null }) {
   const { t } = useTranslation();
-  const [mode, setMode] = useState<'pitch' | 'table'>(() => {
+  const [mode, setMode] = useState<SquadMode>(() => {
     try {
-      return localStorage.getItem('fmi.squadView') === 'pitch' ? 'pitch' : 'table';
+      const v = localStorage.getItem('fmi.squadView.v2');
+      return v === 'pitch' || v === 'table' ? v : 'board';
     } catch {
-      return 'table';
+      return 'board';
     }
   });
-  const choose = (m: 'pitch' | 'table') => {
+  const choose = (m: SquadMode) => {
     setMode(m);
     try {
-      localStorage.setItem('fmi.squadView', m);
+      localStorage.setItem('fmi.squadView.v2', m);
     } catch {
       /* stockage indisponible : le choix vaut pour cette visite */
     }
@@ -804,7 +805,7 @@ function SquadViews({ players, folder, gameDate, gameFormation, lineup, gameTact
   return (
     <div className="space-y-3">
       <div className="flex gap-1" role="tablist" aria-label={t('fm.squadPitch.label')}>
-        {(['table', 'pitch'] as const).map((k) => (
+        {(['board', 'table', 'pitch'] as const).map((k) => (
           <button
             key={k}
             type="button"
@@ -817,7 +818,13 @@ function SquadViews({ players, folder, gameDate, gameFormation, lineup, gameTact
           </button>
         ))}
       </div>
-      {mode === 'pitch' ? <FmSquadPitch players={players} folder={folder} gameFormation={gameFormation} lineup={lineup} gameTactic={gameTactic} /> : <SquadTable players={players} folder={folder} gameDate={gameDate} />}
+      {mode === 'board' ? (
+        <SquadBoard players={players} snap={snap} history={history} club={club} onTable={() => choose('table')} onCompare={onCompare} />
+      ) : mode === 'pitch' ? (
+        <FmSquadPitch players={players} folder={folder} gameFormation={gameFormation} lineup={lineup} gameTactic={gameTactic} />
+      ) : (
+        <SquadTable players={players} folder={folder} gameDate={gameDate} />
+      )}
     </div>
   );
 }
@@ -1091,12 +1098,12 @@ function GameState() {
   if (!status?.gameFound) return null;
   return (
     <>
-      <span className="flex items-center gap-1.5 text-xs text-brun">
-        <span className={`h-2 w-2 rounded-full ${status.running ? 'bg-eau' : 'bg-canard/25'}`} aria-hidden />
+      <span className="flex items-center gap-1.5 text-xs text-white/70">
+        <span className={`h-2 w-2 rounded-full ${status.running ? 'bg-eau' : 'bg-white/30'}`} aria-hidden />
         {t(status.running ? 'layout.state.open' : 'layout.state.closed')}
       </span>
       {bridgeOk === false && (
-        <Link to="/reglages" className="flex items-center gap-1.5 text-xs font-bold text-orange-fonce hover:underline">
+        <Link to="/reglages" className="flex items-center gap-1.5 text-xs font-bold text-orange hover:underline">
           <span className="h-2 w-2 rounded-full bg-ambre" aria-hidden />
           {t('layout.state.plugin')}
         </Link>

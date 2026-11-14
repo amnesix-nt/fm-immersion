@@ -184,7 +184,7 @@ export function Sidebar() {
 }
 
 /** Carte de la carrière suivie : photo du coach (cliquable pour la changer), club, date de jeu, choix de la carrière. */
-function CareerCard() {
+export function CareerCard() {
   const { t, i18n } = useTranslation();
   const qc = useQueryClient();
   const { saveId, save, fmSaves, setSaveId } = useCareer();
@@ -322,7 +322,7 @@ function CareerCard() {
 }
 
 /** Ouvre la recherche rapide (aussi au clavier : Ctrl+K). */
-function SearchButton() {
+export function SearchButton() {
   const { t } = useTranslation();
   const setOpen = useUi((s) => s.setSearchOpen);
   return (

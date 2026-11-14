@@ -2907,7 +2907,8 @@
         "game": "Formation of your FM27 tactic {{tactic}} ({{form}}), as in Tactic.",
         "suggested": "Formation of the suggested lineup in Tactic ({{form}}).",
         "built": "Formation of the tactic you built in Tactic ({{form}})."
-      }
+      },
+      "board": "Dressing room"
     },
     "results": {
       "title": "Results",
@@ -3899,7 +3900,38 @@
       "xi": "Starting XI",
       "bench": "Substitutes",
       "toStart": "should start",
-      "noBench": "No substitute in the squad."
+      "noBench": "No substitute in the squad.",
+      "formation": "Formation",
+      "movesLegend": "Arrow: where the player moves when your team has the ball"
+    },
+    "squadBoard": {
+      "title": "First-team squad",
+      "count_one": "{{count}} player",
+      "count_other": "{{count}} players",
+      "line": {
+        "all": "All",
+        "GB": "Goalkeepers",
+        "DEF": "Defenders",
+        "MIL": "Midfielders",
+        "ATT": "Forwards"
+      },
+      "table": "Detailed table",
+      "col": {
+        "num": "No.",
+        "player": "Player",
+        "pos": "Position",
+        "form": "Form",
+        "last": "Last rating"
+      },
+      "age_one": "{{count}} year old",
+      "age_other": "{{count}} years old",
+      "apps": "apps",
+      "goals": "goals",
+      "avg": "avg rating",
+      "lastRatings": "Last ratings",
+      "noRatings": "No official match rating recorded yet.",
+      "sheet": "Player profile",
+      "compare": "Compare"
     }
   },
   "modes": {
@@ -6680,5 +6712,15 @@
         }
       }
     }
+  },
+  "topbar": {
+    "office": "Office",
+    "club": "Club",
+    "competitions": "Competitions",
+    "media": "Media",
+    "career": "Career",
+    "screens": "Screens",
+    "coach": "My career and coach",
+    "coachShort": "Me"
   }
 }

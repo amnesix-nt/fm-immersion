@@ -84,7 +84,7 @@ function KindIcon({ kind }: { kind: TodoItem['kind'] }) {
 }
 
 /** Le terrain en perspective : plus étroit vers le but adverse, les joueurs restent droits. */
-function PrepPitch({ plan, positions, numbers, swapAt, colors }: { plan: FormationPlan; positions: [number, number][]; numbers: Map<string, number>; swapAt: Map<number, string>; colors: string[] }) {
+function PrepPitch({ plan, positions, moves, numbers, swapAt, colors }: { plan: FormationPlan; positions: [number, number][]; moves?: [number, number][] | null; numbers: Map<string, number>; swapAt: Map<number, string>; colors: string[] }) {
   const { t } = useTranslation();
   // Largeur relative du terrain à la hauteur y (0 = but adverse, 100 = notre but).
   const w = (y: number) => 0.8 + 0.2 * (y / 100);
@@ -116,6 +116,27 @@ function PrepPitch({ plan, positions, numbers, swapAt, colors }: { plan: Formati
           <path d="M39 65.7 L39.3 60.5 L60.7 60.5 L61 65.7" />
         </g>
       </svg>
+      {/* Montées avec le ballon : une flèche ambre de la place de base vers la place avec ballon (déplacements nets seulement). */}
+      {moves && (
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="pointer-events-none absolute inset-0 h-full w-full" aria-hidden>
+          <defs>
+            <marker id="prep-arrow" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="#FFB547" />
+            </marker>
+          </defs>
+          {plan.slots.map((_, i) => {
+            const [x1, y1] = positions[i] ?? [0, 0];
+            const [x2, y2] = moves[i] ?? [x1, y1];
+            if (Math.hypot(x2 - x1, (y2 - y1) * 0.66) < 9) return null;
+            // Départ juste au-dessus du maillot, arrivée un peu avant la place visée.
+            const sx = X(x1, y1);
+            const sy = y1 - 6;
+            const ex = X(x2, y2);
+            const ey = y2 + 3;
+            return <line key={i} x1={sx} y1={sy} x2={ex} y2={ey} stroke="#FFB547" strokeWidth="0.9" strokeDasharray="2.2 1.4" markerEnd="url(#prep-arrow)" vectorEffect="non-scaling-stroke" style={{ strokeWidth: 3 }} />;
+          })}
+        </svg>
+      )}
       {plan.slots.map((sl, i) => {
         const [x, y] = positions[i] ?? [sl.x, sl.y];
         const p = sl.player;
@@ -141,7 +162,7 @@ export function MatchPrep({
   fixtures,
   form,
   plan,
-  positions,
+  positionsFor,
   numbers,
   swapAt,
   items,
@@ -160,7 +181,8 @@ export function MatchPrep({
   fixtures: SnapshotFixture[];
   form: string;
   plan: FormationPlan;
-  positions: [number, number][];
+  /** Places sur le terrain : formation de base, ou avec / sans ballon. */
+  positionsFor: (l: 'base' | Phase) => [number, number][];
   numbers: Map<string, number>;
   swapAt: Map<number, string>;
   /** Points du brief (onze lu dans FM27) ; `null` : le brief est remplacé par `side`. */
@@ -178,6 +200,7 @@ export function MatchPrep({
 }) {
   const { t, i18n } = useTranslation();
   const [all, setAll] = useState(false);
+  const [layout, setLayout] = useState<'base' | Phase>('base');
   const [done, toggle] = useTodoDone();
   const written = useTodoLines(items ?? [], plan, engine);
   const lines = items ? written : null;
@@ -220,17 +243,20 @@ export function MatchPrep({
           <BlockTitle aside={<span className="font-cond text-2xl font-bold text-orange">{form}</span>}>{t('fm.prep.title')}</BlockTitle>
           <div className="mb-3 mt-4 flex flex-wrap items-center gap-2">
             <div className="inline-flex rounded-md bg-white/10 p-0.5" role="tablist" aria-label={t('fm.tac.xi.phaseLabel')}>
-              {(['ip', 'oop'] as const).map((ph) => (
+              {(['base', 'ip', 'oop'] as const).map((l) => (
                 <button
-                  key={ph}
+                  key={l}
                   type="button"
                   role="tab"
-                  aria-selected={phase === ph}
-                  title={t(`fm.tac.xi.phaseHelp.${ph}`)}
-                  onClick={() => onPhase(ph)}
-                  className={`rounded px-3 py-1 text-sm font-bold ${phase === ph ? 'bg-orange text-canard' : 'text-white/80 hover:text-white'}`}
+                  aria-selected={layout === l}
+                  title={l === 'base' ? undefined : t(`fm.tac.xi.phaseHelp.${l}`)}
+                  onClick={() => {
+                    setLayout(l);
+                    if (l !== 'base') onPhase(l);
+                  }}
+                  className={`rounded px-3 py-1 text-sm font-bold ${layout === l ? 'bg-orange text-canard' : 'text-white/80 hover:text-white'}`}
                 >
-                  {t(`fm.tac.phase.${ph}`)} <span className="font-normal opacity-75">{shape(ph)}</span>
+                  {l === 'base' ? t('fm.prep.formation') : t(`fm.tac.phase.${l}`)} {l !== 'base' && <span className="font-normal opacity-75">{shape(l)}</span>}
                 </button>
               ))}
             </div>
@@ -242,7 +268,8 @@ export function MatchPrep({
               ))}
             </div>
           </div>
-          <PrepPitch plan={plan} positions={positions} numbers={numbers} swapAt={swapAt} colors={look?.colors ?? []} />
+          {layout === 'base' && <p className="mb-2 flex items-center gap-2 text-sm text-white/75"><span className="inline-block h-0.5 w-6 border-t-[3px] border-dashed border-orange" aria-hidden />{t('fm.prep.movesLegend')}</p>}
+          <PrepPitch plan={plan} positions={positionsFor(layout)} moves={layout === 'base' ? positionsFor('ip') : null} numbers={numbers} swapAt={swapAt} colors={look?.colors ?? []} />
         </div>
 
         <div className="min-w-0 p-6">
