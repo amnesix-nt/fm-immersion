@@ -49,6 +49,12 @@ describe('sceneState', () => {
     expect(st.pending.map((s) => s.kind)).toEqual(['trophy', 'summer']);
   });
 
+  it("première ouverture : les derniers moments sont proposés même anciens ; logement et voiture du club actuel attendent toujours", () => {
+    expect(sceneState(spells, undefined, '2028-06-01').pending.map((s) => s.kind)).toEqual(['trophy', 'summer', 'car']);
+    const later = sceneState(spells, { answers: { 'sacked|Vänersborgs IF|2026-10-04': { choice: 'work', date: '2026-10-05' } } }, '2028-06-01');
+    expect(later.pending.map((s) => s.kind)).toEqual(['car', 'arrival']);
+  });
+
   it('diplômes : un à la fois, le choix « passer un diplôme » en lance un', () => {
     const life = { answers: { 'sacked|Vänersborgs IF|2026-10-04': { choice: 'badge', date: '2026-10-05' } }, badges: [{ level: 'b', start: '2027-01-01' }] };
     const st = sceneState(spells, life, '2027-10-19');
