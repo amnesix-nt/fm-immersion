@@ -1,5 +1,15 @@
 [
   {
+    "version": "0.1.204",
+    "date": "2026-11-14",
+    "fr": [
+      "Nouvel onglet « Académie » dans Effectif : ta réserve et tes U19 en un coup d'œil. Pour chaque équipe, le nombre de joueurs et l'âge moyen, les décisions à prendre (espoir prêt pour l'équipe première, contrat à prolonger, joueur trop âgé pour sa catégorie, place à libérer), tes meilleurs espoirs et l'effectif complet avec potentiel et fin de contrat."
+    ],
+    "en": [
+      "New \"Academy\" tab in Squad: your reserve and U19s at a glance. For each team, player count and average age, the decisions to make (prospect ready for the first team, contract to extend, player too old for his age group, spot to free up), your best prospects and the full squad with potential and contract end."
+    ]
+  },
+  {
     "version": "0.1.203",
     "date": "2026-11-13",
     "fr": [
