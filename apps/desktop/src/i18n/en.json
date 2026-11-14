@@ -3884,7 +3884,19 @@
       "help": "Reserve and youth players of your club, read by the plugin (loaned-out players are in the Loans tab). Current ability and potential: your staff's stars. Level and ceiling of the best prospects: fit out of 20 for the role of your game plan that suits the player best, today and what he can reach (from his age and potential). \"To do\" compares his fit with your first-team starters. Contract ending soon: 6 months or less. The age limit comes from the team name (U19 = 19); in the game it is counted at the start of the season.",
       "starsHint": "Current ability then potential, in stars, according to your staff."
     },
-    "tabsMore": "More"
+    "tabsMore": "More",
+    "prep": {
+      "title": "Match preparation",
+      "brief": "Assistant's brief",
+      "calendar": "Fixtures",
+      "noMatch": "No match scheduled",
+      "done": "Done in FM27",
+      "inDays_one": "tomorrow",
+      "inDays_other": "in {{count}} days",
+      "inDays_zero": "today",
+      "home": "Home",
+      "away": "Away"
+    }
   },
   "modes": {
     "soon": "Soon",

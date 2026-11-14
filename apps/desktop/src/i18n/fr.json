@@ -3884,7 +3884,19 @@
       "help": "Joueurs de la réserve et des équipes de jeunes de ton club, lus par le plugin (les joueurs prêtés sont dans l'onglet Prêts). Niveau actuel et potentiel : étoiles de ton staff. Niveau et plafond des meilleurs espoirs : adéquation sur 20 au rôle de ton projet de jeu où le joueur est le plus adapté, aujourd'hui et ce qu'il peut atteindre (d'après son âge et son potentiel). « À faire » compare son adéquation à celle des titulaires de ton équipe première. Contrat bientôt fini : 6 mois ou moins. La limite d'âge vient du nom de l'équipe (U19 = 19 ans) ; dans le jeu, elle se compte au début de la saison.",
       "starsHint": "Niveau actuel puis potentiel, en étoiles, d'après ton staff."
     },
-    "tabsMore": "Plus"
+    "tabsMore": "Plus",
+    "prep": {
+      "title": "Préparation du match",
+      "brief": "Brief de l'adjoint",
+      "calendar": "Calendrier",
+      "noMatch": "Pas de match prévu",
+      "done": "Fait dans FM27",
+      "inDays_one": "demain",
+      "inDays_other": "dans {{count}} jours",
+      "inDays_zero": "aujourd'hui",
+      "home": "Domicile",
+      "away": "Extérieur"
+    }
   },
   "modes": {
     "soon": "Bientôt",

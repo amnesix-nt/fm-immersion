@@ -225,24 +225,19 @@ const TODO_SHOWN = 3;
 const TODO_DONE_KEY = 'fmi.tactic.todoDone.v1';
 const TODO_TAG: Record<TodoItem['kind'], string> = { team: 'team', starter: 'starter', piChange: 'player', piAdd: 'player', piRemove: 'player', role: 'role' };
 
-/**
- * « À changer dans FM27 » : la liste unique, classée par importance, de tout ce que les conseils de l'écran demandent
- * de modifier dans la tactique du jeu. Chaque ligne dit quoi faire, puis pourquoi, avec ses chiffres.
- */
-export function TodoCard({ items, plan, engine, tactic }: { items: TodoItem[]; plan: FormationPlan; engine: TacticEngine; tactic: string | null }) {
+/** Une ligne de « À changer dans FM27 » : quoi faire, puis pourquoi, avec ses chiffres. */
+export interface TodoLine {
+  it: TodoItem;
+  what: string;
+  why: string;
+}
+
+/** Les lignes de « À changer dans FM27 », rédigées (liste à cocher et brief de l'adjoint de la préparation du match). */
+export function useTodoLines(items: TodoItem[], plan: FormationPlan, engine: TacticEngine): TodoLine[] {
   const { t, i18n } = useTranslation();
   const en = i18n.resolvedLanguage === 'en';
   const nf1 = new Intl.NumberFormat(i18n.resolvedLanguage, { maximumFractionDigits: 2 });
   const fmt = (vals: Record<string, number | string>) => Object.fromEntries(Object.entries(vals).map(([k, v]) => [k, typeof v === 'number' ? nf1.format(v) : v]));
-  // Les plus importants d'abord : la suite s'ouvre sur demande, pour ne pas allonger la page.
-  const [all, setAll] = useState(false);
-  const scope = useFmSaveScope();
-  const [done, setDone] = useState<string[]>(() => readScoped<string[]>(TODO_DONE_KEY, scope, []));
-  const toggle = (key: string) => {
-    const next = done.includes(key) ? done.filter((k) => k !== key) : [...done, key];
-    setDone(next);
-    writeScoped(TODO_DONE_KEY, scope, next);
-  };
   const role = (code: string) => {
     const r = engine.roles.get(code);
     return (en ? r?.en : r?.fr) ?? r?.fr ?? code;
@@ -279,8 +274,31 @@ export function TodoCard({ items, plan, engine, tactic }: { items: TodoItem[]; p
         };
     }
   };
+  return items.map((it) => ({ it, ...line(it) }));
+}
+
+/** Lignes cochées par le joueur (« fait dans FM27 »), retenues par partie. */
+export function useTodoDone(): [string[], (key: string) => void] {
+  const scope = useFmSaveScope();
+  const [done, setDone] = useState<string[]>(() => readScoped<string[]>(TODO_DONE_KEY, scope, []));
+  const toggle = (key: string) => {
+    const next = done.includes(key) ? done.filter((k) => k !== key) : [...done, key];
+    setDone(next);
+    writeScoped(TODO_DONE_KEY, scope, next);
+  };
+  return [done, toggle];
+}
+
+/**
+ * « À changer dans FM27 » : la liste unique, classée par importance, de tout ce que les conseils de l'écran demandent
+ * de modifier dans la tactique du jeu, à cocher au fur et à mesure.
+ */
+export function TodoCard({ items, plan, engine, tactic }: { items: TodoItem[]; plan: FormationPlan; engine: TacticEngine; tactic: string | null }) {
+  const { t } = useTranslation();
+  const [all, setAll] = useState(false);
+  const [done, toggle] = useTodoDone();
+  const lines = useTodoLines(items, plan, engine);
   // Les lignes cochées descendent en bas de la liste ; le compteur ne garde que ce qui reste à faire.
-  const lines = items.map((it) => ({ it, ...line(it) }));
   const isDone = (l: { what: string }) => done.includes(l.what);
   const ordered = [...lines.filter((l) => !isDone(l)), ...lines.filter(isDone)];
   const left = ordered.filter((l) => !isDone(l)).length;

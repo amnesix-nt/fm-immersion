@@ -32,6 +32,9 @@ importers:
       '@fontsource-variable/nunito':
         specifier: ^5.1.1
         version: 5.3.0
+      '@fontsource/barlow-condensed':
+        specifier: '5'
+        version: 5.3.0
       '@tanstack/react-query':
         specifier: ^5.62.8
         version: 5.104.2(react@18.3.1)
@@ -989,6 +992,9 @@ packages:
 
   '@fontsource-variable/nunito@5.3.0':
     resolution: {integrity: sha512-tw0ch7evIDSwoeUy+0XzocYHfbRWLeCRPJy22KgbrLjDLAbNw/fErBiil10Ssrs3Sjr55zaZrr36a975j8cBkQ==}
+
+  '@fontsource/barlow-condensed@5.3.0':
+    resolution: {integrity: sha512-RA7MmIx0v3eQ6Gcf74qLVLOwLB0GpPOzx+eU9iG/AmCnSJGcIWYeU8y6CEMGZ210MGwGg5CZhzLkkvyZdTTk1g==}
 
   '@jridgewell/gen-mapping@0.3.13':
     resolution: {integrity: sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA==}
@@ -2674,6 +2680,8 @@ snapshots:
   '@fontsource-variable/fraunces@5.3.0': {}
 
   '@fontsource-variable/nunito@5.3.0': {}
+
+  '@fontsource/barlow-condensed@5.3.0': {}
 
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:

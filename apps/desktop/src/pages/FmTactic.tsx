@@ -41,6 +41,7 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api/core';
 import { competitionWeight, formationOfPositions, formationOfSlots, gameFormationOf, gameInstructions, gameLineup, gamePlayerInstructions, instructionLoad, isCongested, lineupAdvice, LOAD_WINDOW_DAYS, matchdayPlan, matchResults, matchReview, matchStats, recentLoad, snapshotFixtures, summarize, tacticSlots, tacticTodo, teamAdvice, TEAM_INSTRUCTIONS_FM27, type PlayerStats } from '@fm-immersion/module-fm';
+import { MatchPrep } from './FmMatchPrep';
 import { GamePiLine, LineupAdviceCard, MatchReviewCard, PhysicalCard, PiState, TeamAdviceBlock, TodoCard } from './FmTacticAdvice';
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -286,6 +287,18 @@ function FmTacticView({ snap, players, folder, gameFormation, lineup, lineupStat
     });
     return tacticTodo({ team: tiBase === 'game' ? tiAdvice : null, lineup: advice, players, budget });
   })();
+  // Terrain de la préparation du match (paysage, maillots + noms) : plus d'écart vertical entre les joueurs.
+  const prepShown = spreadXY(plan.slots.map((s) => phaseXY(s, phase, block)), 19, 17).map(([x, y]) => [Math.min(88, Math.max(12, x)), Math.min(91, Math.max(9, y))] as [number, number]);
+  // Préparation du match : prochain adversaire, trois prochains matchs, numéros de maillot lus par le plugin.
+  const nextMatch = snap ? summarize(snap, players).nextMatch : null;
+  const upcoming = snap ? snapshotFixtures(snap).filter((f) => f.date.slice(0, 10) >= snap.gameDate.slice(0, 10)).slice(0, 3) : [];
+  const numbers = new Map(
+    ((Array.isArray(snap?.players) ? snap!.players : []) as { id?: unknown; squadNumber?: unknown }[]).flatMap((r) =>
+      typeof r.squadNumber === 'number' && r.squadNumber >= 0 ? [[String(r.id), r.squadNumber] as const] : [],
+    ),
+  );
+  // Titulaires à remplacer selon « À changer dans FM27 » : le nom conseillé s'affiche sous le joueur, sur le terrain.
+  const swapAt = new Map(todo.flatMap((it) => (it.kind === 'starter' ? [[it.advice.slot, it.advice.better.name] as const] : [])));
   // Rôle avec ballon : FM27 fixe la mission d'après le rôle, on l'affiche à côté (« Milieu axial (Soutien) »).
   const roleName = (code: string, ph?: Phase) => {
     const r = engine.roles.get(code);
@@ -329,14 +342,17 @@ function FmTacticView({ snap, players, folder, gameFormation, lineup, lineupStat
           </div>
         )}
         {fromGame && slots ? (
-          <div className="flex flex-wrap gap-1" role="tablist" aria-label={t('fm.tac.slots.label')}>
-            {slots.names.map((n) => (
-              <button key={n} type="button" role="tab" aria-selected={n === slots.shown} onClick={() => slots.pick(n)} className={`chip ${n === slots.shown ? 'chip-on' : ''}`}>
-                {n}
-                {n === slots.active && <span className="ml-1.5 text-xs font-normal opacity-80">{t('fm.tac.slots.active')}</span>}
-              </button>
-            ))}
-          </div>
+          <label className="flex items-center gap-2 text-sm font-bold">
+            {t('fm.tac.slots.label')}
+            <select className="input py-1.5 font-normal" value={slots.shown ?? ''} onChange={(e) => slots.pick(e.target.value)}>
+              {slots.names.map((n) => (
+                <option key={n} value={n}>
+                  {n}
+                  {n === slots.active ? ` ${t('fm.tac.slots.active')}` : ''}
+                </option>
+              ))}
+            </select>
+          </label>
         ) : (
           fromGame && gameTactic && <span className="text-sm font-bold text-canard">{gameTactic}</span>
         )}
@@ -399,7 +415,6 @@ function FmTacticView({ snap, players, folder, gameFormation, lineup, lineupStat
           </p>
         )}
         {fromGame && slots?.missing && <p className="w-full rounded-xl bg-ambre/20 px-3 py-2 text-sm text-canard">{t('fm.tac.slots.missing', { name: slots.missing, active: slots.active ?? '' })}</p>}
-        {local?.ref && <span className="rounded-md bg-eau/20 px-1.5 py-0.5 text-xs text-canard">{t('fm.tac.localRef')}</span>}
         {local?.error && <span className="rounded-md bg-corail/15 px-1.5 py-0.5 text-sm text-canard">{t('fm.tac.localRefError')}</span>}
       </div>
       
@@ -412,170 +427,91 @@ function FmTacticView({ snap, players, folder, gameFormation, lineup, lineupStat
             label: t('fm.tac.sections.xi'),
             node: (
               <>
-              {/* D'abord ce que disent les matchs et ce qu'il faut changer dans le jeu ; le onze et son détail ensuite. */}
-              {team === 'A' && (
-                <div className={`grid items-start gap-4 ${fromGame && review.recent.length ? 'xl:grid-cols-[3fr_2fr]' : ''}`}>
-                  {/* La liste à cocher d'abord : c'est ce qu'on vient faire ici. Le bilan des matchs l'éclaire, à côté. */}
-                  {fromGame && planA && (
-                    <div className="space-y-3">
-                      <TodoCard items={todo} plan={planA} engine={engine} tactic={gameTactic} />
-                      {physical && <PhysicalCard watch={physical} plan={planA} windowDays={LOAD_WINDOW_DAYS} />}
-                    </div>
-                  )}
-                  <MatchReviewCard review={review} tactic={gameTactic} fromGame={fromGame} />
-                </div>
-              )}
-              {/* Le onze : terrain compact à gauche, liste prête à appliquer dans FM27 à droite. Survoler l'un met l'autre en évidence. */}
+              {/*
+                Lecture en deux temps (refonte « l'essentiel d'abord ») : en haut, ce qu'il faut régler dans FM27 à côté du terrain ;
+                en dessous, le onze poste par poste sur une ligne chacun ; ensuite seulement le bilan des matchs et les doublures.
+              */}
+              <MatchPrep
+                club={snap?.club ?? ''}
+                next={nextMatch}
+                fixtures={upcoming}
+                form={team === 'B' ? plan.form : form}
+                plan={plan}
+                positions={prepShown}
+                numbers={numbers}
+                swapAt={team === 'A' ? swapAt : new Map()}
+                items={team === 'A' && fromGame ? todo : null}
+                engine={engine}
+                phase={phase}
+                onPhase={(ph) => update({ phase: ph })}
+                shape={shape}
+                team={team}
+                onTeam={setTeam}
+                side={
+                  team === 'B' && planB && planA ? (
+                    <p>{t('fm.tac.team.help', { a: note(planA.score), b: note(planB.score) })}</p>
+                  ) : (
+                    <p>{t(gamePlan ? 'fm.tac.suggestedHelpGame' : 'fm.tac.suggestedHelp')}</p>
+                  )
+                }
+              />
+
+              {/* Le onze à recopier dans FM27 : une ligne par poste, du gardien aux attaquants ; les deux rôles en colonnes. */}
               <section className="card">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <h2 className="text-xl font-semibold">
-                      {team === 'B' ? plan.form : form} · {fromGame && team === 'A' && gameTactic ? gameTactic : styleName(style)} <span className="text-sm font-normal text-brun">{t('fm.tac.fit', { value: note(plan.score) })}</span>
-                    </h2>
-                    <div className="flex gap-1" role="tablist" aria-label={t('fm.tac.team.label')}>
-                      {(['A', 'B'] as const).map((k) => (
-                        <button
-                          key={k}
-                          type="button"
-                          role="tab"
-                          aria-selected={team === k}
-                          onClick={() => setTeam(k)}
-                          className={`chip ${team === k ? 'chip-on' : ''}`}
-                        >
-                          {t(`fm.tac.team.${k}`)}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  {team === 'B' && planB && planA && (
-                    <p className="mt-1 text-sm text-brun">{t('fm.tac.team.help', { a: note(planA.score), b: note(planB.score) })}</p>
-                  )}
-                  <p className="mt-1 text-sm text-brun">
-                    <span className="rounded-md bg-eau/20 px-1.5 py-0.5 text-xs font-bold text-canard">{t(fromGame ? 'fm.tac.fromGame' : 'fm.tac.suggested')}</span>
-                  </p>
-                  <More>{t(fromGame ? 'fm.tac.fromGameHelp' : gamePlan ? 'fm.tac.suggestedHelpGame' : 'fm.tac.suggestedHelp')}</More>
-                  {!gamePlan && lineupStatus && lineupStatus !== 'lue' && <p className="mt-1 text-xs text-brun">{t('fm.tac.lineupStatus', { status: lineupStatus })}</p>}
-
-                {/* La phase montrée sur le terrain, choisie en tête avec une phrase qui dit ce qu'on regarde. */}
-                <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2">
-                  <div className="inline-flex rounded-xl bg-creme p-1" role="tablist" aria-label={t('fm.tac.xi.phaseLabel')}>
-                    {(['ip', 'oop'] as const).map((ph) => (
-                      <button
-                        key={ph}
-                        type="button"
-                        role="tab"
-                        aria-selected={phase === ph}
-                        onClick={() => update({ phase: ph })}
-                        className={`rounded-lg px-4 py-2 text-base font-bold transition ${phase === ph ? 'bg-canard text-white shadow' : 'text-canard hover:bg-white'}`}
-                      >
-                        {t(`fm.tac.phase.${ph}`)} <span className="ml-1 font-normal opacity-75">{shape(ph)}</span>
-                      </button>
-                    ))}
-                  </div>
-                  <p className="min-w-[14rem] flex-1 text-sm text-brun">{t(`fm.tac.xi.phaseHelp.${phase}`)}</p>
-                </div>
-
-                <div className="mt-4 grid items-start gap-8 xl:grid-cols-[minmax(20rem,27rem)_minmax(0,1fr)]">
-                  {/* Terrain : une pastille par joueur, poste à la couleur de sa ligne et nom. */}
-                  <div>
-                    <Pitch className="mx-auto w-full max-w-[27rem]">
-                      {/* Au survol seulement : d'où part le joueur dans l'autre phase. */}
-                      {hover != null && plan.slots[hover] && (() => {
-                        const [x1, y1] = phaseXY(plan.slots[hover]!, other, block);
-                        const [x2, y2] = shown[hover] ?? [x1, y1];
-                        return Math.hypot(x1 - x2, y1 - y2) > 2 ? (
-                          <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="pointer-events-none absolute inset-0 h-full w-full" aria-hidden>
-                            <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="#FFB547" strokeWidth="0.6" strokeDasharray="1.5 1" />
-                            <ellipse cx={x1} cy={y1} rx="1.6" ry="1.1" fill="none" stroke="#FFB547" strokeWidth="0.5" />
-                          </svg>
-                        ) : null;
-                      })()}
-                      {plan.slots.map((sl, i) => {
-                        const [x, y] = shown[i] ?? [sl.x, sl.y];
-                        const code = phase === 'ip' ? sl.ip : sl.oop;
-                        const off = !!sl.player && !sl.player.positions.includes(sl.pos);
-                        const c = LINE_COLOR[lineOf(slotPos(sl, phase))];
+                <h2 className="text-lg font-semibold">{t('fm.tac.xi.title')}</h2>
+                <div className="mt-2 overflow-x-auto">
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th>{t('fm.tac.xi.pos')}</th>
+                        <th>{t('fm.tac.xi.player')}</th>
+                        <th>{t('fm.tac.phase.ip')}</th>
+                        <th>{t('fm.tac.phase.oop')}</th>
+                        <th>{t('fm.tac.xi.backup')}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {rows.map((i) => {
+                        const sl = plan.slots[i]!;
+                        const p = sl.player;
+                        const sub = (plan.subs[i] ?? [])[0];
+                        const fitOf = (ph: Phase) => (p ? (ph === 'ip' ? engine.roleFit(p, sl.ip, 'ip', sl.pos) : oopFit(engine, p, sl.oop, sl.pos, sl.posOOP)) : null);
                         return (
-                          <button
-                            key={i}
-                            type="button"
-                            title={`${roleName(code, phase)}${off ? ` · ${t('fm.tac.offPos')}` : ''}`}
-                            onMouseEnter={() => setHover(i)}
-                            onMouseLeave={() => setHover(null)}
-                            onFocus={() => setHover(i)}
-                            onBlur={() => setHover(null)}
-                            className={`absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-0.5 transition-all duration-500 ${hover === i ? 'z-10 scale-110' : ''}`}
-                            style={{ left: `${x}%`, top: `${y}%` }}
-                          >
-                            {/* Le poste FM27 du créneau dans la phase montrée (FM27 en donne un avec ballon, un sans) : le rôle déplace la pastille, jamais le poste. */}
-                            <span
-                              className={`whitespace-nowrap rounded-md px-2 py-1 text-xs font-bold leading-none shadow ring-2 ${c.bg} ${c.text} ${hover === i ? 'ring-white' : off ? 'ring-corail' : 'ring-white/40'}`}
-                            >
-                              {POS_LABEL[slotPos(sl, phase)]}
-                            </span>
-                            <span className="max-w-[8rem] truncate rounded-md bg-white px-2 py-0.5 text-sm font-bold text-canard shadow">
-                              {sl.player ? shortName(sl.player.name) : t('fm.tac.nobody')}
-                            </span>
-                          </button>
+                          <tr key={i} className={hover === i ? 'bg-creme/70' : ''} onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)}>
+                            <td>
+                              <PosBadge pos={sl.pos} />
+                            </td>
+                            <td className="whitespace-nowrap font-bold text-canard">
+                              {p ? <PlayerLink player={p} /> : <span className="text-corail">{t('fm.tac.nobody')}</span>}
+                              {p?.team && <span className="ml-2 text-xs font-normal text-orange-fonce">{t('fm.tac.fromTeam', { team: p.team })}</span>}
+                              {p && !p.positions.includes(sl.pos) && <span className="ml-2 text-xs font-normal text-corail">{t('fm.tac.offPos')}</span>}
+                            </td>
+                            {(['ip', 'oop'] as const).map((ph) => (
+                              <td key={ph}>
+                                {ph === 'oop' && sl.posOOP && sl.posOOP !== sl.pos && <span className="mr-1.5"><PosBadge pos={sl.posOOP} /></span>}
+                                <span className="text-canard">{roleName(ph === 'ip' ? sl.ip : sl.oop, ph)}</span>
+                                {p && <span className="ml-1.5 text-xs font-bold text-brun">{note(fitOf(ph))}</span>}
+                              </td>
+                            ))}
+                            <td className="whitespace-nowrap text-sm text-brun">
+                              {sub ? sub.name : '–'}
+                              {sub?.team && <span className="ml-1 text-xs text-orange-fonce">{t('fm.tac.fromTeam', { team: sub.team })}</span>}
+                            </td>
+                          </tr>
                         );
                       })}
-                    </Pitch>
-                  </div>
-
-                  {/* Liste à recopier dans FM27 : une ligne par poste, rangée du gardien aux attaquants, les deux rôles et la doublure sous le titulaire. */}
-                  <div className="min-w-0">
-                    <h3 className="font-semibold">{t('fm.tac.xi.title')}</h3>
-                    <div className="mt-2 overflow-x-auto">
-                      <table className="data-table">
-                        <thead>
-                          <tr>
-                            <th>{t('fm.tac.xi.pos')}</th>
-                            <th>{t('fm.tac.xi.player')}</th>
-                            <th>{t('fm.tac.xi.role')}</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {rows.map((i) => {
-                            const sl = plan.slots[i]!;
-                            const p = sl.player;
-                            const fitOf = (ph: Phase) => (p ? (ph === 'ip' ? engine.roleFit(p, sl.ip, 'ip', sl.pos) : oopFit(engine, p, sl.oop, sl.pos, sl.posOOP)) : null);
-                            return (
-                              <tr key={i} className={hover === i ? 'bg-creme/70' : ''} onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)}>
-                                <td>
-                                  <PosBadge pos={sl.pos} />
-                                </td>
-                                <td className="font-bold text-canard">
-                                  {p ? <PlayerLink player={p} /> : <span className="text-corail">{t('fm.tac.nobody')}</span>}
-                                  {p?.team && <span className="ml-2 text-xs font-normal text-orange-fonce">{t('fm.tac.fromTeam', { team: p.team })}</span>}
-                                  {p && !p.positions.includes(sl.pos) && <span className="ml-2 text-xs font-normal text-brun">{t('fm.tac.offPos')}</span>}
-                                  {(plan.subs[i] ?? [])[0] && (
-                                    <div className="text-xs font-normal text-brun">
-                                      {t('fm.tac.xi.backupOf', { name: (plan.subs[i] ?? [])[0]!.name })}
-                                      {(plan.subs[i] ?? [])[0]!.team && <span className="ml-1 text-orange-fonce">{t('fm.tac.fromTeam', { team: (plan.subs[i] ?? [])[0]!.team })}</span>}
-                                    </div>
-                                  )}
-                                </td>
-                                <td>
-                                  {(['ip', 'oop'] as const).map((ph) => (
-                                    <div key={ph} className="flex flex-wrap items-baseline gap-x-2">
-                                      <span className="text-xs text-brun">{t(`fm.tac.phase.${ph}`)}</span>
-                                      {ph === 'oop' && sl.posOOP && sl.posOOP !== sl.pos && <PosBadge pos={sl.posOOP} />}
-                                      <span className="text-canard">{roleName(ph === 'ip' ? sl.ip : sl.oop, ph)}</span>
-                                      {p && <span className="text-xs font-bold text-brun">{note(fitOf(ph))}</span>}
-                                    </div>
-                                  ))}
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                    <More>{t(fromGame ? 'fm.tac.pitchHelpGame' : 'fm.tac.pitchHelp')}</More>
-                  </div>
+                    </tbody>
+                  </table>
                 </div>
               </section>
-              {team === 'A' && advice && planA && <LineupAdviceCard advice={advice} plan={planA} engine={engine} inTodo={fromGame} />}
-              {team === 'A' && !fromGame && physical && planA && <PhysicalCard watch={physical} plan={planA} windowDays={LOAD_WINDOW_DAYS} />}
+
+              {team === 'A' && physical && planA && <PhysicalCard watch={physical} plan={planA} windowDays={LOAD_WINDOW_DAYS} />}
+              {team === 'A' && (
+                <div className="grid items-start gap-4 xl:grid-cols-2">
+                  <MatchReviewCard review={review} tactic={gameTactic} fromGame={fromGame} />
+                  {advice && planA && <LineupAdviceCard advice={advice} plan={planA} engine={engine} inTodo={fromGame} />}
+                </div>
+              )}
               </>
             ),
           },
