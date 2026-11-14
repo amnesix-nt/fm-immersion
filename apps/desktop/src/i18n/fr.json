@@ -3895,7 +3895,11 @@
       "inDays_other": "dans {{count}} jours",
       "inDays_zero": "aujourd'hui",
       "home": "Domicile",
-      "away": "Extérieur"
+      "away": "Extérieur",
+      "xi": "Le onze",
+      "bench": "Remplaçants",
+      "toStart": "à titulariser",
+      "noBench": "Pas de remplaçant dans l'effectif."
     }
   },
   "modes": {

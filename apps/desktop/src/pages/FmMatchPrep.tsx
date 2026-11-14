@@ -152,6 +152,8 @@ export function MatchPrep({
   team,
   onTeam,
   side,
+  xi,
+  bench,
 }: {
   club: string;
   next: PrepNext | null;
@@ -170,6 +172,9 @@ export function MatchPrep({
   team: 'A' | 'B';
   onTeam: (t: 'A' | 'B') => void;
   side?: ReactNode;
+  /** Le onze poste par poste (rôles et notes) et les remplaçants, intégrés au tableau sombre. */
+  xi?: ReactNode;
+  bench?: ReactNode;
 }) {
   const { t, i18n } = useTranslation();
   const [all, setAll] = useState(false);
@@ -274,6 +279,20 @@ export function MatchPrep({
           )}
         </div>
       </div>
+
+      {/* Le onze à recopier dans FM27 et les remplaçants, sous le terrain. */}
+      {(xi || bench) && (
+        <div className="grid border-t border-white/10 lg:grid-cols-[minmax(0,1.65fr)_minmax(18rem,1fr)]">
+          <div className="min-w-0 border-white/10 p-6 lg:border-r">
+            <BlockTitle>{t('fm.prep.xi')}</BlockTitle>
+            <div className="mt-3 overflow-x-auto">{xi}</div>
+          </div>
+          <div className="min-w-0 p-6">
+            <BlockTitle>{t('fm.prep.bench')}</BlockTitle>
+            <div className="mt-3">{bench}</div>
+          </div>
+        </div>
+      )}
 
       {/* Calendrier : l'adversaire, domicile ou extérieur, la compétition et la date. */}
       {fixtures.length > 0 && (

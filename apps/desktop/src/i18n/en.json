@@ -3895,7 +3895,11 @@
       "inDays_other": "in {{count}} days",
       "inDays_zero": "today",
       "home": "Home",
-      "away": "Away"
+      "away": "Away",
+      "xi": "Starting XI",
+      "bench": "Substitutes",
+      "toStart": "should start",
+      "noBench": "No substitute in the squad."
     }
   },
   "modes": {

@@ -289,6 +289,18 @@ function FmTacticView({ snap, players, folder, gameFormation, lineup, lineupStat
   })();
   // Terrain de la préparation du match (paysage, maillots + noms) : plus d'écart vertical entre les joueurs.
   const prepShown = spreadXY(plan.slots.map((s) => phaseXY(s, phase, block)), 19, 17).map(([x, y]) => [Math.min(88, Math.max(12, x)), Math.min(91, Math.max(9, y))] as [number, number]);
+  // Remplaçants : la première doublure de chaque poste, sans doublon, avec les postes qu'elle couvre (banc de 9 au plus).
+  const bench = (() => {
+    const out = new Map<string, { player: FmPlayer; covers: PosCode[] }>();
+    plan.slots.forEach((sl, i) => {
+      const b = (plan.subs[i] ?? [])[0];
+      if (!b) return;
+      const e = out.get(b.id) ?? { player: b, covers: [] };
+      if (!e.covers.includes(sl.pos)) e.covers.push(sl.pos);
+      out.set(b.id, e);
+    });
+    return [...out.values()].slice(0, 9);
+  })();
   // Préparation du match : prochain adversaire, trois prochains matchs, numéros de maillot lus par le plugin.
   const nextMatch = snap ? summarize(snap, players).nextMatch : null;
   const upcoming = snap ? snapshotFixtures(snap).filter((f) => f.date.slice(0, 10) >= snap.gameDate.slice(0, 10)).slice(0, 3) : [];
@@ -447,6 +459,71 @@ function FmTacticView({ snap, players, folder, gameFormation, lineup, lineupStat
                 shape={shape}
                 team={team}
                 onTeam={setTeam}
+                xi={
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="text-left text-xs uppercase tracking-wider text-white/50">
+                        <th className="pb-2 pr-2 font-bold">{t('fm.tac.xi.pos')}</th>
+                        <th className="pb-2 pr-3 font-bold">{t('fm.tac.xi.player')}</th>
+                        <th className="pb-2 pr-3 font-bold">{t('fm.tac.phase.ip')}</th>
+                        <th className="pb-2 font-bold">{t('fm.tac.phase.oop')}</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/10">
+                      {rows.map((i) => {
+                        const sl = plan.slots[i]!;
+                        const p = sl.player;
+                        const num = p ? numbers.get(p.id) : undefined;
+                        const swap = team === 'A' ? swapAt.get(i) : undefined;
+                        const fitOf = (ph: Phase) => (p ? (ph === 'ip' ? engine.roleFit(p, sl.ip, 'ip', sl.pos) : oopFit(engine, p, sl.oop, sl.pos, sl.posOOP)) : null);
+                        return (
+                          <tr key={i} className={hover === i ? 'bg-white/10' : ''} onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)}>
+                            <td className="py-2 pr-2">
+                              <span className="inline-block rounded ring-1 ring-white/40"><PosBadge pos={sl.pos} /></span>
+                            </td>
+                            <td className="whitespace-nowrap py-2 pr-3">
+                              <span className="mr-2 inline-block w-6 text-right font-cond text-lg font-bold text-orange">{num ?? ''}</span>
+                              <span className="font-bold text-white">{p ? <PlayerLink player={p} /> : t('fm.tac.nobody')}</span>
+                              {p?.team && <span className="ml-2 text-xs text-orange">{t('fm.tac.fromTeam', { team: p.team })}</span>}
+                              {swap && <span className="ml-2 rounded-sm bg-orange px-1.5 font-cond text-xs font-bold text-canard">→ {swap}</span>}
+                            </td>
+                            {(['ip', 'oop'] as const).map((ph) => (
+                              <td key={ph} className="py-2 pr-3 text-white/85">
+                                {ph === 'oop' && sl.posOOP && sl.posOOP !== sl.pos && <span className="mr-1.5 inline-block rounded ring-1 ring-white/40"><PosBadge pos={sl.posOOP} /></span>}
+                                {roleName(ph === 'ip' ? sl.ip : sl.oop, ph)}
+                                {p && <span className="ml-1.5 font-cond font-bold text-orange">{note(fitOf(ph))}</span>}
+                              </td>
+                            ))}
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                }
+                bench={
+                  bench.length ? (
+                    <ul className="divide-y divide-white/10">
+                      {bench.map(({ player: b, covers }) => (
+                        <li key={b.id} className="flex items-center gap-3 py-2">
+                          <span className="w-6 shrink-0 text-right font-cond text-lg font-bold text-orange">{numbers.get(b.id) ?? ''}</span>
+                          <span className="min-w-0 flex-1">
+                            <span className="block truncate font-bold text-white">
+                              <PlayerLink player={b} />
+                            </span>
+                            <span className="flex flex-wrap gap-1 pt-0.5">
+                              {covers.map((pos, k) => (
+                                <span key={k} className="inline-block rounded ring-1 ring-white/40"><PosBadge pos={pos} /></span>
+                              ))}
+                            </span>
+                          </span>
+                          {team === 'A' && [...swapAt.values()].includes(b.name) && <span className="shrink-0 rounded-sm bg-orange px-1.5 font-cond text-xs font-bold text-canard">{t('fm.prep.toStart')}</span>}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-sm text-white/70">{t('fm.prep.noBench')}</p>
+                  )
+                }
                 side={
                   team === 'B' && planB && planA ? (
                     <p>{t('fm.tac.team.help', { a: note(planA.score), b: note(planB.score) })}</p>
@@ -455,55 +532,6 @@ function FmTacticView({ snap, players, folder, gameFormation, lineup, lineupStat
                   )
                 }
               />
-
-              {/* Le onze à recopier dans FM27 : une ligne par poste, du gardien aux attaquants ; les deux rôles en colonnes. */}
-              <section className="card">
-                <h2 className="text-lg font-semibold">{t('fm.tac.xi.title')}</h2>
-                <div className="mt-2 overflow-x-auto">
-                  <table className="data-table">
-                    <thead>
-                      <tr>
-                        <th>{t('fm.tac.xi.pos')}</th>
-                        <th>{t('fm.tac.xi.player')}</th>
-                        <th>{t('fm.tac.phase.ip')}</th>
-                        <th>{t('fm.tac.phase.oop')}</th>
-                        <th>{t('fm.tac.xi.backup')}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {rows.map((i) => {
-                        const sl = plan.slots[i]!;
-                        const p = sl.player;
-                        const sub = (plan.subs[i] ?? [])[0];
-                        const fitOf = (ph: Phase) => (p ? (ph === 'ip' ? engine.roleFit(p, sl.ip, 'ip', sl.pos) : oopFit(engine, p, sl.oop, sl.pos, sl.posOOP)) : null);
-                        return (
-                          <tr key={i} className={hover === i ? 'bg-creme/70' : ''} onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)}>
-                            <td>
-                              <PosBadge pos={sl.pos} />
-                            </td>
-                            <td className="whitespace-nowrap font-bold text-canard">
-                              {p ? <PlayerLink player={p} /> : <span className="text-corail">{t('fm.tac.nobody')}</span>}
-                              {p?.team && <span className="ml-2 text-xs font-normal text-orange-fonce">{t('fm.tac.fromTeam', { team: p.team })}</span>}
-                              {p && !p.positions.includes(sl.pos) && <span className="ml-2 text-xs font-normal text-corail">{t('fm.tac.offPos')}</span>}
-                            </td>
-                            {(['ip', 'oop'] as const).map((ph) => (
-                              <td key={ph}>
-                                {ph === 'oop' && sl.posOOP && sl.posOOP !== sl.pos && <span className="mr-1.5"><PosBadge pos={sl.posOOP} /></span>}
-                                <span className="text-canard">{roleName(ph === 'ip' ? sl.ip : sl.oop, ph)}</span>
-                                {p && <span className="ml-1.5 text-xs font-bold text-brun">{note(fitOf(ph))}</span>}
-                              </td>
-                            ))}
-                            <td className="whitespace-nowrap text-sm text-brun">
-                              {sub ? sub.name : '–'}
-                              {sub?.team && <span className="ml-1 text-xs text-orange-fonce">{t('fm.tac.fromTeam', { team: sub.team })}</span>}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              </section>
 
               {team === 'A' && physical && planA && <PhysicalCard watch={physical} plan={planA} windowDays={LOAD_WINDOW_DAYS} />}
               {team === 'A' && (
