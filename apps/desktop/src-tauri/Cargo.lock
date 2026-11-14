@@ -849,7 +849,7 @@ dependencies = [
 
 [[package]]
 name = "fm-immersion"
-version = "0.1.206"
+version = "0.1.207"
 dependencies = [
  "keyring",
  "rusqlite",

@@ -50,7 +50,10 @@ export interface Scene {
   choices: SceneChoice[];
 }
 
-/** Une scène qui attend plus longtemps que ça (en jours de jeu) est passée : elle n'a plus d'effet. */
+/**
+ * Une scène qui attend plus longtemps que ça (en jours de jeu) est passée : elle n'a plus d'effet. Sauf à la première
+ * ouverture et pour le logement et la voiture du club actuel (voir `sceneState`).
+ */
 export const SCENE_EXPIRY_DAYS = 120;
 const BASE_GAUGE = 60;
 
@@ -212,11 +215,16 @@ export function sceneState(spells: CareerSpell[], life: CoachLife | undefined, g
   const answers = life?.answers ?? {};
   const answered: SceneState['answered'] = [];
   const pending: Scene[] = [];
+  // Première ouverture (aucune réponse encore) : les derniers moments passés sont proposés quand même, sinon une
+  // carrière déjà avancée n'aurait aucun message. Le logement et la voiture du club actuel attendent toujours.
+  const firstUse = !Object.keys(answers).length;
+  const cur = spells.at(-1);
+  const lasting = (sc: Scene) => !!cur?.current && (sc.kind === 'arrival' || sc.kind === 'car') && sc.club === cur.club && sc.date === d10(cur.start);
   for (const sc of scenes) {
     const a = answers[sc.id];
     const choice = a && sc.choices.find((c) => c.key === a.choice);
     if (choice) answered.push({ scene: sc, choice, date: a.date });
-    else if (!today || days(sc.date, today) - 1 <= SCENE_EXPIRY_DAYS) pending.push(sc);
+    else if (!today || firstUse || lasting(sc) || days(sc.date, today) - 1 <= SCENE_EXPIRY_DAYS) pending.push(sc);
   }
   let harmony = BASE_GAUGE;
   let morale = BASE_GAUGE;
