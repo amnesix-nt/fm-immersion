@@ -104,6 +104,24 @@ export function SquadBoard({ players, snap, history, club, onTable, onCompare }:
     .slice(0, 5);
   const last = (p: FmPlayer) => (ratings.get(p.id) ?? []).slice(-5);
   const selLast = sel ? last(sel) : [];
+  const money = new Intl.NumberFormat(i18n.resolvedLanguage, { style: 'currency', currency: 'EUR', notation: 'compact', maximumFractionDigits: 1 });
+  const nf1 = new Intl.NumberFormat(i18n.resolvedLanguage, { maximumFractionDigits: 1 });
+  const date = new Intl.DateTimeFormat(i18n.resolvedLanguage, { month: 'short', year: 'numeric' });
+  // Fiche courte : niveau vu par le staff, état physique, moral, statut, contrat et argent ; « – » quand le jeu ne le donne pas.
+  const details = (p: FmPlayer): [string, string, boolean][] => [
+    ['level', p.stars?.current != null ? `${nf1.format(p.stars.current)} / ${p.stars.potential != null ? nf1.format(p.stars.potential) : '–'} ★` : '–', false],
+    ['condition', p.condition != null ? `${Math.round(p.condition)} %` : '–', p.condition != null && p.condition < 85],
+    ['sharpness', p.sharpness != null ? `${Math.round(p.sharpness)} %` : '–', p.sharpness != null && p.sharpness < 70],
+    ['morale', p.morale ?? '–', false],
+    ['goalsPerMatch', p.apps ? nf2.format((p.goals ?? 0) / p.apps) : '–', false],
+    ['status', p.squadStatus ?? '–', false],
+    ['contract', p.contractEnd ? date.format(new Date(p.contractEnd)) : '–', false],
+    ['value', p.value ? money.format(p.value) : '–', false],
+    ['wage', p.wage ? money.format(p.wage) : '–', false],
+    ['foot', p.foot ?? '–', false],
+    ['hierarchy', p.hierarchy ?? '–', false],
+    ['personality', p.personality ?? '–', false],
+  ];
 
   return (
     <section className="overflow-hidden rounded-2xl bg-canard text-white shadow-lg">
@@ -144,6 +162,11 @@ export function SquadBoard({ players, snap, history, club, onTable, onCompare }:
                 <th className="w-14 py-2 pl-3 text-center">{t('fm.squadBoard.col.num')}</th>
                 <th className="py-2">{t('fm.squadBoard.col.player')}</th>
                 <th className="py-2 text-center">{t('fm.squadBoard.col.pos')}</th>
+                <th className="py-2 text-center">{t('fm.squadBoard.col.age')}</th>
+                <th className="py-2 text-center">{t('fm.squadBoard.col.apps')}</th>
+                <th className="py-2 text-center">{t('fm.squadBoard.col.goals')}</th>
+                <th className="py-2 text-center">{t('fm.squadBoard.col.avg')}</th>
+                <th className="py-2 text-center">{t('fm.squadBoard.col.condition')}</th>
                 <th className="py-2">{t('fm.squadBoard.col.form')}</th>
                 <th className="py-2 pr-3 text-right">{t('fm.squadBoard.col.last')}</th>
               </tr>
@@ -165,7 +188,12 @@ export function SquadBoard({ players, snap, history, club, onTable, onCompare }:
                       {p.injury && <span className="ml-2 align-middle text-sm font-bold text-corail" title={p.injury}>✚</span>}
                     </td>
                     <td className="py-2 text-center font-cond text-xl text-white/85">{p.positions[0] ? POS_LABEL[p.positions[0]] : '–'}</td>
-                    <td className="py-2">
+                    <td className="py-2 text-center font-cond text-xl tabular-nums text-white/85">{p.age ?? '–'}</td>
+                    <td className="py-2 text-center font-cond text-xl tabular-nums">{p.apps ?? '–'}</td>
+                    <td className="py-2 text-center font-cond text-xl tabular-nums">{p.goals ?? '–'}</td>
+                    <td className="py-2 text-center font-cond text-xl tabular-nums">{p.avgRating ? nf2.format(p.avgRating) : '–'}</td>
+                    <td className={`py-2 text-center font-cond text-xl tabular-nums ${p.condition != null && p.condition < 85 ? 'font-bold text-corail' : ''}`}>{p.condition != null ? `${Math.round(p.condition)} %` : '–'}</td>
+                    <td className="py-2 pr-2">
                       <span className="flex gap-1" title={l5.map((r) => nf2.format(r)).join(' · ')}>
                         {Array.from({ length: 5 }, (_, k) => {
                           const r = l5[l5.length - 5 + k];
@@ -173,7 +201,7 @@ export function SquadBoard({ players, snap, history, club, onTable, onCompare }:
                         })}
                       </span>
                     </td>
-                    <td className="py-2 pr-3 text-right font-cond text-2xl tabular-nums">{lastRating != null ? nf2.format(lastRating) : p.avgRating ? nf2.format(p.avgRating) : '–'}</td>
+                    <td className="py-2 pr-3 text-right font-cond text-2xl tabular-nums">{lastRating != null ? nf2.format(lastRating) : '–'}</td>
                   </tr>
                 );
               })}
@@ -219,6 +247,17 @@ export function SquadBoard({ players, snap, history, club, onTable, onCompare }:
                 )}
               </div>
             </div>
+            <dl className="mt-5 grid grid-cols-2 gap-px overflow-hidden rounded-lg bg-white/10 sm:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3">
+              {details(sel).map(([k, v, warn]) => (
+                <div key={k} className="bg-canard px-3 py-2">
+                  <dt className="truncate text-xs font-bold uppercase tracking-wide text-white/60">{t(`fm.squadBoard.stat.${k}`)}</dt>
+                  <dd className={`break-words font-cond text-xl font-semibold leading-tight ${warn ? 'text-corail' : 'text-white'}`} title={String(v)}>
+                    {v}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+            {(sel.injury || sel.suspension) && <p className="mt-3 rounded-md bg-corail/20 px-3 py-2 text-sm font-semibold text-white">✚ {sel.injury ?? sel.suspension}</p>}
             <div className="mt-5 grid grid-cols-2 gap-3">
               <button type="button" onClick={() => openSheet?.(sel.id)} className="rounded-lg border-2 border-orange py-2 font-cond text-xl font-bold text-white hover:bg-orange/10">
                 {t('fm.squadBoard.sheet')}

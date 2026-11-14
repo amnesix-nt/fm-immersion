@@ -3921,7 +3921,12 @@
         "player": "Joueur",
         "pos": "Poste",
         "form": "Forme",
-        "last": "Dernière note"
+        "last": "Dernière note",
+        "age": "Âge",
+        "apps": "MJ",
+        "goals": "Buts",
+        "avg": "Moy.",
+        "condition": "Cond."
       },
       "age_one": "{{count}} an",
       "age_other": "{{count}} ans",
@@ -3931,7 +3936,21 @@
       "lastRatings": "Dernières notes",
       "noRatings": "Pas encore de note relevée en match officiel.",
       "sheet": "Fiche du joueur",
-      "compare": "Comparer"
+      "compare": "Comparer",
+      "stat": {
+        "level": "Niveau / pot.",
+        "condition": "Condition",
+        "sharpness": "Rythme",
+        "morale": "Moral",
+        "goalsPerMatch": "Buts / match",
+        "status": "Statut",
+        "contract": "Fin de contrat",
+        "value": "Valeur",
+        "wage": "Salaire",
+        "foot": "Pied fort",
+        "hierarchy": "Vestiaire",
+        "personality": "Personnalité"
+      }
     }
   },
   "modes": {

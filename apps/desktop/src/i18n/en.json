@@ -3921,7 +3921,12 @@
         "player": "Player",
         "pos": "Position",
         "form": "Form",
-        "last": "Last rating"
+        "last": "Last rating",
+        "age": "Age",
+        "apps": "Apps",
+        "goals": "Gls",
+        "avg": "Avg",
+        "condition": "Cond."
       },
       "age_one": "{{count}} year old",
       "age_other": "{{count}} years old",
@@ -3931,7 +3936,21 @@
       "lastRatings": "Last ratings",
       "noRatings": "No official match rating recorded yet.",
       "sheet": "Player profile",
-      "compare": "Compare"
+      "compare": "Compare",
+      "stat": {
+        "level": "Level / pot.",
+        "condition": "Condition",
+        "sharpness": "Sharpness",
+        "morale": "Morale",
+        "goalsPerMatch": "Goals / match",
+        "status": "Status",
+        "contract": "Contract until",
+        "value": "Value",
+        "wage": "Wage",
+        "foot": "Preferred foot",
+        "hierarchy": "Dressing room",
+        "personality": "Personality"
+      }
     }
   },
   "modes": {
