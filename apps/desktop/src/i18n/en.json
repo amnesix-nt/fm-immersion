@@ -3950,6 +3950,16 @@
         "foot": "Preferred foot",
         "hierarchy": "Dressing room",
         "personality": "Personality"
+      },
+      "season": {
+        "title": "In matches this season",
+        "minutes_one": "{{count}} minute",
+        "minutes_other": "{{count}} minutes",
+        "none": "No match stats for him yet this season.",
+        "rank": "Rank among players in his line",
+        "legend": "Bar: his rank in his line, from green (among the best) to red.",
+        "few": "Fewer than 3 full matches: no comparison yet.",
+        "at": "Recorded on {{date}}."
       }
     }
   },

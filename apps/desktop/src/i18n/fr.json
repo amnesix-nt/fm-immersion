@@ -3950,6 +3950,16 @@
         "foot": "Pied fort",
         "hierarchy": "Vestiaire",
         "personality": "Personnalité"
+      },
+      "season": {
+        "title": "En match cette saison",
+        "minutes_one": "{{count}} minute",
+        "minutes_other": "{{count}} minutes",
+        "none": "Pas encore de statistiques de match pour lui cette saison.",
+        "rank": "Rang parmi les joueurs de sa ligne",
+        "legend": "Barre : son rang dans sa ligne, du vert (parmi les meilleurs) au rouge.",
+        "few": "Moins de 3 matchs complets : pas encore de comparaison.",
+        "at": "Relevé du {{date}}."
       }
     }
   },

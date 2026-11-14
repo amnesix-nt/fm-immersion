@@ -1,4 +1,4 @@
-import { inkOn, officialResults, POS_LABEL, ratingsByPlayer, type FmPlayer, type FmSnapshot, type Line } from '@fm-immersion/module-fm';
+import { inkOn, matchStats, officialResults, POS_LABEL, ratingsByPlayer, STAT_METRICS, statsBoard, type FmPlayer, type FmSnapshot, type Line, type StatKey } from '@fm-immersion/module-fm';
 import { useContext, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Face } from '../components/Face';
@@ -93,8 +93,17 @@ export function SquadBoard({ players, snap, history, club, onTable, onCompare }:
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [players, line, numbers],
   );
+  // Stats du Centre de données : relevé le plus récent qui en contient (le dernier peut être vide après une lecture ratée).
+  const seasonStats = useMemo(() => {
+    const sorted = [...history].sort((a, b) => b.gameDate.localeCompare(a.gameDate));
+    for (const h of [{ gameDate: '', data: snap }, ...sorted]) {
+      const m = matchStats(h.data);
+      if ([...m.values()].some((x) => (x.minutes ?? 0) > 0)) return { at: h.gameDate, board: statsBoard(players, m) };
+    }
+    return null;
+  }, [history, snap, players]);
   const [picked, setPicked] = useState<string | null>(null);
-  const sel = list.find((p) => p.id === picked) ?? list[0] ?? null;
+  const sel = list.find((p) => p.id === picked) ?? list.find((p) => (p.apps ?? 0) > 0) ?? list[0] ?? null;
   const look = clubLook(club);
   const nf2 = new Intl.NumberFormat(i18n.resolvedLanguage, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   // Maillots du vestiaire : les numéros des joueurs les mieux notés.
@@ -257,6 +266,7 @@ export function SquadBoard({ players, snap, history, club, onTable, onCompare }:
                 </div>
               ))}
             </dl>
+            <SeasonBlock player={sel} season={seasonStats} />
             {(sel.injury || sel.suspension) && <p className="mt-3 rounded-md bg-corail/20 px-3 py-2 text-sm font-semibold text-white">✚ {sel.injury ?? sel.suspension}</p>}
             <div className="mt-5 grid grid-cols-2 gap-3">
               <button type="button" onClick={() => openSheet?.(sel.id)} className="rounded-lg border-2 border-orange py-2 font-cond text-xl font-bold text-white hover:bg-orange/10">
@@ -273,5 +283,50 @@ export function SquadBoard({ players, snap, history, club, onTable, onCompare }:
         )}
       </div>
     </section>
+  );
+}
+
+type Season = { at: string; board: ReturnType<typeof statsBoard> } | null;
+
+const fmtStat = (k: StatKey, v: number, lang: string | undefined) =>
+  k.endsWith('Pct') ? `${Math.round(v)} %` : new Intl.NumberFormat(lang, { maximumFractionDigits: k === 'mistakes' ? 0 : k === 'distance90' ? 1 : 2 }).format(v);
+
+/** En match cette saison : minutes et mesures de sa ligne, avec son rang parmi les joueurs de la ligne (barre). */
+function SeasonBlock({ player, season }: { player: FmPlayer; season: Season }) {
+  const { t, i18n } = useTranslation();
+  const date = new Intl.DateTimeFormat(i18n.resolvedLanguage, { day: 'numeric', month: 'long' });
+  const r = season?.board.players.find((x) => x.player.id === player.id);
+  const metrics = STAT_METRICS.filter((m) => player.line && m.lines.includes(player.line) && r?.stats[m.key] != null);
+  return (
+    <div className="mt-5">
+      <div className="flex items-baseline justify-between gap-2">
+        <p className="font-cond text-xl font-semibold">{t('fm.squadBoard.season.title')}</p>
+        {r && <p className="font-cond text-base text-white/70">{t('fm.squadBoard.season.minutes', { count: Math.round(r.minutes) })}</p>}
+      </div>
+      {!r || !metrics.length ? (
+        <p className="mt-1 text-sm text-white/60">{t('fm.squadBoard.season.none')}</p>
+      ) : (
+        <>
+          <ul className="mt-2 space-y-1.5">
+            {metrics.map((m) => {
+              const mark = r.marks[m.key];
+              return (
+                <li key={m.key} className="grid grid-cols-[minmax(0,1fr)_4.5rem_5rem] items-center gap-2 text-sm">
+                  <span className="truncate text-white/85">{t(`fm.stats.col.${m.key}`)}</span>
+                  <span className="text-right font-cond text-lg font-semibold tabular-nums">{fmtStat(m.key, r.stats[m.key]!, i18n.resolvedLanguage)}</span>
+                  <span className="h-2 overflow-hidden rounded-full bg-white/10" title={mark ? t('fm.squadBoard.season.rank') : undefined}>
+                    {mark && <span className={`block h-full rounded-full ${mark.rank >= 0.67 ? 'bg-[#8BD346]' : mark.rank >= 0.34 ? 'bg-ambre' : 'bg-corail'}`} style={{ width: `${Math.max(8, mark.rank * 100)}%` }} />}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+          <p className="mt-2 text-xs text-white/55">
+            {r.enough ? t('fm.squadBoard.season.legend') : t('fm.squadBoard.season.few')}
+            {season?.at ? ` ${t('fm.squadBoard.season.at', { date: date.format(new Date(season.at)) })}` : ''}
+          </p>
+        </>
+      )}
+    </div>
   );
 }
