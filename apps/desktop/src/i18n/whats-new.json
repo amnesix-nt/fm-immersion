@@ -1,5 +1,17 @@
 [
   {
+    "version": "0.1.204",
+    "date": "2026-11-14",
+    "fr": [
+      "Nouveau dans « Ma carrière » : la partie « Hors terrain ». Note le salaire de chaque club et vois ce que ta carrière t'a rapporté, après impôts et dépenses du foyer.",
+      "Ajoute ta famille (conjoint, enfants qui grandissent avec la date de jeu, photo) et retrouve tes grands moments dans le journal de vie. Tes titres sont maintenant rangés dans une vitrine des trophées."
+    ],
+    "en": [
+      "New in \"My career\": the \"Off the pitch\" part. Enter the salary for each club and see what your career has earned you, after tax and household spending.",
+      "Add your family (partner, children who grow up with the game date, photo) and find your big moments in the life journal. Your titles now sit in a trophy cabinet."
+    ]
+  },
+  {
     "version": "0.1.203",
     "date": "2026-11-13",
     "fr": [
