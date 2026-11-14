@@ -337,7 +337,10 @@
         "help": "This list gathers the advice from the boxes below (last matches, team instructions, player instructions, assistant's view), in the order they weigh on your results. It empties as you set your tactic in FM27 and the app reads the save again. Nothing is changed in the game: you decide.",
         "more_one": "Show the {{count}} other point",
         "more_other": "Show the {{count}} other points",
-        "less": "Shorten the list"
+        "less": "Shorten the list",
+        "left_one": "· {{count}} to do",
+        "left_other": "· {{count}} to do",
+        "left_zero": "· all done"
       },
       "review": {
         "title": "What your last matches say",
@@ -402,7 +405,8 @@
           "condition": "{{pos}}: {{better}} ({{betterFit}}) rates higher than {{starter}} ({{starterFit}}), but he is tired ({{value}}%). He takes his place back once rested.",
           "morale": "{{pos}}: {{better}} ({{betterFit}}) rates higher than {{starter}} ({{starterFit}}), but his morale is low ({{morale}}). A chat or playing time can lift him.",
           "risk": "{{pos}}: {{better}} ({{betterFit}}) rates higher than {{starter}} ({{starterFit}}), but the game gives him a high injury risk. He takes his place back once rested."
-        }
+        },
+        "titleBench": "Backups and players to bring back"
       },
       "tiAdvice": {
         "title": "Adapted to your eleven",
@@ -3879,7 +3883,8 @@
       },
       "help": "Reserve and youth players of your club, read by the plugin (loaned-out players are in the Loans tab). Current ability and potential: your staff's stars. Level and ceiling of the best prospects: fit out of 20 for the role of your game plan that suits the player best, today and what he can reach (from his age and potential). \"To do\" compares his fit with your first-team starters. Contract ending soon: 6 months or less. The age limit comes from the team name (U19 = 19); in the game it is counted at the start of the season.",
       "starsHint": "Current ability then potential, in stars, according to your staff."
-    }
+    },
+    "tabsMore": "More"
   },
   "modes": {
     "soon": "Soon",
@@ -5371,7 +5376,9 @@
         "mercato": "No transfer or finance decision to make this week."
       },
       "todo_one": "To do here",
-      "todo_other": "To do here ({{count}})"
+      "todo_other": "To do here ({{count}})",
+      "elsewhereShort_one": "{{count}} more elsewhere",
+      "elsewhereShort_other": "{{count}} more elsewhere"
     },
     "state": {
       "open": "FM27 open",

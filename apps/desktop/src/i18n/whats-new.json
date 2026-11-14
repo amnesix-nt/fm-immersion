@@ -1,5 +1,17 @@
 [
   {
+    "version": "0.1.209",
+    "date": "2026-11-14",
+    "fr": [
+      "Les écrans de Mon club sont plus courts : trois onglets à chaque fois, le reste dans « Plus ».",
+      "Sur Tactique, une seule liste de ce qu'il faut régler dans FM27, à cocher au fur et à mesure, sans les conseils répétés en dessous."
+    ],
+    "en": [
+      "My club screens are shorter: three tabs each, the rest under \"More\".",
+      "On Tactics, a single checklist of what to change in FM27, to tick off as you go, without the advice repeated below."
+    ]
+  },
+  {
     "version": "0.1.208",
     "date": "2026-11-14",
     "fr": [

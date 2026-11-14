@@ -337,7 +337,10 @@
         "help": "Cette liste reprend les conseils des cadres plus bas (derniers matchs, consignes d'équipe, consignes individuelles, avis de l'adjoint), dans l'ordre où ils pèsent sur tes résultats. Elle se vide à mesure que tu règles ta tactique dans FM27 et que l'appli relit la partie. Rien n'est modifié dans le jeu : c'est toi qui décides.",
         "more_one": "Voir le {{count}} autre point",
         "more_other": "Voir les {{count}} autres points",
-        "less": "Réduire la liste"
+        "less": "Réduire la liste",
+        "left_one": "· {{count}} à régler",
+        "left_other": "· {{count}} à régler",
+        "left_zero": "· tout est réglé"
       },
       "review": {
         "title": "Ce que disent tes derniers matchs",
@@ -402,7 +405,8 @@
           "condition": "{{pos}} : {{better}} ({{betterFit}}) est mieux noté que {{starter}} ({{starterFit}}), mais il est fatigué ({{value}} %). Il reprend sa place une fois reposé.",
           "morale": "{{pos}} : {{better}} ({{betterFit}}) est mieux noté que {{starter}} ({{starterFit}}), mais son moral est bas ({{morale}}). Une discussion ou du temps de jeu peut le relancer.",
           "risk": "{{pos}} : {{better}} ({{betterFit}}) est mieux noté que {{starter}} ({{starterFit}}), mais le jeu lui donne un risque de blessure élevé. Il reprend sa place une fois reposé."
-        }
+        },
+        "titleBench": "Doublures et joueurs à relancer"
       },
       "tiAdvice": {
         "title": "Adapté à ton onze",
@@ -3879,7 +3883,8 @@
       },
       "help": "Joueurs de la réserve et des équipes de jeunes de ton club, lus par le plugin (les joueurs prêtés sont dans l'onglet Prêts). Niveau actuel et potentiel : étoiles de ton staff. Niveau et plafond des meilleurs espoirs : adéquation sur 20 au rôle de ton projet de jeu où le joueur est le plus adapté, aujourd'hui et ce qu'il peut atteindre (d'après son âge et son potentiel). « À faire » compare son adéquation à celle des titulaires de ton équipe première. Contrat bientôt fini : 6 mois ou moins. La limite d'âge vient du nom de l'équipe (U19 = 19 ans) ; dans le jeu, elle se compte au début de la saison.",
       "starsHint": "Niveau actuel puis potentiel, en étoiles, d'après ton staff."
-    }
+    },
+    "tabsMore": "Plus"
   },
   "modes": {
     "soon": "Bientôt",
@@ -5371,7 +5376,9 @@
         "mercato": "Pas de décision de mercato ni de finances à prendre cette semaine."
       },
       "todo_one": "À faire ici",
-      "todo_other": "À faire ici ({{count}})"
+      "todo_other": "À faire ici ({{count}})",
+      "elsewhereShort_one": "{{count}} autre point ailleurs",
+      "elsewhereShort_other": "{{count}} autres points ailleurs"
     },
     "state": {
       "open": "FM27 ouvert",

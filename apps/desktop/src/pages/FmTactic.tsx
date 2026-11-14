@@ -414,9 +414,15 @@ function FmTacticView({ snap, players, folder, gameFormation, lineup, lineupStat
               <>
               {/* D'abord ce que disent les matchs et ce qu'il faut changer dans le jeu ; le onze et son détail ensuite. */}
               {team === 'A' && (
-                <div className={`grid items-start gap-4 ${fromGame && review.recent.length ? 'xl:grid-cols-[2fr_3fr]' : ''}`}>
+                <div className={`grid items-start gap-4 ${fromGame && review.recent.length ? 'xl:grid-cols-[3fr_2fr]' : ''}`}>
+                  {/* La liste à cocher d'abord : c'est ce qu'on vient faire ici. Le bilan des matchs l'éclaire, à côté. */}
+                  {fromGame && planA && (
+                    <div className="space-y-3">
+                      <TodoCard items={todo} plan={planA} engine={engine} tactic={gameTactic} />
+                      {physical && <PhysicalCard watch={physical} plan={planA} windowDays={LOAD_WINDOW_DAYS} />}
+                    </div>
+                  )}
                   <MatchReviewCard review={review} tactic={gameTactic} fromGame={fromGame} />
-                  {fromGame && planA && <TodoCard items={todo} plan={planA} engine={engine} tactic={gameTactic} />}
                 </div>
               )}
               {/* Le onze : terrain compact à gauche, liste prête à appliquer dans FM27 à droite. Survoler l'un met l'autre en évidence. */}
@@ -444,9 +450,9 @@ function FmTacticView({ snap, players, folder, gameFormation, lineup, lineupStat
                     <p className="mt-1 text-sm text-brun">{t('fm.tac.team.help', { a: note(planA.score), b: note(planB.score) })}</p>
                   )}
                   <p className="mt-1 text-sm text-brun">
-                    <span className="mr-2 rounded-md bg-eau/20 px-1.5 py-0.5 text-xs font-bold text-canard">{t(fromGame ? 'fm.tac.fromGame' : 'fm.tac.suggested')}</span>
-                    {t(fromGame ? 'fm.tac.fromGameHelp' : gamePlan ? 'fm.tac.suggestedHelpGame' : 'fm.tac.suggestedHelp')}
+                    <span className="rounded-md bg-eau/20 px-1.5 py-0.5 text-xs font-bold text-canard">{t(fromGame ? 'fm.tac.fromGame' : 'fm.tac.suggested')}</span>
                   </p>
+                  <More>{t(fromGame ? 'fm.tac.fromGameHelp' : gamePlan ? 'fm.tac.suggestedHelpGame' : 'fm.tac.suggestedHelp')}</More>
                   {!gamePlan && lineupStatus && lineupStatus !== 'lue' && <p className="mt-1 text-xs text-brun">{t('fm.tac.lineupStatus', { status: lineupStatus })}</p>}
 
                 {/* La phase montrée sur le terrain, choisie en tête avec une phrase qui dit ce qu'on regarde. */}
@@ -568,8 +574,8 @@ function FmTacticView({ snap, players, folder, gameFormation, lineup, lineupStat
                   </div>
                 </div>
               </section>
-              {team === 'A' && advice && planA && <LineupAdviceCard advice={advice} plan={planA} engine={engine} />}
-              {team === 'A' && physical && planA && <PhysicalCard watch={physical} plan={planA} windowDays={LOAD_WINDOW_DAYS} />}
+              {team === 'A' && advice && planA && <LineupAdviceCard advice={advice} plan={planA} engine={engine} inTodo={fromGame} />}
+              {team === 'A' && !fromGame && physical && planA && <PhysicalCard watch={physical} plan={planA} windowDays={LOAD_WINDOW_DAYS} />}
               </>
             ),
           },

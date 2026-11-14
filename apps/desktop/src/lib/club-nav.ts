@@ -24,6 +24,20 @@ export const TABS: Record<ClubPage, readonly (readonly string[])[]> = {
   mercato: [['mercato'], ['scouting'], ['targets'], ['finances'], ['wages'], ['contracts']],
 };
 
+/**
+ * Refonte « l'essentiel d'abord » (14/11/2026) : au plus trois onglets visibles par écran, les plus utiles ;
+ * les autres parties passent dans le menu « Plus » (toujours accessibles, liens et recherche inchangés).
+ */
+export const MAIN_TABS: Record<ClubPage, readonly string[]> = {
+  tactic: ['tactic', 'opponent', 'training'],
+  squad: ['squad', 'progression', 'academy'],
+  results: ['results', 'diagnosis', 'stats', 'analysis'],
+  mercato: ['mercato', 'targets', 'finances'],
+};
+
+/** Parties d'un écran rangées dans « Plus » (dans l'ordre des onglets). */
+export const moreTabs = (page: ClubPage): string[] => TABS[page].flat().filter((v) => !MAIN_TABS[page].includes(v));
+
 /** Sous-onglet qui contient une partie (le premier de l'écran à défaut). */
 export function tabOf(page: ClubPage, part: string): readonly string[] {
   return TABS[page].find((t) => t.includes(part)) ?? TABS[page][0]!;

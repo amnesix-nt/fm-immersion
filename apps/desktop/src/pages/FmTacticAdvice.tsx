@@ -13,6 +13,7 @@ import {
   type TodoItem,
 } from '@fm-immersion/module-fm';
 import { useState } from 'react';
+import { readScoped, useFmSaveScope, writeScoped } from '../lib/save-store';
 import { useTranslation } from 'react-i18next';
 import { fitGap, fitPct, More } from './FmUi';
 
@@ -22,7 +23,9 @@ import { fitGap, fitPct, More } from './FmUi';
  */
 
 /** L'avis de l'adjoint sur le onze affiché : des phrases courtes, chacune avec ses chiffres. */
-export function LineupAdviceCard({ advice, plan, engine }: { advice: LineupAdvice; plan: FormationPlan; engine: TacticEngine }) {
+export function LineupAdviceCard({ advice: full, plan, engine, inTodo = false }: { advice: LineupAdvice; plan: FormationPlan; engine: TacticEngine; inTodo?: boolean }) {
+  // Quand « À changer dans FM27 » liste déjà les titulaires et les rôles, la carte ne garde que doublures et joueurs à relancer.
+  const advice = inTodo ? { ...full, starters: [], roles: [] } : full;
   const { t, i18n } = useTranslation();
   const en = i18n.resolvedLanguage === 'en';
   const role = (code: string) => {
@@ -31,9 +34,10 @@ export function LineupAdviceCard({ advice, plan, engine }: { advice: LineupAdvic
   };
   const pos = (i: number) => POS_LABEL[plan.slots[i]!.pos];
   const empty = !advice.roles.length && !advice.starters.length && !advice.rested.length && !advice.cover.length;
+  if (inTodo && empty) return null;
   return (
     <section className="card">
-      <h2 className="text-xl font-semibold">{t('fm.tac.advice.title')}</h2>
+      <h2 className="text-xl font-semibold">{t(inTodo ? 'fm.tac.advice.titleBench' : 'fm.tac.advice.title')}</h2>
       {empty ? (
         <p className="mt-2 text-sm">{t('fm.tac.advice.none')}</p>
       ) : (
@@ -111,6 +115,7 @@ export function PhysicalCard({ watch, plan, windowDays }: { watch: PhysicalWatch
     if (w.swapped) return t((w.drop ?? 0) <= 0 ? 'fm.tac.physical.do.swapEven' : 'fm.tac.physical.do.swap', vals);
     return t('fm.tac.physical.do.keep', vals);
   };
+  if (watch.length === 0) return <p className="rounded-lg bg-eau/15 px-3 py-2 text-sm">{t('fm.tac.physical.none')}</p>;
   return (
     <section className="card">
       <h2 className="text-xl font-semibold">{t('fm.tac.physical.title')}</h2>
@@ -215,7 +220,9 @@ export function MatchReviewCard({ review, tactic, fromGame }: { review: MatchRev
 }
 
 /** Lignes montrées d'emblée dans « À changer dans FM27 ». */
-const TODO_SHOWN = 5;
+const TODO_SHOWN = 3;
+/** Lignes cochées par le joueur (« fait dans FM27 »), retenues par partie jusqu'à la prochaine lecture qui les efface d'elle-même. */
+const TODO_DONE_KEY = 'fmi.tactic.todoDone.v1';
 const TODO_TAG: Record<TodoItem['kind'], string> = { team: 'team', starter: 'starter', piChange: 'player', piAdd: 'player', piRemove: 'player', role: 'role' };
 
 /**
@@ -229,7 +236,13 @@ export function TodoCard({ items, plan, engine, tactic }: { items: TodoItem[]; p
   const fmt = (vals: Record<string, number | string>) => Object.fromEntries(Object.entries(vals).map(([k, v]) => [k, typeof v === 'number' ? nf1.format(v) : v]));
   // Les plus importants d'abord : la suite s'ouvre sur demande, pour ne pas allonger la page.
   const [all, setAll] = useState(false);
-  const shown = all ? items : items.slice(0, TODO_SHOWN);
+  const scope = useFmSaveScope();
+  const [done, setDone] = useState<string[]>(() => readScoped<string[]>(TODO_DONE_KEY, scope, []));
+  const toggle = (key: string) => {
+    const next = done.includes(key) ? done.filter((k) => k !== key) : [...done, key];
+    setDone(next);
+    writeScoped(TODO_DONE_KEY, scope, next);
+  };
   const role = (code: string) => {
     const r = engine.roles.get(code);
     return (en ? r?.en : r?.fr) ?? r?.fr ?? code;
@@ -266,38 +279,47 @@ export function TodoCard({ items, plan, engine, tactic }: { items: TodoItem[]; p
         };
     }
   };
+  // Les lignes cochées descendent en bas de la liste ; le compteur ne garde que ce qui reste à faire.
+  const lines = items.map((it) => ({ it, ...line(it) }));
+  const isDone = (l: { what: string }) => done.includes(l.what);
+  const ordered = [...lines.filter((l) => !isDone(l)), ...lines.filter(isDone)];
+  const left = ordered.filter((l) => !isDone(l)).length;
+  const shown = all ? ordered : ordered.slice(0, TODO_SHOWN);
   return (
-    <section className="card border-l-4 border-orange">
-      <h2 className="text-xl font-semibold">
+    <section className="card">
+      <h2 className="flex flex-wrap items-baseline gap-x-2 text-xl font-semibold">
         {t('fm.tac.todo.title')}
-        {items.length > 0 && <span className="ml-2 rounded-full bg-orange px-2 py-0.5 text-sm font-bold text-canard">{items.length}</span>}
+        {items.length > 0 && <span className="text-sm font-normal text-brun">{t('fm.tac.todo.left', { count: left })}</span>}
       </h2>
-      <p className="mt-1 text-sm text-brun">{t(tactic ? 'fm.tac.todo.intro' : 'fm.tac.todo.introNoName', { tactic: tactic ?? '' })}</p>
       {items.length ? (
-        <ol className="mt-3 space-y-1.5 text-sm">
-          {shown.map((it, i) => {
-            const l = line(it);
+        <ul className="mt-3 divide-y divide-canard/10 text-sm">
+          {shown.map((l) => {
+            const ok = isDone(l);
             return (
-              <li key={i} className="flex items-start gap-3 rounded-xl bg-creme/50 px-3 py-2">
-                <span className="w-5 shrink-0 text-right font-bold text-canard/50">{i + 1}</span>
-                <span>
-                  <span className="mr-2 text-xs font-bold uppercase tracking-wide text-orange-fonce">{t(`fm.tac.todo.tag.${TODO_TAG[it.kind]}`)}</span>
-                  <b className="text-canard">{l.what}</b>
-                  <span className="block text-xs text-brun first-letter:uppercase">{l.why}</span>
-                </span>
+              <li key={l.what}>
+                <label className="flex cursor-pointer items-start gap-3 py-2.5">
+                  <input type="checkbox" className="mt-1 h-4 w-4 shrink-0 accent-[#8F5400]" checked={ok} onChange={() => toggle(l.what)} />
+                  <span className={ok ? 'text-brun line-through' : ''}>
+                    <span className="mr-2 text-xs font-bold uppercase tracking-wide text-orange-fonce">{t(`fm.tac.todo.tag.${TODO_TAG[l.it.kind]}`)}</span>
+                    <b className={ok ? 'font-semibold' : 'text-canard'}>{l.what}</b>
+                    {!ok && <span className="block text-xs text-brun first-letter:uppercase">{l.why}</span>}
+                  </span>
+                </label>
               </li>
             );
           })}
-        </ol>
+        </ul>
       ) : (
         <p className="mt-2 rounded-xl bg-eau/15 px-3 py-2 text-sm">{t('fm.tac.todo.none')}</p>
       )}
       {items.length > TODO_SHOWN && (
-        <button type="button" className="mt-2 text-sm font-bold text-orange-fonce underline" onClick={() => setAll(!all)}>
+        <button type="button" className="mt-1 text-sm font-bold text-orange-fonce hover:underline" onClick={() => setAll(!all)}>
           {all ? t('fm.tac.todo.less') : t('fm.tac.todo.more', { count: items.length - TODO_SHOWN })}
         </button>
       )}
-      <More>{t('fm.tac.todo.help')}</More>
+      <More>
+        {t(tactic ? 'fm.tac.todo.intro' : 'fm.tac.todo.introNoName', { tactic: tactic ?? '' })} {t('fm.tac.todo.help')}
+      </More>
     </section>
   );
 }

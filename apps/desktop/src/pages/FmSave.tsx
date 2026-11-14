@@ -40,7 +40,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useUi } from '../lib/ui-store';
 import { TodayCards } from '../components/TodayCards';
 import { shownGameDate, useCareer, useCareerStore } from '../lib/career';
-import { CLUB_PAGES, clubPath, pageOf, PARTS, TABS, type ClubPage } from '../lib/club-nav';
+import { CLUB_PAGES, clubPath, MAIN_TABS, moreTabs, pageOf, PARTS, TABS, type ClubPage } from '../lib/club-nav';
 import { fmData } from '../lib/data';
 import { useHistory } from '../lib/fm-cache';
 import { importMissingHistory, type FmHistoryFile } from '../lib/fm-history';
@@ -643,31 +643,83 @@ export function NextStep({ step, club }: { step: 'career' | 'plugin' | 'save' | 
   );
 }
 
-/** Parties d'un écran : une rangée de pastilles, une partie par onglet (celle choisie en bleu nuit). */
+/**
+ * Parties d'un écran : au plus trois onglets visibles (les plus utiles), le reste dans le menu « Plus ».
+ * Une partie ouverte depuis « Plus » s'affiche comme quatrième pastille, pour savoir où l'on est.
+ */
 function PageParts({ page, current, go, render }: { page: ClubPage; current: string; go: (v: string) => void; render: (v: string) => ReactNode }) {
   const { t } = useTranslation();
   const parts = PARTS[page];
   const active = parts.includes(current) ? current : parts[0]!;
-  const tabs = TABS[page].flat();
+  const all = TABS[page].flat();
+  const main = all.filter((v) => MAIN_TABS[page].includes(v));
+  const more = moreTabs(page);
+  const [open, setOpen] = useState(false);
+  const menu = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const close = (e: MouseEvent | KeyboardEvent) => {
+      if (e instanceof KeyboardEvent ? e.key === 'Escape' : !menu.current?.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', close);
+    document.addEventListener('keydown', close);
+    return () => {
+      document.removeEventListener('mousedown', close);
+      document.removeEventListener('keydown', close);
+    };
+  }, [open]);
+  const pill = (v: string) => (
+    <button
+      key={v}
+      type="button"
+      role="tab"
+      aria-selected={v === active}
+      onClick={() => go(v)}
+      className={`rounded-md px-3 py-1.5 text-sm font-bold ${v === active ? 'bg-canard text-white' : 'bg-white text-canard ring-1 ring-canard/10 hover:bg-orange-clair'}`}
+    >
+      {t(`fm.tabNames.${v}`)}
+    </button>
+  );
   return (
     <>
-      {tabs.length > 1 && (
-        <div className="sticky top-[3.25rem] z-30 -mx-1 mb-4 flex flex-wrap gap-1.5 bg-creme px-1 py-2" role="tablist" aria-label={t('fm.onThisPage')}>
-          {tabs.map((v) => (
-            <button
-              key={v}
-              type="button"
-              role="tab"
-              aria-selected={v === active}
-              onClick={() => go(v)}
-              className={`rounded-md px-3 py-1.5 text-sm font-bold ${v === active ? 'bg-canard text-white' : 'bg-white text-canard ring-1 ring-canard/10 hover:bg-orange-clair'}`}
-            >
-              {t(`fm.tabNames.${v}`)}
-            </button>
-          ))}
+      {all.length > 1 && (
+        <div className="sticky top-[3.25rem] z-30 -mx-1 mb-4 flex flex-wrap items-center gap-1.5 bg-creme px-1 py-2" role="tablist" aria-label={t('fm.onThisPage')}>
+          {main.map(pill)}
+          {more.includes(active) && pill(active)}
+          {more.length > 0 && (
+            <div ref={menu} className="relative">
+              <button
+                type="button"
+                aria-haspopup="menu"
+                aria-expanded={open}
+                onClick={() => setOpen(!open)}
+                className="rounded-md px-3 py-1.5 text-sm font-bold text-orange-fonce hover:bg-orange-clair"
+              >
+                {t('fm.tabsMore')} ▾
+              </button>
+              {open && (
+                <div role="menu" className="absolute left-0 top-full z-40 mt-1 min-w-[13rem] rounded-lg bg-white p-1 shadow-lg ring-1 ring-canard/10">
+                  {more.map((v) => (
+                    <button
+                      key={v}
+                      type="button"
+                      role="menuitem"
+                      onClick={() => {
+                        setOpen(false);
+                        go(v);
+                      }}
+                      className={`block w-full rounded-md px-3 py-1.5 text-left text-sm ${v === active ? 'bg-orange-clair font-bold' : 'hover:bg-creme'}`}
+                    >
+                      {t(`fm.tabNames.${v}`)}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
-      <section key={active} role={tabs.length > 1 ? 'tabpanel' : undefined}>
+      <section key={active} role={all.length > 1 ? 'tabpanel' : undefined}>
         <HelpHost>{render(active)}</HelpHost>
       </section>
     </>
@@ -684,34 +736,34 @@ function AssistantSays({ page, saveId, go }: { page: ClubPage; saveId: string; g
   if (!brief.at.startsWith(`${saveId}|`)) return null;
   const lines = brief.items.filter((x) => pageOf(x.view) === page);
   const others = brief.items.length - lines.length;
+  // Une bande fine, pas une carte : le message de l'adjoint guide sans prendre la place des conseils de l'écran.
   return (
-    <aside className="mb-5 flex gap-4 rounded-xl border-l-4 border-orange bg-white p-4 ring-1 ring-canard/10" aria-label={t('layout.assistant.label')}>
-      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-canard font-extrabold text-white" aria-hidden>
+    <aside className="mb-3 flex items-start gap-3 rounded-lg bg-white/70 px-3 py-2 text-sm ring-1 ring-canard/10" aria-label={t('layout.assistant.label')}>
+      <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-canard text-xs font-extrabold text-white" aria-hidden>
         {t('layout.assistant.initial')}
       </span>
       <div className="min-w-0 flex-1">
-        <p className="font-extrabold">{t(lines.length ? 'layout.assistant.todo' : 'layout.assistant.label', { count: lines.length })}</p>
         {lines.length ? (
-          <ul className="mt-1 space-y-2">
-            {lines.map((x, i) => (
-              <li key={x.key} className="flex flex-wrap items-center gap-x-3 gap-y-1">
+          <ul className="space-y-1">
+            {lines.map((x) => (
+              <li key={x.key} className="flex flex-wrap items-center gap-x-2">
                 <span className={`h-2 w-2 shrink-0 rounded-full ${x.tone === 'bad' ? 'bg-corail' : x.tone === 'warn' ? 'bg-ambre' : 'bg-eau'}`} aria-hidden />
-                <span className="min-w-0 flex-1 text-[0.95rem]">{x.text}</span>
-                <button type="button" className={i === 0 ? 'btn-primary px-3 py-1 text-sm' : 'btn-secondary px-3 py-1 text-sm'} onClick={() => go(x.view)}>
-                  {x.action}
+                <span className="min-w-0">{x.text}</span>
+                <button type="button" className="font-bold text-orange-fonce hover:underline" onClick={() => go(x.view)}>
+                  {x.action} →
                 </button>
               </li>
             ))}
           </ul>
         ) : (
-          <p className="mt-1 text-[0.95rem] text-brun">{t(`layout.assistant.calm.${page}`)}</p>
-        )}
-        {others > 0 && (
-          <Link to="/" className="mt-2 inline-block text-sm font-bold text-orange-fonce hover:underline">
-            {t('layout.assistant.elsewhere', { count: others })}
-          </Link>
+          <p className="text-brun">{t(`layout.assistant.calm.${page}`)}</p>
         )}
       </div>
+      {others > 0 && (
+        <Link to="/" className="shrink-0 whitespace-nowrap font-bold text-orange-fonce hover:underline">
+          {t('layout.assistant.elsewhereShort', { count: others })}
+        </Link>
+      )}
     </aside>
   );
 }
@@ -719,11 +771,13 @@ function AssistantSays({ page, saveId, go }: { page: ClubPage; saveId: string; g
 /** En-tête commun aux écrans du club : groupe, nom de l'écran et la question à laquelle il répond. */
 function ViewHeader({ view, part }: { view: string; part: string }) {
   const { t } = useTranslation();
+  const group = t(`layout.navShort.${pageOf(view)}`, { defaultValue: pageLabel(t, view) });
+  const title = t(`fm.tabNames.${part}`, { defaultValue: pageLabel(t, view) });
   return (
     <header className="mb-2">
       {/* Comme la maquette : l'écran en surtitre, la partie ouverte en titre, puis ce qu'on y regarde. */}
-      <p className="text-xs font-bold uppercase tracking-wide text-canard/50">{t(`layout.navShort.${pageOf(view)}`, { defaultValue: pageLabel(t, view) })}</p>
-      <h1 className="text-3xl font-semibold">{t(`fm.tabNames.${part}`, { defaultValue: pageLabel(t, view) })}</h1>
+      {group !== title && <p className="text-xs font-bold uppercase tracking-wide text-canard/50">{group}</p>}
+      <h1 className="text-3xl font-semibold">{title}</h1>
       <p className="mt-1 max-w-3xl text-sm text-brun">{t(`fm.intro.${part}`)}</p>
     </header>
   );
