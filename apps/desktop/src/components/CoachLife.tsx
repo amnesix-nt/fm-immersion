@@ -125,7 +125,7 @@ function Phone({ saveId, st, gameDate, life }: { saveId: string; st: SceneState;
             return (
               <li key={sc.id}>
                 <p className="text-xs font-bold text-white/60">
-                  <span aria-hidden>{fromIcon[sc.from]}</span> {t(`coachLife.phone.from.${sc.from}`, { name: sc.name ?? '' })} · {dateFmt.format(new Date(sc.date))}
+                  <span aria-hidden>{fromIcon[sc.from]}</span> {t(`coachLife.phone.from.${sc.from}`, { name: life?.partner?.name || t('coachLife.phone.someone') })} · {dateFmt.format(new Date(sc.date))}
                 </p>
                 <p className="mt-1 max-w-xl rounded-2xl rounded-tl-sm bg-white px-4 py-3 text-sm text-canard">{t(`coachLife.scene.${sc.kind}.text`, params)}</p>
                 <div className="mt-2 flex flex-wrap gap-2">
