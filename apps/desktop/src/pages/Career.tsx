@@ -4,6 +4,7 @@ import type { TFunction } from 'i18next';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import { CoachLifeSection, TrophyCabinet } from '../components/CoachLife';
 import { PageHero } from '../components/PageHero';
 import { useCareer } from '../lib/career';
 import { useFmFolder } from '../lib/fm-sync';
@@ -66,7 +67,6 @@ export function Career() {
 
   const dateFmt = new Intl.DateTimeFormat(lang, { dateStyle: 'medium' });
   const tt = career.totals;
-  const trophies = career.spells.flatMap((s) => s.trophies.map((tr) => ({ ...tr, club: s.club })));
 
   return (
     <div className="w-full px-6 py-6 xl:px-10">
@@ -119,21 +119,7 @@ export function Career() {
             <WorldMap spells={career.spells} />
             <div className="card">
               <h2 className="text-xl font-semibold">{t('careerPage.honours')}</h2>
-              {trophies.length ? (
-                <ul className="mt-3 space-y-2">
-                  {trophies.map((tr, i) => (
-                    <li key={i} className="flex items-baseline gap-3">
-                      <span aria-hidden>🏆</span>
-                      <span className="font-bold">{trophyName(t, tr)}</span>
-                      <span className="text-sm text-brun">
-                        {tr.club} · {tr.season}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="mt-2 text-brun">{t('careerPage.noTrophy')}</p>
-              )}
+              <TrophyCabinet spells={career.spells} />
               <h3 className="mt-6 text-sm font-extrabold uppercase tracking-wider text-canard/60">{t('careerPage.records')}</h3>
               <ul className="mt-2 space-y-1.5 text-sm">
                 {tt.biggestWin && (
@@ -167,6 +153,8 @@ export function Career() {
             ))}
           </ol>
           <p className="mt-4 text-xs text-brun">{t('careerPage.source')}</p>
+
+          <CoachLifeSection saveId={saveId} life={settings?.coachLife} spells={career.spells} gameDate={kept.at(-1)?.gameDate ?? null} />
         </>
       )}
 

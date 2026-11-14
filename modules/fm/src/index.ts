@@ -89,6 +89,7 @@ export * from './cups';
 export * from './club-look';
 export * from './countries';
 export * from './career';
+export * from './coach-life';
 export * from './press';
 export * from './match-review';
 export * from './tactic-todo';

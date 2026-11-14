@@ -5787,7 +5787,7 @@
       "trophies_other": "Trophies",
       "best": "Best finish"
     },
-    "honours": "Honours",
+    "honours": "Trophy cabinet",
     "noTrophy": "No trophy yet. The first one will come.",
     "records": "Records",
     "biggestWin": "Biggest win: {{score}} against {{opponent}} ({{club}})",
@@ -6427,6 +6427,65 @@
       "later": "Later",
       "thanks": "Answers sent to FM Immersion. Thanks, boss!",
       "inGame": "You can also answer right inside FM27: the press window opens over the game (F8 key)."
+    }
+  },
+  "coachLife": {
+    "title": "Off the pitch",
+    "intro": "Your coach's life away from the club: what your career has earned you, your family and the big moments. Everything stays in the app, nothing is changed in your save.",
+    "money": {
+      "title": "Personal finances",
+      "help": "Enter the salary for each club (you'll find it in your contract, on your manager profile in FM27). The app counts the days spent at each club.",
+      "gross": "Earned (gross)",
+      "net": "After tax ({{rate}}%)",
+      "savings": "Saved",
+      "monthly": "Net per month today",
+      "club": "Club",
+      "weekly": "Weekly salary",
+      "earned": "Earned",
+      "wagePlaceholder": "to fill in",
+      "weeklyOf": "Weekly salary at {{club}}",
+      "currency": "Currency",
+      "tax": "Tax and charges",
+      "costs": "Household spending per month",
+      "missing_one": "One club has no salary yet: it isn't counted in the totals.",
+      "missing_other": "{{count}} clubs have no salary yet: they aren't counted in the totals."
+    },
+    "home": {
+      "title": "Family",
+      "help": "Your family, if you want to give it a place in your career. Children's ages follow the game date.",
+      "photoPick": "Add a family photo",
+      "photoAlt": "Family photo",
+      "photoRemove": "Remove photo",
+      "photoError": "This image couldn't be read.",
+      "partner": "Partner",
+      "partnerPlaceholder": "First name",
+      "since": "Together since",
+      "children": "Children",
+      "noChild": "No children yet.",
+      "age_one": "{{count}} year old",
+      "age_other": "{{count}} years old",
+      "unborn": "not born yet",
+      "remove": "Remove",
+      "childName": "First name",
+      "childBorn": "Date of birth",
+      "addChild": "Add"
+    },
+    "stage": {
+      "baby": "toddler",
+      "nursery": "nursery school",
+      "primary": "primary school",
+      "middle": "middle school",
+      "high": "high school",
+      "adult": "adult"
+    },
+    "journal": {
+      "title": "Life journal",
+      "arrival": "Joined {{club}}",
+      "left": "Left {{club}}",
+      "sacked": "Sacked by {{club}}",
+      "trophy": "{{trophy}} with {{club}} ({{season}})",
+      "partner": "Moved in with {{name}}",
+      "birth": "{{name}} was born"
     }
   }
 }

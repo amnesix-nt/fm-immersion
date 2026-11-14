@@ -1,5 +1,5 @@
 import { saves } from '@fm-immersion/db';
-import { addBaseTarget, refreshBaseTarget, carryRoleStars, fmSnapshotSchema, fmStatusSchema, type DbPlayer, type FmStatus, type GazetteWriting, type LeavingMark, type LeavingMarks, mergeTargets, type FmSnapshot, type TargetRecord } from '@fm-immersion/module-fm';
+import { addBaseTarget, refreshBaseTarget, carryRoleStars, fmSnapshotSchema, fmStatusSchema, type DbPlayer, type CoachLife, type FmStatus, type GazetteWriting, type LeavingMark, type LeavingMarks, mergeTargets, type FmSnapshot, type TargetRecord } from '@fm-immersion/module-fm';
 import { fmGazetteWriting, fmPressConferences, fmSnapshots, fmTargets, type FmPressConferenceRow } from '@fm-immersion/module-fm/schema';
 import { and, asc, desc, eq, lte, ne } from 'drizzle-orm';
 import { challengesRepo } from './challenges';
@@ -38,6 +38,8 @@ export interface FmSaveSettings {
   careerCountries?: Record<string, string>;
   /** Clubs écartés de « Ma carrière » par le joueur (jours importés d'une autre sauvegarde, test…), par nom. */
   careerHidden?: string[];
+  /** Vie du coach hors terrain dans « Ma carrière » (salaires, foyer), saisie par le joueur. Rien n'est écrit dans FM27. */
+  coachLife?: CoachLife;
 }
 
 /**

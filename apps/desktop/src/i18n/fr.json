@@ -5787,7 +5787,7 @@
       "trophies_other": "Titres",
       "best": "Meilleure place"
     },
-    "honours": "Palmarès",
+    "honours": "Vitrine des trophées",
     "noTrophy": "Pas encore de titre. Le premier viendra.",
     "records": "Records",
     "biggestWin": "Plus large victoire : {{score}} contre {{opponent}} ({{club}})",
@@ -6427,6 +6427,65 @@
       "later": "Plus tard",
       "thanks": "Réponses envoyées à FM Immersion. Merci coach !",
       "inGame": "Tu peux aussi répondre directement dans FM27 : la fenêtre de conférence s'ouvre par-dessus le jeu (touche F8)."
+    }
+  },
+  "coachLife": {
+    "title": "Hors terrain",
+    "intro": "La vie du coach en dehors du club : ce que ta carrière t'a rapporté, ton foyer et les grands moments. Tout reste dans l'appli, rien n'est changé dans ta partie.",
+    "money": {
+      "title": "Finances perso",
+      "help": "Note le salaire de chaque club (tu le trouves dans ton contrat, sur ton profil de manager dans FM27). L'appli compte les jours passés dans chaque club.",
+      "gross": "Gagné (brut)",
+      "net": "Après impôts ({{rate}} %)",
+      "savings": "De côté",
+      "monthly": "Net par mois aujourd'hui",
+      "club": "Club",
+      "weekly": "Salaire par semaine",
+      "earned": "Gagné",
+      "wagePlaceholder": "à remplir",
+      "weeklyOf": "Salaire par semaine à {{club}}",
+      "currency": "Devise",
+      "tax": "Impôts et charges",
+      "costs": "Dépenses du foyer par mois",
+      "missing_one": "Un club n'a pas encore de salaire : il ne compte pas dans les totaux.",
+      "missing_other": "{{count}} clubs n'ont pas encore de salaire : ils ne comptent pas dans les totaux."
+    },
+    "home": {
+      "title": "Le foyer",
+      "help": "Ta famille, si tu veux lui donner une place dans ta carrière. L'âge des enfants suit la date de jeu.",
+      "photoPick": "Ajouter une photo de famille",
+      "photoAlt": "Photo de famille",
+      "photoRemove": "Retirer la photo",
+      "photoError": "Cette image n'a pas pu être lue.",
+      "partner": "Conjoint ou conjointe",
+      "partnerPlaceholder": "Prénom",
+      "since": "Ensemble depuis",
+      "children": "Enfants",
+      "noChild": "Pas d'enfant pour l'instant.",
+      "age_one": "{{count}} an",
+      "age_other": "{{count}} ans",
+      "unborn": "pas encore né",
+      "remove": "Retirer",
+      "childName": "Prénom",
+      "childBorn": "Date de naissance",
+      "addChild": "Ajouter"
+    },
+    "stage": {
+      "baby": "tout-petit",
+      "nursery": "maternelle",
+      "primary": "école primaire",
+      "middle": "collège",
+      "high": "lycée",
+      "adult": "adulte"
+    },
+    "journal": {
+      "title": "Journal de vie",
+      "arrival": "Arrivée à {{club}}",
+      "left": "Départ de {{club}}",
+      "sacked": "Limogé par {{club}}",
+      "trophy": "{{trophy}} avec {{club}} ({{season}})",
+      "partner": "Début de la vie commune avec {{name}}",
+      "birth": "Naissance de {{name}}"
     }
   }
 }
