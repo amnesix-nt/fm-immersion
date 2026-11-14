@@ -337,7 +337,10 @@
         "help": "Cette liste reprend les conseils des cadres plus bas (derniers matchs, consignes d'équipe, consignes individuelles, avis de l'adjoint), dans l'ordre où ils pèsent sur tes résultats. Elle se vide à mesure que tu règles ta tactique dans FM27 et que l'appli relit la partie. Rien n'est modifié dans le jeu : c'est toi qui décides.",
         "more_one": "Voir le {{count}} autre point",
         "more_other": "Voir les {{count}} autres points",
-        "less": "Réduire la liste"
+        "less": "Réduire la liste",
+        "left_one": "· {{count}} à régler",
+        "left_other": "· {{count}} à régler",
+        "left_zero": "· tout est réglé"
       },
       "review": {
         "title": "Ce que disent tes derniers matchs",
@@ -402,7 +405,8 @@
           "condition": "{{pos}} : {{better}} ({{betterFit}}) est mieux noté que {{starter}} ({{starterFit}}), mais il est fatigué ({{value}} %). Il reprend sa place une fois reposé.",
           "morale": "{{pos}} : {{better}} ({{betterFit}}) est mieux noté que {{starter}} ({{starterFit}}), mais son moral est bas ({{morale}}). Une discussion ou du temps de jeu peut le relancer.",
           "risk": "{{pos}} : {{better}} ({{betterFit}}) est mieux noté que {{starter}} ({{starterFit}}), mais le jeu lui donne un risque de blessure élevé. Il reprend sa place une fois reposé."
-        }
+        },
+        "titleBench": "Doublures et joueurs à relancer"
       },
       "tiAdvice": {
         "title": "Adapté à ton onze",
@@ -2903,7 +2907,8 @@
         "game": "Schéma de ta tactique FM27 {{tactic}} ({{form}}), comme en Tactique.",
         "suggested": "Schéma de la compo suggérée en Tactique ({{form}}).",
         "built": "Schéma de ta tactique construite en Tactique ({{form}})."
-      }
+      },
+      "board": "Vestiaire"
     },
     "results": {
       "title": "Résultats",
@@ -3879,6 +3884,83 @@
       },
       "help": "Joueurs de la réserve et des équipes de jeunes de ton club, lus par le plugin (les joueurs prêtés sont dans l'onglet Prêts). Niveau actuel et potentiel : étoiles de ton staff. Niveau et plafond des meilleurs espoirs : adéquation sur 20 au rôle de ton projet de jeu où le joueur est le plus adapté, aujourd'hui et ce qu'il peut atteindre (d'après son âge et son potentiel). « À faire » compare son adéquation à celle des titulaires de ton équipe première. Contrat bientôt fini : 6 mois ou moins. La limite d'âge vient du nom de l'équipe (U19 = 19 ans) ; dans le jeu, elle se compte au début de la saison.",
       "starsHint": "Niveau actuel puis potentiel, en étoiles, d'après ton staff."
+    },
+    "tabsMore": "Plus",
+    "prep": {
+      "title": "Préparation du match",
+      "brief": "Brief de l'adjoint",
+      "calendar": "Calendrier",
+      "noMatch": "Pas de match prévu",
+      "done": "Fait dans FM27",
+      "inDays_one": "demain",
+      "inDays_other": "dans {{count}} jours",
+      "inDays_zero": "aujourd'hui",
+      "home": "Domicile",
+      "away": "Extérieur",
+      "xi": "Le onze",
+      "bench": "Remplaçants",
+      "toStart": "à titulariser",
+      "noBench": "Pas de remplaçant dans l'effectif.",
+      "formation": "Formation",
+      "movesLegend": "Flèche : où le joueur monte quand ton équipe a le ballon"
+    },
+    "squadBoard": {
+      "title": "Effectif professionnel",
+      "count_one": "{{count}} joueur",
+      "count_other": "{{count}} joueurs",
+      "line": {
+        "all": "Tous",
+        "GB": "Gardiens",
+        "DEF": "Défenseurs",
+        "MIL": "Milieux",
+        "ATT": "Attaquants"
+      },
+      "table": "Tableau détaillé",
+      "col": {
+        "num": "N°",
+        "player": "Joueur",
+        "pos": "Poste",
+        "form": "Forme",
+        "last": "Dernière note",
+        "age": "Âge",
+        "apps": "MJ",
+        "goals": "Buts",
+        "avg": "Moy.",
+        "condition": "Cond."
+      },
+      "age_one": "{{count}} an",
+      "age_other": "{{count}} ans",
+      "apps": "matchs",
+      "goals": "buts",
+      "avg": "note moy.",
+      "lastRatings": "Dernières notes",
+      "noRatings": "Pas encore de note relevée en match officiel.",
+      "sheet": "Fiche du joueur",
+      "compare": "Comparer",
+      "stat": {
+        "level": "Niveau / pot.",
+        "condition": "Condition",
+        "sharpness": "Rythme",
+        "morale": "Moral",
+        "goalsPerMatch": "Buts / match",
+        "status": "Statut",
+        "contract": "Fin de contrat",
+        "value": "Valeur",
+        "wage": "Salaire",
+        "foot": "Pied fort",
+        "hierarchy": "Vestiaire",
+        "personality": "Personnalité"
+      },
+      "season": {
+        "title": "En match cette saison",
+        "minutes_one": "{{count}} minute",
+        "minutes_other": "{{count}} minutes",
+        "none": "Pas encore de statistiques de match pour lui cette saison.",
+        "rank": "Rang parmi les joueurs de sa ligne",
+        "legend": "Barre : son rang dans sa ligne, du vert (parmi les meilleurs) au rouge.",
+        "few": "Moins de 3 matchs complets : pas encore de comparaison.",
+        "at": "Relevé du {{date}}."
+      }
     }
   },
   "modes": {
@@ -5371,7 +5453,9 @@
         "mercato": "Pas de décision de mercato ni de finances à prendre cette semaine."
       },
       "todo_one": "À faire ici",
-      "todo_other": "À faire ici ({{count}})"
+      "todo_other": "À faire ici ({{count}})",
+      "elsewhereShort_one": "{{count}} autre point ailleurs",
+      "elsewhereShort_other": "{{count}} autres points ailleurs"
     },
     "state": {
       "open": "FM27 ouvert",
@@ -6657,5 +6741,15 @@
         }
       }
     }
+  },
+  "topbar": {
+    "office": "Bureau",
+    "club": "Club",
+    "competitions": "Compétitions",
+    "media": "Médias",
+    "career": "Carrière",
+    "screens": "Écrans",
+    "coach": "Ma carrière et mon coach",
+    "coachShort": "Moi"
   }
 }

@@ -27,6 +27,8 @@ export default {
       fontFamily: {
         display: ['"Fraunces Variable"', 'Georgia', 'serif'],
         sans: ['"Nunito Variable"', 'system-ui', 'sans-serif'],
+        // Titres « tableau de bord » (préparation du match) : la police du logo, condensée (OFL).
+        cond: ['"Barlow Condensed"', '"Arial Narrow"', 'sans-serif'],
       },
     },
   },

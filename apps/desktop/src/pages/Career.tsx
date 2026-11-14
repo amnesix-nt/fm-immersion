@@ -9,7 +9,8 @@ import { PageHero } from '../components/PageHero';
 import { useCareer } from '../lib/career';
 import { useFmFolder } from '../lib/fm-sync';
 import { FmHistoryImport } from './FmSave';
-import { clubLogoUrl, clubLook, rememberClubLooks } from '../lib/club-look';
+import { clubLook, rememberClubLooks } from '../lib/club-look';
+import { Crest } from '../components/Crest';
 import { fmData } from '../lib/data';
 import { useHistory } from '../lib/fm-cache';
 import { trophyName } from '../lib/farewell-text';
@@ -192,23 +193,6 @@ function Tile({ value, label, accent }: { value: string; label: string; accent?:
       <p className="font-display text-2xl font-semibold tabular-nums">{value}</p>
       <p className="mt-0.5 text-xs font-bold uppercase tracking-wide text-canard/60">{label}</p>
     </div>
-  );
-}
-
-/** Écusson du club : son logo (pack du joueur), sinon un rond à ses couleurs avec son sigle. */
-function Crest({ club, size = 40 }: { club: string; size?: number }) {
-  const { data: logo } = useQuery({ queryKey: ['clubLogo', club], queryFn: () => clubLogoUrl(club), staleTime: Infinity });
-  const look = clubLook(club);
-  if (logo) return <img src={logo} alt="" width={size} height={size} className="shrink-0 object-contain" />;
-  const bg = look?.colors[0] ?? '#0F1B2D';
-  return (
-    <span
-      className={`flex shrink-0 items-center justify-center rounded-full font-extrabold ${crestLetters(club, look?.abbr).length > 3 ? 'text-[10px]' : 'text-xs'}`}
-      style={{ width: size, height: size, background: bg, color: inkOn(bg), boxShadow: `inset 0 0 0 3px ${look?.colors[1] ?? '#FFB547'}` }}
-      aria-hidden
-    >
-      {crestLetters(club, look?.abbr)}
-    </span>
   );
 }
 

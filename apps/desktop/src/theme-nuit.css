@@ -1,0 +1,38 @@
+/*
+ * Thème « nuit » (maquettes du joueur, 14/11/2026) : toute l'appli sur fond bleu nuit, cadres un ton plus clair,
+ * texte clair, ambre pour les liens et l'action. Les écrans gardent leurs classes (canard = texte, white = cadre,
+ * creme = fond) : `theme-nuit.generated.css` les retourne, ce fichier règle les composants et les cas particuliers.
+ */
+.theme-nuit { color-scheme: dark; }
+.theme-nuit body { background: #0C1626; color: #E7EBF2; }
+
+/* Composants communs */
+.theme-nuit .card { background: #16263E; --tw-ring-color: rgb(255 255 255 / 0.07); box-shadow: none; }
+.theme-nuit .fm .card h2, .theme-nuit .fm .card h3 { color: #E7EBF2; }
+.theme-nuit .fm .card h3 { color: rgb(231 235 242 / 0.6); }
+.theme-nuit .input { background: #0F1C30; border-color: rgb(255 255 255 / 0.18); color: #E7EBF2; }
+.theme-nuit .chip { background: #16263E; color: #E7EBF2; --tw-ring-color: rgb(255 255 255 / 0.15); }
+.theme-nuit .chip:hover { background: #1E3150; }
+.theme-nuit .chip-on, .theme-nuit .chip-on:hover { background: #FFB547; color: #0F1B2D; --tw-ring-color: #FFB547; }
+.theme-nuit .pill { background: #3D2C10; color: #FFE2B0; }
+.theme-nuit .fm .pill { background: rgb(255 255 255 / 0.1); color: #E7EBF2; }
+.theme-nuit .btn-primary { color: #0F1B2D; }
+.theme-nuit .btn-secondary { background: #3D2C10; color: #FFE2B0; }
+.theme-nuit .help { color: #A7B2C6; }
+.theme-nuit .data-table thead { border-color: rgb(255 255 255 / 0.12); }
+.theme-nuit .data-table th { color: rgb(231 235 242 / 0.6); }
+.theme-nuit .data-table tbody tr { border-color: rgb(255 255 255 / 0.06); }
+.theme-nuit .data-table tbody tr:hover { background: rgb(255 181 71 / 0.08); }
+.theme-nuit .fm .data-table thead { background: rgb(255 255 255 / 0.04); }
+.theme-nuit .fm .data-table tbody tr:nth-child(even) { background: rgb(255 255 255 / 0.025); }
+.theme-nuit .data-table.wide thead th, .theme-nuit .fm .data-table.wide thead th,
+.theme-nuit .data-table.wide th:first-child, .theme-nuit .data-table.wide td:first-child { background: #16263E; }
+.theme-nuit details > summary { color: inherit; }
+.theme-nuit select option { background: #16263E; color: #E7EBF2; }
+
+/* Sur un fond vif (ambre, vert, jaune), le texte reste bleu nuit, même s'il porte la classe du texte clair. */
+.theme-nuit :is(.bg-orange, .bg-ambre, .bg-eau, .bg-eau-soutenu, .bg-white\/90),
+.theme-nuit :is(.bg-orange, .bg-ambre, .bg-eau, .bg-eau-soutenu) :is(.text-canard, .text-brun, .text-canard\/60, .text-canard\/70, .text-canard\/80) { color: #0F1B2D; }
+
+/* Titres de page : plus de contraste sur le fond sombre. */
+.theme-nuit h1 { color: #FFFFFF; }
