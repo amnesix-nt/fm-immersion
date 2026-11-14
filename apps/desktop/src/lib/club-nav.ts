@@ -8,7 +8,7 @@ export type ClubPage = (typeof CLUB_PAGES)[number];
 
 export const PARTS: Record<ClubPage, readonly string[]> = {
   tactic: ['tactic', 'instructions', 'builder', 'opponent', 'depth', 'calendar', 'style', 'effectiveness', 'project', 'training', 'staff'],
-  squad: ['squad', 'playtime', 'dressing', 'progression', 'roles', 'compare', 'numbers', 'loans'],
+  squad: ['squad', 'playtime', 'dressing', 'progression', 'roles', 'compare', 'numbers', 'loans', 'academy'],
   results: ['results', 'diagnosis', 'stats', 'analysis'],
   mercato: ['mercato', 'scouting', 'targets', 'finances', 'wages', 'contracts'],
 };
@@ -19,7 +19,7 @@ export const PARTS: Record<ClubPage, readonly string[]> = {
  */
 export const TABS: Record<ClubPage, readonly (readonly string[])[]> = {
   tactic: ['tactic', 'instructions', 'builder', 'opponent', 'calendar', 'training', 'depth', 'style', 'effectiveness', 'project', 'staff'].map((v) => [v]),
-  squad: ['squad', 'loans', 'numbers', 'playtime', 'dressing', 'progression', 'roles', 'compare'].map((v) => [v]),
+  squad: ['squad', 'academy', 'loans', 'numbers', 'playtime', 'dressing', 'progression', 'roles', 'compare'].map((v) => [v]),
   results: [['results'], ['diagnosis'], ['stats'], ['analysis']],
   mercato: [['mercato'], ['scouting'], ['targets'], ['finances'], ['wages'], ['contracts']],
 };

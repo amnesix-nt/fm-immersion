@@ -74,6 +74,7 @@ import { FmResults } from './FmResults';
 import { FmDiagnosis } from './FmDiagnosis';
 import { FmStyle } from './FmStyle';
 import { FmBuilder } from './FmBuilder';
+import { FmAcademy } from './FmAcademy';
 import { FmTactic, ProjectProvider, ReserveContext, useTacticEngine } from './FmTactic';
 import { FmTargets } from './FmTargets';
 import { FmScouting } from './FmScouting';
@@ -209,6 +210,8 @@ export function FmSave({ page }: { page?: 'home' | 'settings' }) {
         return <FmDressing players={players} />;
       case 'loans':
         return <FmLoans snap={snapshot.data} />;
+      case 'academy':
+        return <FmAcademy players={players} folder={folder} gameDate={snapshot.gameDate} />;
       case 'numbers':
         return <FmShirts players={players} folder={folder} gameFormation={gameFormation} gameTactic={typeof snapshot.data.tactic?.name === 'string' ? snapshot.data.tactic.name : null} />;
       case 'tactic':

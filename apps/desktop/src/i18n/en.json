@@ -626,7 +626,8 @@
       "staff": "Staff",
       "numbers": "Shirt numbers",
       "playtime": "Playing time",
-      "builder": "Build"
+      "builder": "Build",
+      "academy": "Academy"
     },
     "home": {
       "todo": "To deal with",
@@ -1862,7 +1863,8 @@
       "diagnosis": "Starters below the eleven's average, and why.",
       "numbers": "Suggested squad numbers for the season: 1 to 11 for the starters by position, each position's backup right behind.",
       "staff": "Your coaches' ratings by area: who should handle what, and which free coach would fill a gap.",
-      "builder": "Your tactic from scratch: positions and roles in and out of possession, style, and what holds up or doesn't."
+      "builder": "Your tactic from scratch: positions and roles in and out of possession, style, and what holds up or doesn't.",
+      "academy": "Your reserve and youth teams: overview, decisions to make and best prospects."
     },
     "nextStep": "Next step: {{view}}",
     "opp": {
@@ -2664,7 +2666,8 @@
       "targets": "Targets",
       "finances": "Finances",
       "wages": "Wages",
-      "contracts": "Contracts"
+      "contracts": "Contracts",
+      "academy": "Academy"
     },
     "subtabs": {
       "squad": "Players",
@@ -3838,6 +3841,44 @@
       "missing": "Missing:",
       "bar": "XI level {{bar}}",
       "subAhead": "Backup rates higher"
+    },
+    "academy": {
+      "title": "Academy",
+      "none": "No reserve or youth player has been read yet. The plugin reads them as soon as your save is loaded in FM27.",
+      "noAttributes_one": "{{count}} reserve or youth player is read, but not their attributes yet: reload the save in FM27.",
+      "noAttributes_other": "{{count}} reserve and youth players are read, but not their attributes yet: reload the save in FM27.",
+      "players_one": "{{count}} player",
+      "players_other": "{{count}} players",
+      "avgAge": "average age {{age}}",
+      "todo_one": "{{count}} decision to make",
+      "todo_other": "{{count}} decisions to make",
+      "noAlert": "Nothing to decide right now: no contract ending, nobody too old for their age group.",
+      "alert": {
+        "promote": "Ready for the first team",
+        "contract": "Contract to extend",
+        "ageOut": "Last season in his age group",
+        "release": "Spot to free up"
+      },
+      "alertText": {
+        "promote": "{{team}}: already at your starters' level for his role. Have him train with the first team.",
+        "contract": "{{team}}: contract until {{date}}. He has potential, don't let him leave for free.",
+        "ageOut": "{{team}}: {{age}} years old, he will be over the age (under {{limit}}) next season. Plan to move him up to the reserve or first team, loan him out or release him.",
+        "release": "{{team}}: {{age}} years old with little potential. He's taking the place of a more promising youngster.",
+        "releaseContract": "{{team}}: contract until {{date}} and little potential. You can let him go when it ends."
+      },
+      "prospects": "Best prospects",
+      "squad": "Squad by team",
+      "soon": "Ending soon",
+      "col": {
+        "team": "Team",
+        "now": "Level",
+        "ceiling": "Ceiling",
+        "status": "Squad status",
+        "stars": "Stars (now → potential)",
+        "contract": "Contract"
+      },
+      "help": "Reserve and youth players of your club, read by the plugin (loaned-out players are in the Loans tab). Current ability and potential: your staff's stars. Level and ceiling of the best prospects: fit out of 20 for the role of your game plan that suits the player best, today and what he can reach (from his age and potential). \"To do\" compares his fit with your first-team starters. Contract ending soon: 6 months or less. The age limit comes from the team name (U19 = 19); in the game it is counted at the start of the season.",
+      "starsHint": "Current ability then potential, in stars, according to your staff."
     }
   },
   "modes": {
