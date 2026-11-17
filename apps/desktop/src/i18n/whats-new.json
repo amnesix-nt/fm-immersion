@@ -1,5 +1,15 @@
 [
   {
+    "version": "0.1.242",
+    "date": "2026-11-17",
+    "fr": [
+      "Construire ma tactique : l'import depuis le dossier tactics lit aussi les tactiques enregistrées par d'autres outils que l'écran d'export de FM27, comme Pivot Gang Elite."
+    ],
+    "en": [
+      "Build my tactic: importing from the tactics folder now also reads tactics saved by tools other than FM27's export screen, such as Pivot Gang Elite."
+    ]
+  },
+  {
     "version": "0.1.241",
     "date": "2026-11-17",
     "fr": [

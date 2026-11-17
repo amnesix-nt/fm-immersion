@@ -7,7 +7,9 @@
 //! - répertoire à 9 + position : `02 01 "fmf." 08 00 00` puis une trame zstd : arborescence (nom, fichiers, sous-dossiers),
 //!   chaque fichier = nom, extension, u64 position (depuis l'octet 26), u64 taille stockée, u64 taille réelle, 16 octets ;
 //! - chaque fichier stocké : u32 16, u32 16, clé AES-128 (16), IV (16), puis le contenu chiffré en AES-CTR
-//!   (compteur 128 bits gros-boutiste), qui est une trame zstd.
+//!   (compteur 128 bits gros-boutiste), qui est une trame zstd. C'est la forme des exports du jeu (magie « afe. ») ;
+//!   un fichier écrit par le sérialiseur du jeu hors de l'écran d'export (magie « fmf. », ex. FM Tactics Lab) range
+//!   directement la trame zstd, sans chiffrement.
 //!
 //! On renvoie le fichier `.tac` déchiffré ; son contenu (postes, rôles, mentalité) est lu côté TypeScript
 //! (`modules/fm/src/tactic-file.ts`).
@@ -134,15 +136,21 @@ fn unzstd(data: &[u8]) -> Result<Vec<u8>, String> {
     Ok(out)
 }
 
+const ZSTD_MAGIC: [u8; 4] = [0x28, 0xb5, 0x2f, 0xfd];
+
 /// Déchiffre un fichier stocké (clé et IV en tête), puis le décompresse s'il est en zstd.
+/// Un fichier non chiffré (trame zstd directe) est seulement décompressé.
 fn unpack(seg: &[u8]) -> Result<Vec<u8>, String> {
-    if seg.len() < 40 {
-        return Err("fichier stocké trop court".into());
+    if seg.starts_with(&ZSTD_MAGIC) {
+        return unzstd(seg);
+    }
+    if seg.len() < 40 || seg[..8] != [16, 0, 0, 0, 16, 0, 0, 0] {
+        return Err("fichier stocké illisible".into());
     }
     let mut data = seg[40..].to_vec();
     let mut cipher = Aes128Ctr::new(seg[8..24].into(), seg[24..40].into());
     cipher.apply_keystream(&mut data);
-    if data.starts_with(&[0x28, 0xb5, 0x2f, 0xfd]) {
+    if data.starts_with(&ZSTD_MAGIC) {
         unzstd(&data)
     } else {
         Ok(data)
@@ -199,6 +207,9 @@ mod tests {
     use super::*;
 
     const PIVOT_GANG: &[u8] = include_bytes!("testdata/pivot-gang.fmf");
+    /// Même disposition qu'un fichier écrit par le sérialiseur du jeu (« fmf. », zstd sans chiffrement), construit
+    /// à partir du `.tac` de Pivot Gang renommé.
+    const ELITE_ZSTD: &[u8] = include_bytes!("testdata/pivot-gang-elite-zstd.fmf");
 
     #[test]
     fn lit_le_tac_d_une_tactique_exportee() {
@@ -207,6 +218,14 @@ mod tests {
         assert_eq!(&tac[2..6], b"cat.");
         let n = u32::from_le_bytes(tac[16..20].try_into().unwrap()) as usize;
         assert_eq!(&tac[20..20 + n], b"PSG adapte Slutsk - FM Immersion");
+    }
+
+    #[test]
+    fn lit_un_fichier_non_chiffre() {
+        let tac = tac_of_fmf(ELITE_ZSTD).unwrap();
+        assert_eq!(&tac[2..6], b"cat.");
+        let n = u32::from_le_bytes(tac[16..20].try_into().unwrap()) as usize;
+        assert_eq!(&tac[20..20 + n], b"Pivot Gang Elite");
     }
 
     #[test]
