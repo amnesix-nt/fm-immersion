@@ -1,5 +1,15 @@
 [
   {
+    "version": "0.1.244",
+    "date": "2026-11-17",
+    "fr": [
+      "Les joueurs lus dans le jeu (recrues, recherche, remplaçants) ont maintenant leur note d'appels : elle s'affichait « ? » et manquait dans leurs notes."
+    ],
+    "en": [
+      "Players read from the game (recruits, search, replacements) now have their Movement rating: it showed as \"?\" and was missing from their ratings."
+    ]
+  },
+  {
     "version": "0.1.243",
     "date": "2026-11-17",
     "fr": [

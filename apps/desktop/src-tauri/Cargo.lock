@@ -879,7 +879,7 @@ dependencies = [
 
 [[package]]
 name = "fm-immersion"
-version = "0.1.243"
+version = "0.1.244"
 dependencies = [
  "aes",
  "ctr",

@@ -439,7 +439,8 @@ const ATTRIBUTES: [(&str, usize); 47] = [
     ("Determination", 66),
     ("Flair", 41),
     ("Leadership", 55),
-    ("OffTheBall", 21),
+    // « Appels » : même nom que le plugin (`Movement`), utilisé partout dans l'appli.
+    ("Movement", 21),
     ("Positioning", 35),
     ("Teamwork", 43),
     ("WorkRate", 44),
