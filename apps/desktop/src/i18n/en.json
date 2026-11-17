@@ -1194,7 +1194,8 @@
         "value": "Value",
         "stars": "Potential",
         "knowledge": "Known",
-        "seen": "List"
+        "seen": "List",
+        "meta": "Meta"
       },
       "compare": "Compare",
       "outside": "outside target XI",
@@ -4212,6 +4213,36 @@
         "cards": "High Dirtiness: expect cards.",
         "fragile": "Injury-prone: watch his workload, he gets injured more often.",
         "bigGames": "Good in big matches (slight edge, not established by the tests)."
+      }
+    },
+    "tacRecruit": {
+      "title": "Signings for my tactic · {{style}} {{form}}",
+      "help": "Pick a position in your tactic: FM Immersion searches the FM27 database (read-only) and your followed targets for players who are natural in that position, and ranks them by \"position and meta\": the average of their fit to the position's two roles (in and out of possession, game rating out of 20) and their meta rating at that position (what their attributes are really worth in the match engine: pace, acceleration, stamina…). A player who suits the role but whom the engine punishes drops, a meta profile rated a bit lower rises. The search starts a little below your starter's CA and only keeps players your club can attract and afford. For goalkeepers, the meta rating comes from the Match Lab study: agility and reflexes above all.",
+      "weakest": "to strengthen",
+      "empty": "Nobody in your squad plays here",
+      "oop": "out of possession: {{role}}",
+      "starter": "Starter: {{name}} ({{note}})",
+      "backup": "backup: {{name}} ({{note}})",
+      "note": "fit {{fit}}, meta {{meta}}, position and meta {{score}}",
+      "keys": "Key attributes for the position: {{list}}",
+      "run": "Search for this position",
+      "count": "{{shown}} players in the position out of {{read}} read",
+      "hint": "Run the search: FM27 must be open with your save loaded.",
+      "followedOnly": "For now only your followed targets are ranked. Run the search to go through the whole database (FM27 open, save loaded).",
+      "none": "No player found in this position. Try without an age limit or with players out of reach.",
+      "more": "Show the {{count}} others",
+      "less": "Show less",
+      "scoreHelp": "Average of the fit to the position's roles and the meta rating at the position, out of 20.",
+      "col": {
+        "player": "Player",
+        "age": "Age",
+        "reach": "Reach",
+        "caPa": "CA / PA",
+        "fit": "Fit",
+        "meta": "Meta",
+        "score": "Position and meta",
+        "gain": "Impact",
+        "keys": "Key attributes"
       }
     }
   },

@@ -1,4 +1,5 @@
 import { roleCeiling,
+  engineValue,
   POS_LABEL,
   buildProject,
   clubFinances,
@@ -19,8 +20,10 @@ import { fmData } from "../lib/data";
 import { useFmSaveScope, writeScoped } from "../lib/save-store";
 import { FmDbSearch } from "./FmDbSearch";
 import { useTacticEngine } from "./FmTactic";
+import { FmTacticRecruits } from "./FmTacticRecruits";
 import {
   CompatTag,
+  EngineTag,
   Empty,
   Fit,
   Level,
@@ -146,6 +149,15 @@ export function FmTargets({
 
   return (
     <>
+      <FmTacticRecruits
+        saveId={saveId}
+        gameDate={snap.gameDate}
+        snap={snap}
+        engine={engine}
+        project={pr}
+        players={players}
+        followedTargets={all.filter((p) => !p.dismissed && Object.keys(p.attributes).length)}
+      />
       <Panel
         title={t("fm.targets.title", {
           style: names.style(pr.style),
@@ -180,6 +192,7 @@ export function FmTargets({
                     "club",
                     "pos",
                     "fit",
+                    "meta",
                     "gain",
                     "level",
                     "stars",
@@ -241,6 +254,9 @@ export function FmTargets({
                       </td>
                       <td className="px-2 py-1.5">
                         <Fit value={best?.fit} />
+                      </td>
+                      <td className="px-2 py-1.5">
+                        {best && best.slot.pos !== "GB" ? <EngineTag v={engineValue(p, best.slot.pos)} /> : "–"}
                       </td>
                       <td
                         className="px-2 py-1.5"

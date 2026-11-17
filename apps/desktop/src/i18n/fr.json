@@ -1194,7 +1194,8 @@
         "value": "Valeur",
         "stars": "Potentiel",
         "knowledge": "Connu",
-        "seen": "Liste"
+        "seen": "Liste",
+        "meta": "Méta"
       },
       "compare": "Comparer",
       "outside": "hors onze cible",
@@ -4212,6 +4213,36 @@
         "cards": "Agressivité déloyale élevée : attends-toi à des cartons.",
         "fragile": "Fragile : surveille sa charge, il se blesse plus souvent.",
         "bigGames": "Bon dans les grands matchs (léger avantage, pas établi par les tests)."
+      }
+    },
+    "tacRecruit": {
+      "title": "Recrues pour ma tactique · {{style}} {{form}}",
+      "help": "Choisis un poste de ta tactique : FM Immersion cherche dans la base de FM27 (lecture seule) et dans tes cibles suivies les joueurs qui jouent naturellement à ce poste, et les classe par « poste et méta » : la moyenne de leur adéquation aux deux rôles du poste (avec et sans ballon, note du jeu sur 20) et de leur note méta au poste (ce que leurs attributs valent vraiment dans le moteur de match : vitesse, accélération, endurance…). Un joueur qui colle au rôle mais que le moteur pénalise descend, un profil méta un peu moins coté monte. La recherche part d'un peu sous le CA de ton titulaire et ne garde que les joueurs que ton club peut attirer et payer. Pour les gardiens, la note méta vient de l'étude Match Lab : agilité et réflexes avant tout.",
+      "weakest": "à renforcer",
+      "empty": "Personne à ce poste dans ton effectif",
+      "oop": "sans ballon : {{role}}",
+      "starter": "Titulaire : {{name}} ({{note}})",
+      "backup": "doublure : {{name}} ({{note}})",
+      "note": "adéq. {{fit}}, méta {{meta}}, poste et méta {{score}}",
+      "keys": "Attributs clés du poste : {{list}}",
+      "run": "Chercher pour ce poste",
+      "count": "{{shown}} joueurs au poste sur {{read}} lus",
+      "hint": "Lance la recherche : FM27 doit être ouvert avec ta partie chargée.",
+      "followedOnly": "Pour l'instant, seules tes cibles suivies sont classées. Lance la recherche pour fouiller toute la base (FM27 ouvert, partie chargée).",
+      "none": "Aucun joueur trouvé à ce poste. Essaie sans limite d'âge ou avec les joueurs hors de portée.",
+      "more": "Voir les {{count}} autres",
+      "less": "Voir moins",
+      "scoreHelp": "Moyenne de l'adéquation aux rôles du poste et de la note méta au poste, sur 20.",
+      "col": {
+        "player": "Joueur",
+        "age": "Âge",
+        "reach": "Portée",
+        "caPa": "CA / PA",
+        "fit": "Adéq.",
+        "meta": "Méta",
+        "score": "Poste et méta",
+        "gain": "Apport",
+        "keys": "Attributs clés"
       }
     }
   },
