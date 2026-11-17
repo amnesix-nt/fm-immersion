@@ -18,6 +18,10 @@ describe('progression sur le CA réel', () => {
     const snap = withAbilities({ players: [{ id: 7, name: 'X' }], abilities: { '7': { ca: 55, pa: -75 } } });
     const x = normalizePlayer(snap.players[0] as never);
     expect([x.ca, x.pa]).toEqual([55, null]);
+    expect(x.hidden).toBeNull();
+    // Les attributs cachés lus avec le CA/PA suivent ; une valeur hors 1-20 est écartée.
+    const h = withAbilities({ players: [{ id: 7, name: 'X' }], abilities: { '7': { ca: 55, pa: 90, hidden: { Consistency: 14, Dirtiness: 0 } } } });
+    expect(normalizePlayer(h.players[0] as never).hidden).toEqual({ Consistency: 14 });
   });
 });
 

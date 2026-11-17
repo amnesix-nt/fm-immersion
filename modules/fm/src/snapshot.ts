@@ -52,7 +52,18 @@ export const fmSnapshotSchema = z
      * CA et PA réels (0-200) lus par FM Immersion dans la mémoire du jeu (lecture seule, si le joueur l'a activé), par id
      * de joueur, à la date de l'instantané. Échelle fixe, contrairement aux étoiles relatives à l'effectif.
      */
-    abilities: z.record(z.object({ ca: z.number(), pa: z.number() })).nullish(),
+    abilities: z
+      .record(
+        z.object({
+          ca: z.number(),
+          pa: z.number(),
+          /** Attributs cachés (régularité, saleté, grands matchs, fragilité, polyvalence), lus avec le CA/PA. */
+          hidden: z.record(z.number()).nullish(),
+          /** Octets de personnalité candidats, bruts (place de la pression à confirmer). */
+          personalityRaw: z.array(z.number()).nullish(),
+        }),
+      )
+      .nullish(),
   })
   .passthrough();
 

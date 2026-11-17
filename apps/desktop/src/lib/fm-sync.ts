@@ -111,7 +111,7 @@ export function useFmSync() {
         abilitiesTry.current = Date.now();
         const latest = await fmData.latest(saveId);
         if (!latest || latest.data.abilities || latest.gameDate === abilitiesDate.current) return;
-        const r = await invoke<{ gameDate: string | null; players: { id: number; ca: number; pa: number }[] }>('fm_memory_abilities');
+        const r = await invoke<{ gameDate: string | null; players: { id: number; ca: number; pa: number; hidden?: Record<string, number>; personalityRaw?: number[] | null }[] }>('fm_memory_abilities');
         // La mémoire peut être en avance sur l'instantané (écrit toutes les 5 minutes) : on attend la même date.
         if (stop || r.gameDate?.slice(0, 10) !== latest.gameDate.slice(0, 10) || !r.players.length) return;
         if (await fmData.attachAbilities(saveId, latest.gameDate, r.players)) {

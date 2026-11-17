@@ -850,7 +850,12 @@
       "Reflexes": "Réflexes",
       "RushingOut": "Sorties",
       "TendencyToPunch": "Tendance à boxer",
-      "Throwing": "Relances main"
+      "Throwing": "Relances main",
+      "Consistency": "Régularité",
+      "Dirtiness": "Agressivité déloyale",
+      "ImportantMatches": "Grands matchs",
+      "InjuryProneness": "Fragilité",
+      "Versatility": "Polyvalence"
     },
     "attrGroup": {
       "technical": "Technique",
@@ -4199,6 +4204,15 @@
       "age_one": "{{count}} an",
       "age_other": "{{count}} ans",
       "help": "FM27 a annoncé l'accord, mais ne l'inscrit dans ton effectif qu'à la signature effective, parfois quelques jours plus tard. D'ici là, il n'entre ni dans les compos ni dans l'analyse."
+    },
+    "hidden": {
+      "title": "Attributs cachés",
+      "help": "Lus dans la mémoire de FM27 avec le CA/PA (option « Lire le CA/PA »), le jeu ne les montre pas. D'après les tests de Match Lab (12 800 matchs), aucun ne change le résultat d'un match de façon nette : ils ne comptent pas dans la note méta. L'agressivité déloyale donne des cartons (à 20 : un carton de plus par match) et la fragilité joue sur les blessures au fil de la saison. Pour la fragilité et l'agressivité, plus bas vaut mieux.",
+      "note": {
+        "cards": "Agressivité déloyale élevée : attends-toi à des cartons.",
+        "fragile": "Fragile : surveille sa charge, il se blesse plus souvent.",
+        "bigGames": "Bon dans les grands matchs (léger avantage, pas établi par les tests)."
+      }
     }
   },
   "modes": {

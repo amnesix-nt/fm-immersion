@@ -120,3 +120,12 @@ describe('indice moteur (tests d’attributs FM27)', () => {
     expect(fitMetaScore(null, null)).toBeNull();
   });
 });
+
+describe('attributs cachés', () => {
+  it('signale cartons, fragilité et grands matchs, rien sans lecture', async () => {
+    const { hiddenNotes } = await import('../src');
+    expect(hiddenNotes(null)).toEqual([]);
+    expect(hiddenNotes({ Dirtiness: 17, InjuryProneness: 4, ImportantMatches: 16 })).toEqual(['cards', 'bigGames']);
+    expect(hiddenNotes({ Dirtiness: 8, InjuryProneness: 15 })).toEqual(['fragile']);
+  });
+});

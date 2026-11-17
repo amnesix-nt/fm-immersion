@@ -850,7 +850,12 @@
       "Reflexes": "Reflexes",
       "RushingOut": "Rushing out",
       "TendencyToPunch": "Tendency to punch",
-      "Throwing": "Throwing"
+      "Throwing": "Throwing",
+      "Consistency": "Consistency",
+      "Dirtiness": "Dirtiness",
+      "ImportantMatches": "Important Matches",
+      "InjuryProneness": "Injury Proneness",
+      "Versatility": "Versatility"
     },
     "attrGroup": {
       "technical": "Technical",
@@ -4199,6 +4204,15 @@
       "age_one": "{{count}} year old",
       "age_other": "{{count}} years old",
       "help": "FM27 announced the deal but only adds him to your squad once the signing is completed, sometimes a few days later. Until then he stays out of line-ups and analysis."
+    },
+    "hidden": {
+      "title": "Hidden attributes",
+      "help": "Read from FM27's memory along with CA/PA (\"Read CA/PA\" option); the game doesn't show them. According to Match Lab's tests (12,800 matches), none of them clearly changes a match result, so they don't count in the meta rating. Dirtiness brings cards (at 20: one more card per match) and Injury Proneness affects injuries over a season. For Injury Proneness and Dirtiness, lower is better.",
+      "note": {
+        "cards": "High Dirtiness: expect cards.",
+        "fragile": "Injury-prone: watch his workload, he gets injured more often.",
+        "bigGames": "Good in big matches (slight edge, not established by the tests)."
+      }
     }
   },
   "modes": {

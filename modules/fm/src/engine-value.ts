@@ -315,6 +315,26 @@ export function engineValue(p: Pick<FmPlayer, 'attributes' | 'positions'>, at?: 
   };
 }
 
+/** Attributs cachés lus dans la mémoire du jeu, dans l'ordre d'affichage. */
+export const HIDDEN_ATTRS = ['Consistency', 'ImportantMatches', 'InjuryProneness', 'Versatility', 'Dirtiness'] as const;
+
+export type HiddenNote = 'cards' | 'fragile' | 'bigGames';
+
+/**
+ * Ce que les attributs cachés changent vraiment, d'après Match Lab (étude 11, 12 800 matchs) : aucun ne change les
+ * résultats d'un match de façon mesurable (régularité, grands matchs, fragilité et polyvalence comptent pour 0 dans
+ * l'indice). La saleté donne des cartons (20 : un carton de plus par match). Signalés : saleté 15 ou plus, fragilité
+ * 15 ou plus (blessures sur une saison, hors du match), grands matchs 15 ou plus (léger mieux, non établi).
+ */
+export function hiddenNotes(hidden: Record<string, number> | null | undefined): HiddenNote[] {
+  if (!hidden) return [];
+  const out: HiddenNote[] = [];
+  if ((hidden.Dirtiness ?? 0) >= 15) out.push('cards');
+  if ((hidden.InjuryProneness ?? 0) >= 15) out.push('fragile');
+  if ((hidden.ImportantMatches ?? 0) >= 15) out.push('bigGames');
+  return out;
+}
+
 export type EngineTier = 'top' | 'good' | 'average' | 'poor';
 
 /** Repères pour la pastille : un joueur à 12 partout vaut 0. */

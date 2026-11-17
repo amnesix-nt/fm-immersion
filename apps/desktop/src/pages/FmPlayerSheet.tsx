@@ -2,6 +2,8 @@ import { roleCeiling,
   ATTR_GROUPS,
   buildProject,
   engineValue,
+  HIDDEN_ATTRS,
+  hiddenNotes,
   levelSeries,
   matchStatsFull,
   mercatoAdvice,
@@ -471,6 +473,34 @@ export function FmPlayerSheet({
           })}
         </div>
       </Section>
+      {/* Attributs cachés : lus dans la mémoire du jeu avec le CA/PA (option du joueur). */}
+      {p.hidden && (
+        <Section title={t('fm.hidden.title')} help={t('fm.hidden.help')}>
+          <div className="grid gap-x-6 sm:grid-cols-3">
+            {HIDDEN_ATTRS.filter((k) => p.hidden![k] != null).map((k) => {
+              const v = p.hidden![k]!;
+              return (
+                <div key={k} className="grid grid-cols-[1fr_3rem_1.75rem] items-center gap-1.5 py-px text-sm">
+                  <span className="truncate text-canard">{attrLabel(k)}</span>
+                  <span className="block h-1.5 overflow-hidden rounded-full bg-canard/10" aria-hidden>
+                    <span className={`block h-full rounded-full ${barTone(k === 'Dirtiness' || k === 'InjuryProneness' ? 21 - v : v)}`} style={{ width: `${(v / 20) * 100}%` }} />
+                  </span>
+                  <AttrValue value={v} />
+                </div>
+              );
+            })}
+          </div>
+          {hiddenNotes(p.hidden).length > 0 && (
+            <ul className="mt-2 space-y-1 text-sm">
+              {hiddenNotes(p.hidden).map((n) => (
+                <li key={n}>
+                  <Tag tone={n === 'bigGames' ? 'good' : 'warn'}>{t(`fm.hidden.note.${n}`)}</Tag>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Section>
+      )}
       {/* Indice moteur : le poids réel de ses attributs dans le moteur de FM27 (tests de la communauté). */}
       <Section title={<>{t('fm.engine.heading')} {engineVal && <EngineTag v={engineVal} />}</>} help={t('fm.engine.help')}>
         {!engineVal ? (

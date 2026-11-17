@@ -446,6 +446,18 @@ const ATTRIBUTES: [(&str, usize); 47] = [
     ("NaturalFitness", 65),
 ];
 
+/// Attributs cachés du même bloc (mêmes positions que les entrées du moteur de match dans FM27 Match Lab,
+/// `port/map/catalog_constants.json`, MIT, dont la table concorde avec la nôtre pour les 47 attributs ci-dessus).
+/// À confirmer en partie : lus à part, ignorés si l'un d'eux sort de 1-20.
+const HIDDEN_ATTRIBUTES: [(&str, usize); 5] =
+    [("Consistency", 59), ("Dirtiness", 56), ("ImportantMatches", 62), ("InjuryProneness", 63), ("Versatility", 64)];
+
+/// Octets de personnalité candidats dans `ACTUAL_PERSON` : l'adaptabilité est à +0x48 (vérifiée sur le staff) ; la
+/// place de la pression, du professionnalisme, etc. reste à trouver. Gardés bruts pour les rapprocher des
+/// personnalités affichées par le jeu.
+const PERSONALITY_RAW: u64 = 0x48;
+const PERSONALITY_RAW_LEN: usize = 8;
+
 /// Les 15 postes (octets `+0x150` à `+0x15E`) en codes FM Immersion ; le libéro n'a pas d'équivalent.
 const POSITIONS: [Option<&str>; 15] = [
     Some("GB"),
@@ -546,6 +558,10 @@ pub struct DbPlayer {
     pub positions_text: String,
     pub position_ratings: BTreeMap<&'static str, u8>,
     pub attributes: BTreeMap<&'static str, u8>,
+    /// Attributs cachés (régularité, saleté, grands matchs, fragilité, polyvalence), vides s'ils ne sont pas lisibles.
+    pub hidden: BTreeMap<&'static str, u8>,
+    /// Octets de personnalité candidats (`ACTUAL_PERSON+0x48`), bruts, si tous valent 1-20.
+    pub personality_raw: Option<Vec<u8>>,
     /// Échelle de stockage des attributs (`100` : convertis en 1-20 comme le fait le jeu).
     pub attribute_scale: u8,
     /// Salaire du contrat principal, par semaine, dans la monnaie de base du jeu (l'affichage en € par mois
@@ -669,6 +685,14 @@ impl<M: Mem> Ctx<'_, M> {
         if attributes.values().any(|&v| v > 20) {
             return None;
         }
+        let mut hidden = BTreeMap::new();
+        for (key, pos) in HIDDEN_ATTRIBUTES {
+            let v = b[off::AP_ATTR_BASE + pos];
+            hidden.insert(key, if scale100 { ((v as u16 + 2) / 5).clamp(1, 20) as u8 } else { v });
+        }
+        if hidden.values().any(|v| !(1..=20).contains(v)) {
+            hidden.clear();
+        }
         let mut position_ratings = BTreeMap::new();
         for (i, code) in POSITIONS.iter().enumerate() {
             if let Some(code) = code {
@@ -694,6 +718,10 @@ impl<M: Mem> Ctx<'_, M> {
             })
             .or_else(|| self.r.string(actual + off::A_FULL_NAME))?;
         let birth = date_at(&self.r, actual + off::A_BIRTH);
+        let personality_raw = self
+            .r
+            .bytes(actual + PERSONALITY_RAW, PERSONALITY_RAW_LEN)
+            .filter(|b| b.iter().all(|v| (1..=20).contains(v)));
 
         let contract = self.r.ptr(actual + off::A_CONTRACT);
         let wage_weekly = contract.and_then(|c| self.r.i32(c + off::C_WAGE)).filter(|&w| w >= 0);
@@ -761,6 +789,8 @@ impl<M: Mem> Ctx<'_, M> {
             positions_text,
             position_ratings,
             attributes,
+            hidden,
+            personality_raw,
             attribute_scale: if scale100 { 100 } else { 20 },
             wage_weekly,
             contract_end,
@@ -1700,6 +1730,9 @@ pub struct Ability {
     pub wage_weekly: Option<i32>,
     pub value_raw: Option<i32>,
     pub division_reputation: Option<i16>,
+    /// Attributs cachés lus dans la mémoire (vide si illisibles) et octets de personnalité candidats.
+    pub hidden: BTreeMap<&'static str, u8>,
+    pub personality_raw: Option<Vec<u8>>,
 }
 
 /// CA/PA de l'effectif du manager humain, à la date de la partie en cours.
@@ -1724,6 +1757,8 @@ pub fn squad_abilities<M: Mem>(db: &mut Database<M>) -> SquadAbilities {
                 wage_weekly: p.wage_weekly,
                 value_raw: p.value_raw,
                 division_reputation: p.division_reputation,
+                hidden: p.hidden,
+                personality_raw: p.personality_raw,
             })
             .collect(),
         None => Vec::new(),
@@ -1863,6 +1898,9 @@ mod tests {
         for (i, (_, pos)) in ATTRIBUTES.iter().enumerate() {
             b[0x150 + pos] = (i % 20 + 1) as u8;
         }
+        for (i, (_, pos)) in HIDDEN_ATTRIBUTES.iter().enumerate() {
+            b[0x150 + pos] = (i + 3) as u8;
+        }
         b[0x150 + 3] = 20; // DC
         b[0x150 + 7] = 15; // MC
         b[0x150 + 5] = 8; // MDF
@@ -1885,6 +1923,7 @@ mod tests {
         m.put_u64(0x2700_0200, 0x2700_0300);
         m.put_str(0x2700_0300, "Edh");
         m.put_u64(actual + 0x38, 0);
+        m.put(actual + 0x48, vec![14, 9, 12, 16, 5, 11, 13, 7]);
         m.put(actual + 0x60, date(151, 2000)); // 30 mai 2000 (année bissextile)
         m.put_u64(actual + 0x80, contract);
         m.put(contract, vec![0u8; 0x60]);
@@ -1935,6 +1974,9 @@ mod tests {
         assert_eq!(p.attributes.len(), 47);
         assert_eq!(p.attributes["AerialReach"], 1);
         assert_eq!(p.attributes["NaturalFitness"], 47 % 20);
+        assert_eq!(p.hidden.len(), 5);
+        assert_eq!((p.hidden["Consistency"], p.hidden["Versatility"]), (3, 7));
+        assert_eq!(p.personality_raw.as_deref(), Some(&[14u8, 9, 12, 16, 5, 11, 13, 7][..]));
         assert_eq!(p.value_raw, Some(1_250_000));
         assert!(!p.transfer_listed && !p.injured);
         assert_eq!(db.check().unwrap(), (1, 1));

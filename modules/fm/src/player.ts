@@ -88,6 +88,11 @@ export interface FmPlayer {
    */
   ca: number | null;
   pa: number | null;
+  /**
+   * Attributs cachés (Consistency, Dirtiness, ImportantMatches, InjuryProneness, Versatility, 1-20) lus dans la
+   * mémoire du jeu avec le CA/PA ; null s'ils ne sont pas lus.
+   */
+  hidden: Record<string, number> | null;
 }
 
 export function normalizePlayer(p: FmPlayerRaw): FmPlayer {
@@ -144,16 +149,25 @@ export function normalizePlayer(p: FmPlayerRaw): FmPlayer {
     familiarity,
     injuryRisk: injuryRiskOf(p),
     gameStars: p.gameStars && typeof p.gameStars === 'object' ? (p.gameStars as FmPlayer['gameStars']) : null,
+    hidden: hiddenOf((p as { hidden?: unknown }).hidden),
     ca: typeof p.ca === 'number' && p.ca > 0 ? p.ca : null,
     pa: typeof p.pa === 'number' && p.pa > 0 ? p.pa : null,
   };
 }
 
 /** Joint aux joueurs bruts le CA/PA lu dans la mémoire du jeu (`snap.abilities`), s'il y en a. */
-export function withAbilities<S extends { players: { id: string | number }[]; abilities?: Record<string, { ca: number; pa: number }> | null }>(snap: S): S {
+export function withAbilities<S extends { players: { id: string | number }[]; abilities?: Record<string, { ca: number; pa: number; hidden?: Record<string, number> | null }> | null }>(snap: S): S {
   const ab = snap.abilities;
   if (!ab || !Object.keys(ab).length) return snap;
   return { ...snap, players: snap.players.map((p) => (ab[String(p.id)] ? { ...p, ...ab[String(p.id)] } : p)) };
+}
+
+/** Attributs cachés lus dans la mémoire du jeu (1-20) ; null s'ils ne sont pas lus. */
+function hiddenOf(raw: unknown): Record<string, number> | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const out: Record<string, number> = {};
+  for (const [k, v] of Object.entries(raw as Record<string, unknown>)) if (typeof v === 'number' && v >= 1 && v <= 20) out[k] = v;
+  return Object.keys(out).length ? out : null;
 }
 
 /** Risque de blessure du jeu : valeurs sous 100 ou absentes = inconnu. */

@@ -178,13 +178,23 @@ export function fmRepo(db: Db) {
     /**
      * Joint à l'instantané de cette date le CA/PA réels lus dans la mémoire du jeu (rien si l'instantané manque).
      */
-    async attachAbilities(saveId: string, gameDate: string, players: { id: number | string; ca: number; pa: number }[]) {
+    async attachAbilities(saveId: string, gameDate: string, players: { id: number | string; ca: number; pa: number; hidden?: Record<string, number> | null; personalityRaw?: number[] | null }[]) {
       const [row] = await db
         .select()
         .from(fmSnapshots)
         .where(and(eq(fmSnapshots.saveId, saveId), eq(fmSnapshots.gameDate, gameDate)));
       if (!row) return false;
-      const abilities = Object.fromEntries(players.map((p) => [String(p.id), { ca: p.ca, pa: p.pa }]));
+      const abilities = Object.fromEntries(
+        players.map((p) => [
+          String(p.id),
+          {
+            ca: p.ca,
+            pa: p.pa,
+            ...(p.hidden && Object.keys(p.hidden).length ? { hidden: p.hidden } : {}),
+            ...(p.personalityRaw?.length ? { personalityRaw: p.personalityRaw } : {}),
+          },
+        ]),
+      );
       await db
         .update(fmSnapshots)
         .set({ data: { ...row.data, abilities } })
