@@ -1,5 +1,5 @@
 import type { InstructionGroup } from './instructions';
-import { piKey } from './player-instructions-fm27';
+import { PLAYER_INSTRUCTIONS_FM27, piKey } from './player-instructions-fm27';
 import { TEAM_INSTRUCTIONS_FM27 } from './team-instructions-fm27';
 
 /*
@@ -142,4 +142,17 @@ export function gamePlayerInstructions(snap: unknown): Map<string, { mine: strin
     out.set(String(id), { mine: gi.pi[index] ?? [], imposed: gi.imposed[index] ?? [] });
   });
   return out;
+}
+
+/**
+ * Clé « Groupe:Option » d'une consigne individuelle d'après sa valeur dans l'énumération PlayerInstruction du jeu,
+ * ou null si elle n'a pas d'option à l'écran. Les options « Centre », « Premier poteau » et « Second poteau »
+ * existent dans deux groupes : à partir de 36, ce sont celles d'« Attaquer la surface ».
+ */
+export function piKeyOfGameValue(v: number): string | null {
+  const option = PI_OPTION[v];
+  if (!option) return null;
+  const box = v >= 36;
+  const def = PLAYER_INSTRUCTIONS_FM27.find((g) => g.group.startsWith('AttackBox') === box && g.options.some((o) => o.fr === option));
+  return def ? piKey(def.group, option) : null;
 }

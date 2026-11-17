@@ -16,6 +16,7 @@ import {
   MENTALITIES_FM27,
   newBuiltTactic,
   optimiseTactic,
+  parseTacticFile,
   tacticQuality,
   parseBuiltTactics,
   POS_LABEL,
@@ -34,6 +35,7 @@ import {
   type Phase,
   type PosCode,
 } from '@fm-immersion/module-fm';
+import { invoke } from '@tauri-apps/api/core';
 import { Fragment, useContext, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { readScoped, useFmSaveScope, writeScoped } from '../lib/save-store';
@@ -130,6 +132,32 @@ export function FmBuilder({ snap, players, folder }: { snap?: FmSnapshot; player
     if (x) put(x);
   };
 
+  // Import d'une tactique exportée dans le dossier `tactics` de FM27 (lecture seule du fichier .fmf).
+  const [files, setFiles] = useState<{ name: string }[] | null>(null);
+  const [fileName, setFileName] = useState('');
+  const [importMsg, setImportMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const openImport = async () => {
+    setImportMsg(null);
+    const list = await invoke<{ name: string }[]>('fm_list_tactic_files', { folder }).catch(() => []);
+    setFiles(list);
+    setFileName(list[0]?.name ?? '');
+    if (!list.length) setImportMsg({ ok: false, text: t('fm.builder.importNone') });
+  };
+  const importFile = async () => {
+    if (!fileName) return;
+    try {
+      const bytes = await invoke<number[]>('fm_read_tactic_file', { folder, name: fileName });
+      const f = parseTacticFile(bytes);
+      const x = f && builtFromGame(engine, f.slots, newId(), f.name || fileName.replace(/\.fmf$/i, ''), { ti: {}, pi: f.pi, imposed: [] }, f.mentality);
+      if (!x) throw new Error('format');
+      put(x);
+      setFiles(null);
+      setImportMsg({ ok: true, text: t('fm.builder.importDone', { name: x.name }) });
+    } catch {
+      setImportMsg({ ok: false, text: t('fm.builder.importFailed', { name: fileName }) });
+    }
+  };
+
   const starters = (
     <div className="flex flex-wrap items-center gap-2">
       <select className="input w-auto py-1.5" value={form} onChange={(e) => setForm(e.target.value)} aria-label={t('fm.tac.formation')}>
@@ -147,6 +175,27 @@ export function FmBuilder({ snap, players, folder }: { snap?: FmSnapshot; player
           {t('fm.builder.fromGame')}
         </button>
       )}
+      {files == null ? (
+        <button type="button" className="btn-secondary px-3 py-1.5 text-sm" onClick={() => void openImport()} title={t('fm.builder.importHelp')}>
+          {t('fm.builder.importOpen')}
+        </button>
+      ) : (
+        files.length > 0 && (
+          <>
+            <select className="input w-auto max-w-xs py-1.5" value={fileName} onChange={(e) => setFileName(e.target.value)} aria-label={t('fm.builder.importPick')}>
+              {files.map((f) => (
+                <option key={f.name} value={f.name}>
+                  {f.name.replace(/\.fmf$/i, '')}
+                </option>
+              ))}
+            </select>
+            <button type="button" className="btn-primary px-3 py-1.5 text-sm" onClick={() => void importFile()}>
+              {t('fm.builder.importGo')}
+            </button>
+          </>
+        )
+      )}
+      {importMsg && <p className={`w-full text-xs ${importMsg.ok ? 'text-brun' : 'text-corail'}`}>{importMsg.text}</p>}
     </div>
   );
 

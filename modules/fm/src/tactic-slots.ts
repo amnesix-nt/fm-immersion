@@ -45,9 +45,17 @@ const toInt = (v: unknown): bigint | null => {
 /** Code du rôle d'après sa valeur du jeu (bit du rôle, éventuellement combiné à celui de la mission). */
 function roleOf(v: unknown, table: Record<number, string>): string | null {
   const n = toInt(v);
-  if (n == null) return null;
+  return n == null ? null : roleOfBits(n, table);
+}
+
+function roleOfBits(n: bigint, table: Record<number, string>): string | null {
   for (let b = 0; b < 64; b++) if (!DUTY_BITS.has(b) && (n >> BigInt(b)) & 1n && table[b]) return table[b]!;
   return null;
+}
+
+/** Rôle avec ou sans ballon d'après sa valeur exacte sur 64 bits (fichier de tactique exporté, voir tactic-file.ts). */
+export function gameRoleOfBits(n: bigint, phase: 'ip' | 'oop'): string | null {
+  return roleOfBits(n, phase === 'ip' ? IP_ROLE : OOP_ROLE);
 }
 
 export interface TacticSlot {

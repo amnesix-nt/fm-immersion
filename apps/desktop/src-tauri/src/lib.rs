@@ -11,6 +11,7 @@ mod fm;
 mod fm_bridge;
 mod fm_compat;
 mod fm_memory;
+mod fm_tactics;
 mod images;
 mod photos_engine;
 mod photos_pipeline;
@@ -42,6 +43,8 @@ pub fn run() {
             fm::fm_read_reference,
             fm::fm_default_folder,
             fm::fm_list_saves,
+            fm_tactics::fm_list_tactic_files,
+            fm_tactics::fm_read_tactic_file,
             save_backup::fm_backup_list,
             save_backup::fm_backup_make,
             save_backup::fm_backup_open,
