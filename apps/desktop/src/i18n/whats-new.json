@@ -1,12 +1,22 @@
 [
   {
-    "version": "0.1.242",
+    "version": "0.1.243",
     "date": "2026-11-17",
     "fr": [
       "Construire ma tactique : l'import depuis le dossier tactics lit aussi les tactiques enregistrées par d'autres outils que l'écran d'export de FM27, comme Pivot Gang Elite."
     ],
     "en": [
       "Build my tactic: importing from the tactics folder now also reads tactics saved by tools other than FM27's export screen, such as Pivot Gang Elite."
+    ]
+  },
+  {
+    "version": "0.1.242",
+    "date": "2026-11-17",
+    "fr": [
+      "Entraînement : un bouton « Envoyer la semaine à FM27 » prépare ta semaine conseillée comme un programme du jeu. Dans FM27, tu la choisis dans « Priorité du calendrier » : plus besoin de recopier les séances une par une."
+    ],
+    "en": [
+      "Training: a « Send the week to FM27 » button prepares your suggested week as a game schedule. In FM27, pick it in the calendar priority list: no more copying sessions one by one."
     ]
   },
   {

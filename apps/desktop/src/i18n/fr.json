@@ -1854,7 +1854,14 @@
       },
       "prevWeek": "Semaine précédente",
       "nextWeekBtn": "Semaine suivante",
-      "busyIntensity": "{{count}} matchs cette semaine : pas de double intensité. Elle fait un peu plus progresser mais blesse plus, et la récupération manque déjà. Elle revient la semaine prochaine si le calendrier s'allège."
+      "busyIntensity": "{{count}} matchs cette semaine : pas de double intensité. Elle fait un peu plus progresser mais blesse plus, et la récupération manque déjà. Elle revient la semaine prochaine si le calendrier s'allège.",
+      "send": {
+        "button": "Envoyer la semaine à FM27",
+        "help": "Plus besoin de recopier les séances : l'appli prépare le programme, tu le charges dans le jeu.",
+        "done": "C'est prêt. Dans FM27 : Entraînement, Calendrier, puis dans « Priorité du calendrier » choisis « {{name}} ». Le jeu garde tes matchs et retire la préparation de match des semaines sans match.",
+        "error": "Envoi impossible : {{error}}",
+        "description": "Semaine conseillée par FM Immersion."
+      }
     },
     "intro": {
       "playtime": "Qui joue trop, qui ne joue pas assez par rapport au statut promis, et qui risque de venir se plaindre.",

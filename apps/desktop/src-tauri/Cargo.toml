@@ -1,6 +1,6 @@
 [package]
 name = "fm-immersion"
-version = "0.1.242"
+version = "0.1.243"
 description = "FM Immersion — le compagnon de tes parties de Football Manager 27"
 authors = ["FM Immersion"]
 license = "MIT"
@@ -32,10 +32,11 @@ zip = { version = "2", default-features = false, features = ["deflate"] }
 keyring = { version = "3", features = ["windows-native"] }
 # Photos de situation : extraction de l'archive 7z de ComfyUI portable (LZMA2 + filtre BCJ, sans chiffrement)
 sevenz-rust2 = { version = "0.25", default-features = false }
-# Tactiques FM27 (.fmf du dossier tactics) : segments chiffrés en AES-128-CTR puis compressés en zstd, lus hors jeu
+# Fichiers .fmf de FM27 (tactiques lues, programmes d'entraînement écrits) : segments AES-128-CTR et trames zstd
 aes = "0.8"
 ctr = "0.9"
 ruzstd = "0.8"
+xxhash-rust = { version = "0.8", features = ["xxh64"] }
 
 # FM27 : lecture directe de la base du jeu en mémoire (lecture seule, à la demande du joueur)
 [target.'cfg(windows)'.dependencies]

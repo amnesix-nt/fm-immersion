@@ -1,4 +1,6 @@
 import { roleCeiling, snapshotWinterBreak,
+  fm27ScheduleDays,
+  fm27ScheduleName,
   CLUB_STATUSES,
   CONDITION_LEVELS,
   PART_TIME_DAYS,
@@ -68,6 +70,7 @@ import { roleCeiling, snapshotWinterBreak,
   type SquadAt,
 } from '@fm-immersion/module-fm';
 import { projectStyle } from '@fm-immersion/module-fm';
+import { invoke } from '@tauri-apps/api/core';
 import { useContext, useMemo, useState, type ReactNode } from 'react';
 import type { SeasonWeekKind } from '@fm-immersion/module-fm';
 import { useTranslation } from 'react-i18next';
@@ -399,6 +402,7 @@ export function FmTraining({ snap, players, folder, history = [] }: { snap: FmSn
                       ? t(`fm.train.mode.${plan.mode}`, { te: teOverall != null ? Math.round(teOverall) : '?', count: summary.tactical, grow: summary.grow, zones: zoneList })
                       : t(`fm.train.phaseHelp.${plan.phase}`)}
                 </p>
+                <SendToFm folder={folder} monday={monday} days={fm27ScheduleDays(plan)} />
                 <p className="mt-3 text-xs font-bold uppercase tracking-wide text-canard/60">{t('fm.train.steps.title')}</p>
                 <ol className="mt-1 space-y-1.5 text-sm">
                   {[
@@ -859,6 +863,31 @@ const TE_TEST = [
  * « Comprendre » : ce que le moteur fait vraiment de l'entraînement, appliqué à l'effectif du joueur. Les chiffres
  * viennent des bancs d'essai de la communauté (aucune formule officielle).
  */
+/** Écrit la semaine conseillée dans le dossier « schedules » de FM27 ; le joueur la charge lui-même dans le jeu. */
+function SendToFm({ folder, monday, days }: { folder: string; monday: string; days: number[][] }) {
+  const { t } = useTranslation();
+  const name = fm27ScheduleName(monday);
+  const [state, setState] = useState<{ key: string; ok: boolean; error?: string } | null>(null);
+  const key = `${monday}|${JSON.stringify(days)}`;
+  const shown = state?.key === key ? state : null;
+  const send = () =>
+    invoke<string>('fm_write_schedule', { folder, name, description: t('fm.train.send.description'), days })
+      .then(() => setState({ key, ok: true }))
+      .catch((e) => setState({ key, ok: false, error: String(e) }));
+  return (
+    <div className="mt-3 rounded-xl bg-orange-clair/50 p-3 text-sm">
+      <div className="flex flex-wrap items-center gap-3">
+        <button type="button" className="btn-primary text-sm" onClick={send} disabled={!folder}>
+          {t('fm.train.send.button')}
+        </button>
+        <span className="text-brun">{t('fm.train.send.help')}</span>
+      </div>
+      {shown?.ok && <p className="mt-2 font-bold text-canard">{t('fm.train.send.done', { name })}</p>}
+      {shown && !shown.ok && <p className="mt-2 font-bold text-corail">{t('fm.train.send.error', { error: shown.error })}</p>}
+    </div>
+  );
+}
+
 function LearnSection({ rows, teOverall }: { rows: SetupRow[]; teOverall: number | null }) {
   const { t, i18n } = useTranslation();
   const nf1 = new Intl.NumberFormat(i18n.resolvedLanguage, { maximumFractionDigits: 1, minimumFractionDigits: 1 });

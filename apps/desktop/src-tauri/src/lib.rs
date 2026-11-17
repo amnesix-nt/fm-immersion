@@ -11,6 +11,7 @@ mod fm;
 mod fm_bridge;
 mod fm_compat;
 mod fm_memory;
+mod fm_schedule;
 mod fm_tactics;
 mod images;
 mod photos_engine;
@@ -105,6 +106,7 @@ pub fn run() {
             fm::fm_read_request,
             fm::fm_write_coach_photo,
             fm::fm_write_press,
+            fm_schedule::fm_write_schedule,
             fm::fm_read_press_answer,
             facepack::fm_face,
             club_logo::fm_club_logo,

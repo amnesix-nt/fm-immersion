@@ -1854,7 +1854,14 @@
       },
       "prevWeek": "Previous week",
       "nextWeekBtn": "Next week",
-      "busyIntensity": "{{count}} matches this week: no double intensity. It helps development a little but causes more injuries, and recovery is already short. It comes back once the schedule eases."
+      "busyIntensity": "{{count}} matches this week: no double intensity. It helps development a little but causes more injuries, and recovery is already short. It comes back once the schedule eases.",
+      "send": {
+        "button": "Send the week to FM27",
+        "help": "No need to copy the sessions by hand: the app prepares the schedule, you load it in the game.",
+        "done": "Ready. In FM27: Training, Calendar, then pick « {{name}} » in the calendar priority list. The game keeps your matches and drops match preparation from weeks without a match.",
+        "error": "Could not send: {{error}}",
+        "description": "Week suggested by FM Immersion."
+      }
     },
     "intro": {
       "playtime": "Who plays too much, who plays too little compared with their promised status, and who may come and complain.",

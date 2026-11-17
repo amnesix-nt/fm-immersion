@@ -879,7 +879,7 @@ dependencies = [
 
 [[package]]
 name = "fm-immersion"
-version = "0.1.242"
+version = "0.1.243"
 dependencies = [
  "aes",
  "ctr",
@@ -897,6 +897,7 @@ dependencies = [
  "thiserror 2.0.21",
  "ureq",
  "windows-sys 0.61.2",
+ "xxhash-rust",
  "zip 2.6.1",
 ]
 
@@ -5034,6 +5035,12 @@ dependencies = [
  "libc",
  "rustix",
 ]
+
+[[package]]
+name = "xxhash-rust"
+version = "0.8.21"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "40de123dbb523ebcc00d61ec01840ad192578afc378d859f3429caa38308fad5"
 
 [[package]]
 name = "yoke"
