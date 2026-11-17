@@ -14,6 +14,7 @@
 
 use serde::{Deserialize, Serialize, Serializer};
 use sha2::{Digest, Sha256};
+use std::collections::HashSet;
 use std::fs::File;
 use std::io::{BufReader, Read, Seek, SeekFrom};
 use std::path::{Path, PathBuf};
@@ -22,9 +23,24 @@ pub const BUNDLE: &str = "portraits_assets_all.bundle";
 const CATALOG: &str = "catalog_info.bin";
 const CATALOG_HASH: &str = "catalog_info.hash";
 const INSTALLS: &str = "fm-immersion-installs.json";
-/// Valeurs du bundle d'origine de FM27 (version du 29/10/2026) dans le catalogue.
+/// Valeurs du bundle d'origine de FM27 (version du 29/10/2026, jusqu'à la 27.0.x) dans le catalogue.
 pub const ORIG_CRC: u32 = 191_505_968;
 pub const ORIG_SIZE: u32 = 108_004_900;
+/// Bundle d'origine de la 27.1.0 (17/11/2026) : les 14 000 portraits d'avant, identiques, et 956 nouveaux
+/// (hommes, nouvelle barbe).
+pub const ORIG_2710_CRC: u32 = 2_591_666_736;
+pub const ORIG_2710_SIZE: u32 = 115_125_650;
+/// Bundles d'origine connus, du plus ancien au plus récent.
+pub const ORIGINALS: [(u32, u32); 2] = [(ORIG_CRC, ORIG_SIZE), (ORIG_2710_CRC, ORIG_2710_SIZE)];
+
+pub fn is_original(crc: u32, size: u32) -> bool {
+    ORIGINALS.contains(&(crc, size))
+}
+
+/// Taille d'un bundle d'origine connu.
+pub fn is_original_size(size: u64) -> bool {
+    ORIGINALS.iter().any(|&(_, s)| s as u64 == size)
+}
 /// Valeurs du pack v1.0 (release GitHub du 01/11/2026).
 pub const V1_CRC: u32 = 1_069_530_745;
 pub const V1_SIZE: u32 = 526_124_666;
@@ -43,6 +59,8 @@ pub enum PackError {
     UnknownGame,
     #[error("sauvegarde introuvable ou invalide dans {0}. Rien n'a été modifié. Pour revenir aux visages d'origine : Steam > Vérifier l'intégrité des fichiers.")]
     NoBackup(String),
+    #[error("ce pack a été fait pour une autre version de FM27 : il lui manque {0} portraits que le jeu attend (ils resteraient en carré blanc). Rien n'a été modifié. Prends le pack à jour dans « Visages ».")]
+    Incompatible(usize),
     #[error("vérification après copie échouée : {0}")]
     Check(String),
     #[error("réseau : {0}")]
@@ -183,6 +201,48 @@ fn decode_into(kind: u32, src: &[u8], dst: &mut [u8]) -> Result<(), PackError> {
 
 /// CRC32 que Unity compare au catalogue : celui des fichiers contenus dans le bundle, décompressés.
 pub fn unity_crc(path: &Path) -> Result<u32, PackError> {
+    scan_bundle(path, |_| {})
+}
+
+/// CRC Unity et noms des portraits contenus dans le bundle (lus dans les fichiers décompressés).
+pub fn bundle_portraits(path: &Path) -> Result<(u32, HashSet<String>), PackError> {
+    let mut names = HashSet::new();
+    // Un nom peut chevaucher deux blocs : on garde la fin du bloc précédent.
+    let mut tail: Vec<u8> = Vec::new();
+    let crc = scan_bundle(path, |block| {
+        let mut buf = std::mem::take(&mut tail);
+        buf.extend_from_slice(block);
+        names.extend(portrait_names(&buf));
+        tail = buf[buf.len().saturating_sub(64)..].to_vec();
+    })?;
+    Ok((crc, names))
+}
+
+/// Noms de portraits (« portrait_male-0-1-10-4-4 ») cités dans des octets : bundle décompressé ou catalogue.
+pub fn portrait_names(bytes: &[u8]) -> HashSet<String> {
+    let mut out = HashSet::new();
+    for prefix in [&b"portrait_male-"[..], &b"portrait_female-"[..]] {
+        let mut i = 0;
+        while let Some(k) = bytes[i..].windows(prefix.len()).position(|w| w == prefix) {
+            let start = i + k;
+            let mut end = start + prefix.len();
+            while end < bytes.len() && (bytes[end].is_ascii_digit() || bytes[end] == b'-') {
+                end += 1;
+            }
+            let name = &bytes[start..end];
+            // Forme complète : cinq nombres séparés par des tirets.
+            if name.ends_with(b"-") || name.iter().filter(|&&c| c == b'-').count() != 5 {
+                i = start + prefix.len();
+                continue;
+            }
+            out.insert(String::from_utf8_lossy(name).into_owned());
+            i = end;
+        }
+    }
+    out
+}
+
+fn scan_bundle(path: &Path, mut on_block: impl FnMut(&[u8])) -> Result<u32, PackError> {
     let mut f = BufReader::with_capacity(1 << 20, File::open(path)?);
     let len = f.get_ref().metadata()?.len();
     if read_cstr(&mut f)? != "UnityFS" {
@@ -264,6 +324,7 @@ pub fn unity_crc(path: &Path) -> Result<u32, PackError> {
         f.read_exact(&mut src)?;
         decode_into(kind, &src, &mut dst)?;
         crc = crc_update(crc, &dst);
+        on_block(&dst);
     }
     Ok(crc ^ 0xFFFF_FFFF)
 }
@@ -436,7 +497,7 @@ pub enum CatalogState {
 }
 
 pub fn classify(e: &Entry, installs: &[Installed]) -> CatalogState {
-    if e.crc == ORIG_CRC && e.size == ORIG_SIZE {
+    if is_original(e.crc, e.size) {
         CatalogState::Original
     } else if e.crc == V1_CRC && e.size == V1_SIZE {
         CatalogState::V1
@@ -552,13 +613,25 @@ fn latest_set(backup: &Path) -> Option<PathBuf> {
     set.join(CATALOG).is_file().then_some(set)
 }
 
+/// Un bundle d'origine est sauvegardé (désinstallation possible) : celui de la 27.0, ou celui gardé avec le dernier
+/// catalogue d'origine.
+pub fn has_bundle_backup(p: &Paths) -> bool {
+    p.backup.join(BUNDLE).is_file() || latest_set(&p.backup).is_some_and(|s| s.join(BUNDLE).is_file())
+}
+
 /// Sauvegarde des fichiers d'origine (format identique au script des .bat).
 fn backup(p: &Paths, catalog: &[u8], state: CatalogState, cached: &[(PathBuf, Entry)]) -> Result<(), PackError> {
     std::fs::create_dir_all(&p.backup)?;
     let bundle_backup = p.backup.join(BUNDLE);
-    if !bundle_backup.exists() && std::fs::metadata(&p.bundle)?.len() == ORIG_SIZE as u64 {
+    let bundle_size = std::fs::metadata(&p.bundle)?.len();
+    if !bundle_backup.exists() && bundle_size == ORIG_SIZE as u64 {
         copy_checked(&p.bundle, &bundle_backup)?;
     }
+    // Bundle d'origine décrit par ce catalogue (27.1.0 et suivantes) : gardé avec son catalogue, pour que la
+    // désinstallation remette les portraits de la bonne version.
+    let own_bundle = state == CatalogState::Original
+        && read_entry(catalog).is_some_and(|e| e.size as u64 == bundle_size)
+        && bundle_size != ORIG_SIZE as u64;
     // Une mise à jour Steam change le catalogue : chaque catalogue d'origine a son dossier, rien n'est écrasé.
     if state == CatalogState::Original {
         let sha: String = Sha256::digest(catalog).iter().take(6).map(|b| format!("{b:02X}")).collect();
@@ -587,6 +660,9 @@ fn backup(p: &Paths, catalog: &[u8], state: CatalogState, cached: &[(PathBuf, En
             }
             std::fs::rename(&tmp, &set)?;
         }
+        if own_bundle && std::fs::metadata(set.join(BUNDLE)).map(|m| m.len()).ok() != Some(bundle_size) {
+            copy_checked(&p.bundle, &set.join(BUNDLE))?;
+        }
         std::fs::write(p.backup.join("latest.txt"), &name)?;
     }
     Ok(())
@@ -608,10 +684,15 @@ pub fn install(p: &Paths, pack: &Path, now: &str, version: Option<&str>) -> Resu
     if !pack.is_file() {
         return Err(PackError::NoPack(pack.display().to_string()));
     }
-    let crc = unity_crc(pack)?;
+    let (crc, pack_names) = bundle_portraits(pack)?;
     let size = u32::try_from(std::fs::metadata(pack)?.len()).map_err(|_| bad("fichier trop gros"))?;
 
     let catalog = std::fs::read(&p.catalog)?;
+    // Le pack doit contenir chaque portrait que le catalogue du jeu décrit (la 27.1.0 en a ajouté 956).
+    let missing = portrait_names(&catalog).difference(&pack_names).count();
+    if missing > 0 {
+        return Err(PackError::Incompatible(missing));
+    }
     let entry = read_entry(&catalog).ok_or(PackError::UnknownGame)?;
     let mut installs = read_installs(&p.backup);
     let state = classify(&entry, &p.all_known());
@@ -668,7 +749,15 @@ pub fn uninstall(p: &Paths) -> Result<bool, PackError> {
     if state == CatalogState::Unknown {
         return Err(PackError::UnknownGame);
     }
-    let bundle_is_mod = std::fs::metadata(&p.bundle)?.len() != ORIG_SIZE as u64;
+    let set = latest_set(&p.backup);
+    // Bundle d'origine à remettre : celui gardé avec le dernier catalogue d'origine (27.1.0 et suivantes),
+    // sinon celui de la première version (`backup\portraits_assets_all.bundle`).
+    let set_entry = set.as_ref().and_then(|s| std::fs::read(s.join(CATALOG)).ok()).and_then(|b| read_entry(&b));
+    let orig_size = match state {
+        CatalogState::Original => entry.size,
+        _ => set_entry.map_or(ORIG_SIZE, |e| e.size),
+    };
+    let bundle_is_mod = std::fs::metadata(&p.bundle)?.len() != orig_size as u64;
     let catalog_is_mod = state != CatalogState::Original;
     let dirty: Vec<_> = cache_catalogs(&p.cache).into_iter().filter(|(_, e)| classify(e, &[]) != CatalogState::Original).collect();
     if !bundle_is_mod && !catalog_is_mod && dirty.is_empty() {
@@ -676,24 +765,22 @@ pub fn uninstall(p: &Paths) -> Result<bool, PackError> {
     }
 
     let no_backup = || PackError::NoBackup(p.backup.display().to_string());
-    let bundle_backup = p.backup.join(BUNDLE);
-    if bundle_is_mod && std::fs::metadata(&bundle_backup).map(|m| m.len()).ok() != Some(ORIG_SIZE as u64) {
+    let bundle_backup = [set.as_ref().map(|s| s.join(BUNDLE)), Some(p.backup.join(BUNDLE))]
+        .into_iter()
+        .flatten()
+        .find(|b| std::fs::metadata(b).map(|m| m.len()).ok() == Some(orig_size as u64));
+    if bundle_is_mod && bundle_backup.is_none() {
         return Err(no_backup());
     }
-    let set = latest_set(&p.backup);
     if catalog_is_mod {
-        let ok = set
-            .as_ref()
-            .and_then(|s| std::fs::read(s.join(CATALOG)).ok())
-            .and_then(|b| read_entry(&b))
-            .is_some_and(|e| classify(&e, &[]) == CatalogState::Original);
+        let ok = set_entry.is_some_and(|e| classify(&e, &[]) == CatalogState::Original);
         if !ok {
             return Err(no_backup());
         }
     }
 
-    if bundle_is_mod {
-        copy_checked(&bundle_backup, &p.bundle)?;
+    if let (true, Some(b)) = (bundle_is_mod, bundle_backup.as_ref()) {
+        copy_checked(b, &p.bundle)?;
     }
     if let (true, Some(set)) = (catalog_is_mod, set.as_ref()) {
         copy_checked(&set.join(CATALOG), &p.catalog)?;
@@ -995,6 +1082,54 @@ pub(crate) mod tests {
     }
 
     #[test]
+    fn lit_les_noms_de_portraits() {
+        let n = portrait_names(b"..portrait_male-0-1-10-4-4\0portrait_female-2-13-25-2-1xx portrait_male-1-2- portrait_male-3\0portrait_male-0-1-10-4-4");
+        let mut v: Vec<_> = n.into_iter().collect();
+        v.sort();
+        assert_eq!(v, ["portrait_female-2-13-25-2-1", "portrait_male-0-1-10-4-4"]);
+        assert!(is_original(ORIG_2710_CRC, ORIG_2710_SIZE) && is_original(ORIG_CRC, ORIG_SIZE));
+        assert!(!is_original(ORIG_CRC, ORIG_2710_SIZE));
+    }
+
+    /// 27.1.0 : nouveau bundle d'origine (avec des portraits en plus). Un pack fait pour la 27.0 est refusé ;
+    /// le pack refait est installé, l'original de la 27.1.0 gardé à part, et la désinstallation le remet.
+    #[test]
+    fn version_2710_avec_nouveaux_portraits() {
+        let root = std::env::temp_dir().join(format!("fmi-pack-2710-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let p = Paths::new(&root.join("game"), root.join("cache"), root.join("backup"));
+        std::fs::create_dir_all(p.bundle.parent().unwrap()).unwrap();
+        // Sauvegarde de la 27.0 déjà là (installation d'avant la mise à jour).
+        std::fs::create_dir_all(&p.backup).unwrap();
+        File::create(p.backup.join(BUNDLE)).unwrap().set_len(ORIG_SIZE as u64).unwrap();
+        // Jeu en 27.1.0 : bundle et catalogue d'origine, qui cite deux portraits.
+        File::create(&p.bundle).unwrap().set_len(ORIG_2710_SIZE as u64).unwrap();
+        let mut cat = fake_catalog(ORIG_2710_CRC, ORIG_2710_SIZE);
+        cat.extend_from_slice(b"portrait_male-0-1-10-4-0\0portrait_male-0-1-10-4-4\0");
+        std::fs::write(&p.catalog, &cat).unwrap();
+        assert_eq!(catalog_state(&p), Some(CatalogState::Original));
+
+        let old = root.join("old.bundle");
+        std::fs::write(&old, fake_bundle(b"portrait_male-0-1-10-4-0 seulement")).unwrap();
+        assert!(matches!(install(&p, &old, "t", None), Err(PackError::Incompatible(1))));
+        assert_eq!(std::fs::read(&p.catalog).unwrap(), cat);
+
+        let pack = root.join("pack.bundle");
+        std::fs::write(&pack, fake_bundle(b"portrait_male-0-1-10-4-0 portrait_male-0-1-10-4-4")).unwrap();
+        install(&p, &pack, "t", Some("2026-11-17 16:00:00")).unwrap();
+        assert_eq!(catalog_state(&p), Some(CatalogState::Custom));
+        let set = latest_set(&p.backup).unwrap();
+        assert_eq!(std::fs::metadata(set.join(BUNDLE)).unwrap().len(), ORIG_2710_SIZE as u64);
+        assert_eq!(std::fs::metadata(p.backup.join(BUNDLE)).unwrap().len(), ORIG_SIZE as u64);
+
+        assert!(uninstall(&p).unwrap());
+        assert_eq!(std::fs::metadata(&p.bundle).unwrap().len(), ORIG_2710_SIZE as u64);
+        assert_eq!(std::fs::read(&p.catalog).unwrap(), cat);
+        assert!(!uninstall(&p).unwrap());
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
     fn refuse_un_catalogue_inconnu() {
         let root = std::env::temp_dir().join(format!("fmi-pack-inconnu-{}", std::process::id()));
         std::fs::remove_dir_all(&root).ok();
@@ -1099,3 +1234,4 @@ pub(crate) mod tests {
         }
     }
 }
+

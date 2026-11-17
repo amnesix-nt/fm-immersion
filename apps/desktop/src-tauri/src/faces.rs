@@ -54,7 +54,7 @@ pub fn bundle_path(game: &Path) -> std::path::PathBuf {
 
 pub fn state_for_size(size: u64) -> FacesState {
     match size {
-        ORIGINAL_SIZE => FacesState::Original,
+        s if faces_pack::is_original_size(s) => FacesState::Original,
         PHOTOREAL_V1_SIZE => FacesState::PhotorealV1,
         _ => FacesState::Unknown,
     }
@@ -70,7 +70,7 @@ pub fn status_with(game: &Path, paths: Option<&Paths>) -> FacesStatus {
     if !game_found(game) {
         return FacesStatus { state: FacesState::NoGame, size: None, running, backup: false, catalog_mismatch: false, catalog_unknown: false, stale_pack: false };
     }
-    let backup = paths.is_some_and(|p| p.backup.join(faces_pack::BUNDLE).is_file());
+    let backup = paths.is_some_and(faces_pack::has_bundle_backup);
     let Ok(m) = std::fs::metadata(bundle_path(game)) else {
         return FacesStatus { state: FacesState::Missing, size: None, running, backup, catalog_mismatch: false, catalog_unknown: false, stale_pack: false };
     };

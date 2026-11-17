@@ -1,6 +1,6 @@
 [
   {
-    "version": "0.1.240",
+    "version": "0.1.241",
     "date": "2026-11-17",
     "fr": [
       "Construire ma tactique : nouveau bouton « Importer depuis le dossier tactics ». Les tactiques que tu as exportées dans FM27 arrivent dans l'appli avec leurs postes, leurs rôles, leur mentalité et leurs consignes individuelles. Les consignes d'équipe restent à régler à la main pour l'instant.",
@@ -13,6 +13,16 @@
       "Meta rating: goalkeepers finally get theirs. It counts Agility and Reflexes first, the attributes that really stop goals.",
       "Meta rating: a second set of tests (50,000 matches replayed position by position) now shows next to the first. You can see whether they agree, or whether to be careful.",
       "Player sheet: with \"Read CA/PA\", hidden attributes now show (Consistency, Important Matches, Injury Proneness, Versatility, Dirtiness), with a warning for injury-prone or card-prone players."
+    ]
+  },
+  {
+    "version": "0.1.240",
+    "date": "2026-11-17",
+    "fr": [
+      "Visages : l'appli reconnaît la mise à jour 27.1.0 de FM27, qui ajoute 956 nouveaux visages d'hommes. Un pack de visages fait pour l'ancienne version est refusé avant toute copie, pour ne pas te laisser des carrés blancs : installe le pack à jour proposé dans « Visages »."
+    ],
+    "en": [
+      "Faces: the app now recognises FM27 update 27.1.0, which adds 956 new male faces. A face pack made for the previous version is refused before anything is copied, so you don't end up with white squares: install the up-to-date pack offered in \"Faces\"."
     ]
   },
   {
