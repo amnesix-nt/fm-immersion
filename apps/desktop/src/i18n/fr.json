@@ -2058,7 +2058,8 @@
         "decline": "{{age}} ans, en déclin",
         "youthTeam": "progresse avec les jeunes",
         "offProject": "profil hors projet de jeu",
-        "loanIn": "prêté chez nous : il compte cette saison, ni vente ni prolongation"
+        "loanIn": "prêté chez nous : il compte cette saison, ni vente ni prolongation",
+        "underperforms": "ne performe pas : {{rating}} de moyenne en {{count}} matchs, l'équipe est à {{team}}"
       },
       "stayNoYouth": "Les jeunes de 21 ans ou moins sont dans leur cadre plus haut.",
       "board": {

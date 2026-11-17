@@ -49,7 +49,9 @@ export type MercatoReason =
   /** Profil qui ne colle pas au projet de jeu : ne pas y investir de temps. */
   | { id: 'offProject' }
   /** Prêté chez nous : il compte cette saison, mais ni vente, ni prolongation, ni prêt ailleurs. */
-  | { id: 'loanIn' };
+  | { id: 'loanIn' }
+  /** Ne performe pas : note moyenne de la saison nettement sous celle des joueurs qui jouent. */
+  | { id: 'underperforms'; rating: number; team: number; apps: number };
 
 export interface MercatoAdvice {
   player: FmPlayer;
@@ -105,6 +107,29 @@ export const YOUNG_MAX = 21;
 /** Étoiles de potentiel à partir desquelles un jeune vaut le coup (le staff note par rapport au club). */
 /** Repère fixe de potentiel quand aucun titulaire noté ne permet de comparer (les étoiles sont relatives à l'effectif). */
 export const PROSPECT_STARS = 3;
+
+/**
+ * Joueur qui ne performe pas : assez de matchs joués cette saison (UNDER_APPS) pour juger, et une note moyenne à la
+ * fois basse (sous UNDER_RATING) et nettement sous la moyenne des joueurs qui jouent (UNDER_GAP). Repères de
+ * FM Immersion : sous 6,7 un joueur de champ déçoit dans FM, et 0,2 point d'écart sur une saison est net.
+ */
+export const UNDER_APPS = 6;
+export const UNDER_RATING = 6.7;
+export const UNDER_GAP = 0.2;
+
+/** Note moyenne des joueurs qui jouent (au moins UNDER_APPS matchs), null s'il y en a moins de cinq. */
+export function teamRating(list: readonly FmPlayer[]): number | null {
+  const xs = list.flatMap((p) => ((p.apps ?? 0) >= UNDER_APPS && p.avgRating ? [p.avgRating] : []));
+  return xs.length >= 5 ? xs.reduce((a, b) => a + b, 0) / xs.length : null;
+}
+
+/** Raison « ne performe pas », ou null. */
+export function underperforms(p: FmPlayer, team: number | null): Extract<MercatoReason, { id: 'underperforms' }> | null {
+  const apps = p.apps ?? 0;
+  const r = p.avgRating;
+  if (team == null || !r || apps < UNDER_APPS || r >= UNDER_RATING || r > team - UNDER_GAP) return null;
+  return { id: 'underperforms', rating: r, team: Math.round(team * 100) / 100, apps };
+}
 
 const NO_PLACE: Place = { tier: 2, pos: null, rank: null, need: 0, fit: null };
 
@@ -193,6 +218,7 @@ export function mercatoAdvice(
   const nowPlaces = squadPlaces(engine, nowSlots, list);
   const projPlaces = squadPlaces(engine, projSlots, list);
 
+  const team = teamRating(list);
   const advice = list.map((p): MercatoAdvice => {
     const now = nowPlaces.get(p.id) ?? NO_PLACE;
     const proj = projPlaces.get(p.id) ?? NO_PLACE;
@@ -241,6 +267,8 @@ export function mercatoAdvice(
     if (months != null && months <= 12) reasons.push({ id: 'contract', months });
     if (isUnwanted(p.squadStatus)) reasons.push({ id: 'unwanted', status: p.squadStatus! });
     if (off) reasons.push({ id: 'offProject' });
+    const under = underperforms(p, team);
+    if (under) reasons.push(under);
 
     let verdict: MercatoVerdict;
     if (young) {
@@ -270,6 +298,9 @@ export function mercatoAdvice(
       verdict = (p.value ?? 1) > 0 ? 'sell' : 'release';
       if (age >= 30) reasons.push({ id: 'decline', age });
     }
+    // Ne performe pas sur la saison : le mettre en vente, même titulaire (on cherche son remplaçant), sauf un jeune
+    // prometteur qui apprend encore. Sans valeur marchande, il part libre en fin de contrat.
+    if (under && !prospect && verdict !== 'release') verdict = (p.value ?? 1) > 0 ? 'sell' : months != null && months <= 12 ? 'release' : verdict;
     // Statut « indésirable » donné en jeu : il part, sauf s'il est titulaire (le statut est alors à revoir).
     if (isUnwanted(p.squadStatus) && tier > 0 && verdict !== 'release') verdict = 'sell';
     // Prêté chez nous : titulaire ou doublure pour la saison, rien à vendre, prolonger ni prêter ; son contrat n'est pas le nôtre.
@@ -330,6 +361,8 @@ export function contractCall(a: MercatoAdvice): Pick<ContractDecision, 'call' | 
   // Profil hors projet : on ne s'engage pas sur la durée. Titulaire du jour : un an, le temps de trouver mieux.
   if (a.compat?.compat === 'no') return a.now.tier === 0 ? { call: 'extendShort', years: 1 } : { call: leave, years: null };
   if (isUnwanted(a.player.squadStatus) && tier > 0) return { call: leave, years: null };
+  // Ne performe pas : on ne prolonge pas, on vend avant de le perdre libre.
+  if (!a.prospect && a.reasons.some((r) => r.id === 'underperforms')) return { call: leave, years: null };
   if (a.prospect) return { call: 'extend', years: Math.max(3, long) };
   if (tier === 0) return age >= 31 ? { call: 'extendShort', years: 1 } : { call: 'extend', years: long };
   if (tier === 1) return age >= 31 ? { call: 'letGo', years: null } : age >= 29 ? { call: 'extendShort', years: 1 } : { call: 'extend', years: long };

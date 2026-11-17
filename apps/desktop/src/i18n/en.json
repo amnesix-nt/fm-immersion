@@ -2058,7 +2058,8 @@
         "decline": "{{age}}, declining",
         "youthTeam": "develops with the youth team",
         "offProject": "profile off the game plan",
-        "loanIn": "on loan with us: counts this season, no sale or extension"
+        "loanIn": "on loan with us: counts this season, no sale or extension",
+        "underperforms": "not performing: {{rating}} average over {{count}} games, the team is at {{team}}"
       },
       "stayNoYouth": "Players aged 21 or under are in their own panel above.",
       "board": {

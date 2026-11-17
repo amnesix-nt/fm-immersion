@@ -676,6 +676,10 @@ export function useReason() {
         return t('fm.merc.why.overtakes', { count: x.years, starter: x.starter });
       case 'decline':
         return t('fm.merc.why.decline', { age: x.age });
+      case 'underperforms': {
+        const n = (v: number) => v.toLocaleString(i18n.resolvedLanguage, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        return t('fm.merc.why.underperforms', { rating: n(x.rating), team: n(x.team), count: x.apps });
+      }
       default:
         return t(`fm.merc.why.${x.id}`);
     }

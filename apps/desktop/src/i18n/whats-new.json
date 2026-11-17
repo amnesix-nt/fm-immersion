@@ -1,16 +1,28 @@
 [
   {
-    "version": "0.1.238",
+    "version": "0.1.240",
     "date": "2026-11-17",
     "fr": [
+      "Construire ma tactique : nouveau bouton « Importer depuis le dossier tactics ». Les tactiques que tu as exportées dans FM27 arrivent dans l'appli avec leurs postes, leurs rôles, leur mentalité et leurs consignes individuelles. Les consignes d'équipe restent à régler à la main pour l'instant.",
       "Note méta : les gardiens ont enfin la leur. Elle compte d'abord l'agilité et les réflexes, ceux qui arrêtent vraiment des buts.",
       "Note méta : une deuxième série de tests (50 000 matchs rejoués poste par poste) s'affiche à côté de la première. Tu vois si les deux concordent, ou s'il faut rester prudent.",
       "Fiche joueur : avec « Lire le CA/PA », les attributs cachés apparaissent (régularité, grands matchs, fragilité, polyvalence, agressivité déloyale), avec une alerte pour les joueurs fragiles ou abonnés aux cartons."
     ],
     "en": [
+      "Build my tactic: new \"Import from the tactics folder\" button. Tactics you exported in FM27 come into the app with their positions, roles, mentality and player instructions. Team instructions still need to be set by hand for now.",
       "Meta rating: goalkeepers finally get theirs. It counts Agility and Reflexes first, the attributes that really stop goals.",
       "Meta rating: a second set of tests (50,000 matches replayed position by position) now shows next to the first. You can see whether they agree, or whether to be careful.",
       "Player sheet: with \"Read CA/PA\", hidden attributes now show (Consistency, Important Matches, Injury Proneness, Versatility, Dirtiness), with a warning for injury-prone or card-prone players."
+    ]
+  },
+  {
+    "version": "0.1.239",
+    "date": "2026-11-17",
+    "fr": [
+      "Mercato : un joueur qui ne performe pas sur la saison (note moyenne nettement sous celle de l'équipe, après au moins 6 matchs) est maintenant proposé à la vente, même titulaire, et on ne te conseille plus de le prolonger. Les jeunes prometteurs ne sont pas concernés."
+    ],
+    "en": [
+      "Mercato: a player who isn't performing this season (average rating clearly below the team's, after at least 6 games) is now suggested for sale, even as a starter, and you're no longer told to extend his contract. Promising youngsters aren't affected."
     ]
   },
   {

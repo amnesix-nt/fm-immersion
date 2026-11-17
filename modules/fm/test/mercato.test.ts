@@ -127,6 +127,33 @@ describe('mercato : départs et jeunes', () => {
   });
 });
 
+describe('joueurs qui ne performent pas', () => {
+  const played = (x: ReturnType<typeof p>, avgRating: number, apps = 12) => ({ ...x, avgRating, apps });
+  it('propose de vendre un titulaire dont la note de la saison est nettement sous celle de l’équipe', () => {
+    const squad = eleven.map((x) => played(x, x.id === '11' ? 6.45 : 6.95));
+    const r = mercatoAdvice(engine, [...squad, p(12, 'BT', 11)], DATE, { style: 'possession' })!;
+    const bt = r.advice.find((a) => a.player.id === '11')!;
+    expect(bt.now.tier).toBe(0);
+    expect(bt.verdict).toBe('sell');
+    expect(bt.reasons.find((x) => x.id === 'underperforms')).toMatchObject({ rating: 6.45, apps: 12 });
+    // Les autres titulaires restent.
+    expect(r.advice.find((a) => a.player.id === '10')!.verdict).not.toBe('sell');
+  });
+  it('ne juge pas sur trop peu de matchs, ni un jeune prometteur', () => {
+    const few = eleven.map((x) => played(x, x.id === '11' ? 6.45 : 6.95, x.id === '11' ? 3 : 12));
+    expect(mercatoAdvice(engine, few, DATE, { style: 'possession' })!.advice.find((a) => a.player.id === '11')!.verdict).not.toBe('sell');
+    const young = eleven.map((x) => (x.id === '11' ? { ...played(x, 6.45), age: 19, pa: 160, ca: 100 } : played(x, 6.95)));
+    const y = mercatoAdvice(engine, young, DATE, { style: 'possession' })!.advice.find((a) => a.player.id === '11')!;
+    expect(y.prospect).toBe(true);
+    expect(y.verdict).not.toBe('sell');
+  });
+  it('ne prolonge pas un joueur qui ne performe pas', () => {
+    const squad = eleven.map((x) => (x.id === '11' ? { ...played(x, 6.45), contractEnd: '2027-03-31' } : played(x, 6.95)));
+    const c = contractDecisions(mercatoAdvice(engine, squad, DATE, { style: 'possession' })!).find((d) => d.advice.player.id === '11')!;
+    expect(c.call).toBe('sellNow');
+  });
+});
+
 describe('compatibilité avec le projet de jeu', () => {
   it('juge le profil, pas le niveau : un faible fait pour le style reste compatible', () => {
     const pr = buildProject(engine, eleven, { style: 'possession' })!;
