@@ -104,6 +104,7 @@ export function EngineTag({ v }: { v: EngineValue | null | undefined }) {
     v.weaknesses.length > 0 && t('fm.engine.weaknesses', { list: v.weaknesses.map((f) => `${attr(f.attr)} ${f.value}`).join(', ') }),
     v.belowMin.length > 0 && t('fm.engine.belowMin', { list: v.belowMin.map((f) => `${attr(f.attr)} ${f.value}`).join(', ') }),
     engineWeighted(t, v),
+    engineSource(t, v, i18n.resolvedLanguage),
   ]
     .filter(Boolean)
     .join('\n');
@@ -118,6 +119,14 @@ export function EngineTag({ v }: { v: EngineValue | null | undefined }) {
 export function engineWeighted(t: (k: string, o?: Record<string, unknown>) => string, v: EngineValue): string | null {
   const groups = v.groups.filter((g) => g !== 'team');
   return groups.length ? t('fm.engine.weighted', { list: groups.map((g) => t(`fm.engine.group.${g}`)).join(', ') }) : null;
+}
+
+/** Ce que dit la deuxième source (Match Lab) : accord, désaccord, ou seule source pour un gardien. */
+export function engineSource(t: (k: string, o?: Record<string, unknown>) => string, v: EngineValue, lang?: string): string | null {
+  if (v.keeper) return t('fm.engine.keeper');
+  if (v.lab == null) return null;
+  const lab = metaText({ meta: v.lab }, lang);
+  return t(v.agree ? 'fm.engine.agree' : 'fm.engine.disagree', { lab });
 }
 
 /** Nombre avec son signe (+3, −4, 0). */

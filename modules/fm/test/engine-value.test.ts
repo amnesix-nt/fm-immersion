@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { attributeEffect, ENGINE_GAINS, engineGroups, engineTier, fitMetaScore, engineValue, positionWeights } from '../src';
+import { attributeEffect, ENGINE_GAINS, engineGroups, engineTier, fitMetaScore, engineValue, labMeta, positionWeights } from '../src';
 
 const all = (v: number, over: Record<string, number> = {}) => ({ positions: ['MC' as const], attributes: { ...Object.fromEntries(Object.keys(ENGINE_GAINS).map((k) => [k, v])), ...over } });
 
@@ -27,9 +27,49 @@ describe('indice moteur (tests d’attributs FM27)', () => {
     expect(lazy.weaknesses[0]!.attr).toBe('WorkRate');
   });
 
-  it('rien pour un gardien ni sans attributs lus', () => {
-    expect(engineValue({ positions: ['GB'], attributes: all(12).attributes })).toBeNull();
+  it('rien sans attributs lus', () => {
     expect(engineValue({ positions: ['DC'], attributes: { Pace: 15 } })).toBeNull();
+    expect(engineValue({ positions: ['GB'], attributes: { Handling: 15, Kicking: 14 } })).toBeNull();
+  });
+
+  it('note les gardiens par Match Lab : agilité et réflexes d’abord', () => {
+    const gk = (over: Record<string, number> = {}) => ({ positions: ['GB' as const], attributes: { Agility: 12, Reflexes: 12, AerialReach: 12, Acceleration: 12, Determination: 12, Handling: 12, OneOnOnes: 12, ...over } });
+    const base = engineValue(gk())!;
+    expect(base.keeper).toBe(true);
+    expect(base.groups).toEqual(['GK']);
+    expect(base.meta).toBe(12);
+    expect(base.index).toBe(0);
+    expect(base.agree).toBeNull();
+    // Un gardien à 15 partout vaut 15.
+    expect(engineValue(gk({ Agility: 15, Reflexes: 15, AerialReach: 15, Acceleration: 15, Determination: 15 }))!.meta).toBe(15);
+    // Agilité et réflexes pèsent bien plus que le face-à-face ou la prise de balle (non retenus).
+    const shot = engineValue(gk({ Agility: 17, Reflexes: 17 }))!;
+    const other = engineValue(gk({ OneOnOnes: 20, Handling: 20 }))!;
+    expect(shot.meta).toBeGreaterThan(15);
+    expect(shot.strengths.map((f) => f.attr)).toEqual(['Agility', 'Reflexes']);
+    expect(engineTier(shot.index)).toBe('good');
+    expect(other.meta).toBe(12);
+    // Le poste visé compte : un joueur de champ jugé dans les buts, ou un gardien jugé ailleurs.
+    expect(engineValue({ positions: ['DC'], attributes: { ...all(12).attributes, ...gk().attributes } }, 'GB')!.keeper).toBe(true);
+  });
+
+  it('donne la note de Match Lab en deuxième source et dit si les deux concordent', () => {
+    const lab = engineValue(all(14))!;
+    expect(lab.lab).toBe(14);
+    expect(lab.agree).toBe(true);
+    // Technicien lent : la première série le pénalise, Match Lab le juge sur ses seuls attributs physiques.
+    const tech = engineValue(all(12, { Technique: 20, Vision: 20, FirstTouch: 20, Passing: 20, Movement: 20, Tackling: 20, Marking: 20, Composure: 20 }))!;
+    expect(tech.lab).toBe(12);
+    expect(tech.agree).toBe(false);
+    // Un sprinteur : les deux sources le voient au-dessus de 14.
+    const fast = engineValue(all(12, { Pace: 18, Acceleration: 17, Stamina: 16 }))!;
+    expect(fast.lab).toBeGreaterThan(14);
+    expect(fast.agree).toBe(true);
+    // Détente : un défenseur central y gagne plus qu'un milieu défensif.
+    const jump = { ...all(12).attributes, JumpingReach: 18 };
+    expect(labMeta(jump, ['CB'])!).toBeGreaterThan(labMeta(jump, ['DM'])!);
+    // Trop peu d'attributs lus : pas de deuxième note.
+    expect(labMeta({ Pace: 15, Acceleration: 15 }, ['ST'])).toBeNull();
   });
 
   it('pèse les attributs selon le poste (mesures de Purity), sans changer l’échelle', () => {

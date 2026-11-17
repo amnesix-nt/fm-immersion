@@ -20,6 +20,17 @@ import type { PosCode } from './positions';
  * multiplicateur par attribut et par poste (voir `positionWeights`) : la courbe reste celle d'Harvestgreen, seule sa
  * hauteur change selon le poste.
  *
+ * Deuxième source, FM27 Match Lab (caiograco289/Fm-Match-Lab, MIT, étude 13b du 14/11/2026,
+ * https://github.com/caiograco289/Fm-Match-Lab/blob/main/docs/studies/13b-value-by-position-random.md) : le moteur du
+ * jeu rejoué hors du jeu sur 50 000 matchs, chaque attribut de chaque titulaire changé de ±5 au hasard à chaque match,
+ * puis une régression par poste. On en reprend la différence de buts par saison pour +1 point chez un seul joueur du
+ * poste (`LAB_GD`), qui compte aussi la finition et la puissance (elles marquent des buts sans créer d'occasions), et
+ * les points par saison pour le gardien (`LAB_GK`). Limites : une équipe synthétique, une tactique (Gegenpress),
+ * pente moyenne entre 9 et 20 (en dessous, vitesse et accélération coûtent plus).
+ *
+ * Les gardiens n'ont que cette source : agilité et réflexes y arrêtent des buts sans changer les occasions subies.
+ * Les attributs cachés (seule la pression y compte) ne sont pas lus par le plugin : ils ne sont pas pris en compte.
+ *
  * Ce n'est pas la note du jeu : les étoiles et la note au poste restent celles de FM27 (role-ratings-fm27.ts).
  */
 
@@ -58,7 +69,7 @@ export const ENGINE_GAINS: Record<string, readonly [number, number, number]> = {
 };
 
 /** Familles de poste mesurées par Purity ; `team` = pas de mesure propre (milieux centraux et excentrés). */
-export type EngineGroup = 'ST' | 'AM' | 'WB' | 'CB' | 'DM' | 'team';
+export type EngineGroup = 'ST' | 'AM' | 'WB' | 'CB' | 'DM' | 'team' | 'GK';
 export const ENGINE_GROUPS = ['ST', 'AM', 'WB', 'CB', 'DM'] as const;
 
 export const ENGINE_GROUP_OF: Record<PosCode, EngineGroup | null> = {
@@ -90,7 +101,7 @@ const WEIGHT_MAX = 2;
  */
 function groupWeights(group: EngineGroup): Record<string, number> {
   const keys = Object.keys(PURITY);
-  if (group === 'team') return Object.fromEntries(keys.map((k) => [k, 1]));
+  if (group === 'team' || group === 'GK') return Object.fromEntries(keys.map((k) => [k, 1]));
   const i = ENGINE_GROUPS.indexOf(group);
   const raw = keys.map((k) => {
     const { team, by } = PURITY[k]!;
@@ -101,7 +112,7 @@ function groupWeights(group: EngineGroup): Record<string, number> {
   const mean = raw.reduce((s, r) => s + r, 0) / raw.length;
   return Object.fromEntries(keys.map((k, j) => [k, Math.min(WEIGHT_MAX, Math.max(WEIGHT_MIN, raw[j]! / mean))]));
 }
-const WEIGHTS = Object.fromEntries([...ENGINE_GROUPS, 'team'].map((g) => [g, groupWeights(g as EngineGroup)])) as Record<EngineGroup, Record<string, number>>;
+const WEIGHTS = Object.fromEntries([...ENGINE_GROUPS, 'team', 'GK'].map((g) => [g, groupWeights(g as EngineGroup)])) as Record<EngineGroup, Record<string, number>>;
 
 /** Familles de poste d'un joueur, sans doublon (les gardiens n'en ont pas). */
 export function engineGroups(positions: readonly PosCode[]): EngineGroup[] {
@@ -113,6 +124,63 @@ export function positionWeights(positions: readonly PosCode[]): Record<string, n
   const groups = engineGroups(positions);
   if (!groups.length) return WEIGHTS.team;
   return Object.fromEntries(Object.keys(PURITY).map((k) => [k, groups.reduce((s, g) => s + WEIGHTS[g][k]!, 0) / groups.length]));
+}
+
+/**
+ * Match Lab, étude 13b (Gegenpress) : différence de buts par saison pour +1 point chez un joueur du poste, dans l'ordre
+ * ST, AM, DM, FB (latéral ou piston), CB. Les autres attributs y sont à moins de ±0,04 point par saison partout.
+ */
+const LAB_GD: Record<string, readonly [number, number, number, number, number]> = {
+  Acceleration: [0.49, 0.24, 0.27, 0.29, 0.41],
+  Pace: [0.45, 0.27, 0.26, 0.36, 0.31],
+  JumpingReach: [0.34, 0.21, 0.09, 0.11, 0.44],
+  Stamina: [0.15, 0.16, 0.2, 0.25, 0.2],
+  Balance: [0.21, 0.0, 0.06, 0.09, 0.24],
+  Strength: [0.16, 0.14, 0.15, 0.09, 0.17],
+  Finishing: [0.21, 0.06, 0.04, 0.0, 0.04],
+  Anticipation: [0.13, 0.11, 0.1, 0.14, 0.15],
+  Concentration: [0.08, 0.06, 0.08, 0.19, 0.12],
+};
+const LAB_COL: Record<Exclude<EngineGroup, 'GK'>, number | null> = { ST: 0, AM: 1, DM: 2, WB: 3, CB: 4, team: null };
+
+/** Match Lab, étude 13b : points par saison pour +1 point du gardien (les effets nets, t ≥ 2,5). */
+export const LAB_GK: Record<string, number> = { Agility: 0.58, Reflexes: 0.5, AerialReach: 0.16, Acceleration: 0.16, Determination: 0.12 };
+
+/**
+ * Passage des points par saison (Match Lab) aux points de taux de victoire de l'indice : la vitesse de 12 à 18 pour
+ * dix joueurs de champ vaut 19,4 points de % chez Harvestgreen et 0,16 × 10 × 6 ≈ 9,6 points par saison chez
+ * Match Lab, soit environ 2 points de % par point de saison.
+ */
+const LAB_TO_INDEX = 2;
+
+/** Écart de note méta au-delà duquel les deux sources ne disent pas la même chose. */
+export const ENGINE_AGREE_GAP = 1.5;
+
+/** Coefficient Match Lab d'un attribut pour ces familles de poste (moyenne ; équipe = moyenne des cinq postes). */
+function labCoef(attr: string, groups: readonly EngineGroup[]): number {
+  const row = LAB_GD[attr]!;
+  const cols = groups.length ? groups.map((g) => (g === 'GK' ? null : LAB_COL[g])) : [null];
+  const one = (c: number | null) => (c == null ? row.reduce((s, x) => s + x, 0) / row.length : row[c]!);
+  return cols.reduce<number>((s, c) => s + one(c), 0) / cols.length;
+}
+
+/**
+ * Note méta selon Match Lab : la moyenne des attributs lus, pondérée par ce que chacun rapporte au poste (le modèle
+ * est linéaire, donc un joueur à X partout vaut X). Null si moins de 7 des 9 attributs sont lus.
+ */
+export function labMeta(attributes: Record<string, number>, groups: readonly EngineGroup[]): number | null {
+  let num = 0;
+  let den = 0;
+  let read = 0;
+  for (const attr of Object.keys(LAB_GD)) {
+    const v = attributes[attr];
+    if (v == null || !Number.isFinite(v)) continue;
+    const c = labCoef(attr, groups);
+    num += c * Math.max(1, Math.min(20, v));
+    den += c;
+    read++;
+  }
+  return read >= 7 && den > 0 ? Math.round((num / den) * 10) / 10 : null;
 }
 
 /** Attributs à ne pas laisser sous 6 : ils coûtent cher en dessous et rapportent peu au-dessus de 12. */
@@ -158,19 +226,56 @@ export interface EngineValue {
   belowMin: EngineFactor[];
   /** Nombre d'attributs testés lus pour ce joueur. */
   read: number;
+  /** Gardien : note et indice tirés de Match Lab seul (agilité, réflexes, jeu aérien, accélération, détermination). */
+  keeper: boolean;
+  /** Note méta selon la deuxième source (Match Lab) ; pour un gardien, la même que `meta`. Null si non lue. */
+  lab: number | null;
+  /** Joueur de champ : les deux sources donnent-elles la même note (moins de ENGINE_AGREE_GAP d'écart) ? */
+  agree: boolean | null;
 }
 
 /** Attributs testés en dessous desquels l'indice ne veut rien dire (attributs non lus). */
 const MIN_READ = 20;
 const NOTABLE = 4;
 
+/** Indice moteur d'un gardien, d'après Match Lab : linéaire, donc la note méta est la moyenne pondérée des attributs. */
+function keeperValue(attributes: Record<string, number>): EngineValue | null {
+  const factors: EngineFactor[] = [];
+  let num = 0;
+  let den = 0;
+  for (const [attr, c] of Object.entries(LAB_GK)) {
+    const value = attributes[attr];
+    if (value == null || !Number.isFinite(value)) continue;
+    const v = Math.max(1, Math.min(20, value));
+    factors.push({ attr, value, effect: c * LAB_TO_INDEX * (v - 12) });
+    num += c * v;
+    den += c;
+  }
+  // Agilité et réflexes font l'essentiel : sans eux, pas de note.
+  if (attributes.Agility == null || attributes.Reflexes == null || factors.length < 4) return null;
+  const meta = Math.round((num / den) * 10) / 10;
+  const round = (f: EngineFactor) => ({ ...f, effect: Math.round(f.effect * 10) / 10 });
+  return {
+    groups: ['GK'],
+    meta,
+    index: Math.round(factors.reduce((s, f) => s + f.effect, 0)),
+    strengths: factors.filter((f) => f.effect >= NOTABLE).sort((a, b) => b.effect - a.effect).slice(0, 3).map(round),
+    weaknesses: factors.filter((f) => f.effect <= -NOTABLE).sort((a, b) => a.effect - b.effect).slice(0, 3).map(round),
+    belowMin: [],
+    read: factors.length,
+    keeper: true,
+    lab: meta,
+    agree: null,
+  };
+}
+
 /**
- * Indice moteur d'un joueur de champ, pondéré selon ses postes (ou `at`, le poste visé, par exemple pour une recrue) ;
- * null pour un gardien ou si ses attributs ne sont pas lus.
+ * Indice moteur d'un joueur, pondéré selon ses postes (ou `at`, le poste visé, par exemple pour une recrue). Un
+ * gardien (tous ses postes, ou `at`, en GB) est noté par Match Lab seul. Null si ses attributs ne sont pas lus.
  */
 export function engineValue(p: Pick<FmPlayer, 'attributes' | 'positions'>, at?: PosCode): EngineValue | null {
-  if (p.positions.length > 0 && p.positions.every((pos) => pos === 'GB')) return null;
-  const positions = at && at !== 'GB' ? [at] : p.positions;
+  if (at === 'GB' || (!at && p.positions.length > 0 && p.positions.every((pos) => pos === 'GB'))) return keeperValue(p.attributes);
+  const positions = at ? [at] : p.positions;
   const weights = positionWeights(positions);
   const factors: EngineFactor[] = [];
   for (const attr of Object.keys(ENGINE_GAINS)) {
@@ -195,7 +300,11 @@ export function engineValue(p: Pick<FmPlayer, 'attributes' | 'positions'>, at?: 
     }
   const meta = Math.round(((lo + hi) / 2) * 10) / 10;
   const round = (f: EngineFactor) => ({ ...f, effect: Math.round(f.effect * 10) / 10 });
+  const lab = labMeta(p.attributes, engineGroups(positions));
   return {
+    keeper: false,
+    lab,
+    agree: lab == null ? null : Math.abs(lab - meta) < ENGINE_AGREE_GAP,
     groups: engineGroups(positions),
     meta,
     index: Math.round(index),

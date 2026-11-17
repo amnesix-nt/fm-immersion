@@ -1,5 +1,17 @@
 [
   {
+    "version": "0.1.236",
+    "date": "2026-11-17",
+    "fr": [
+      "Note méta : les gardiens ont enfin la leur. Elle compte d'abord l'agilité et les réflexes, ceux qui arrêtent vraiment des buts.",
+      "Note méta : une deuxième série de tests (50 000 matchs rejoués poste par poste) s'affiche à côté de la première. Tu vois si les deux concordent, ou s'il faut rester prudent."
+    ],
+    "en": [
+      "Meta rating: goalkeepers finally get theirs. It counts Agility and Reflexes first, the attributes that really stop goals.",
+      "Meta rating: a second set of tests (50,000 matches replayed position by position) now shows next to the first. You can see whether they agree, or whether to be careful."
+    ]
+  },
+  {
     "version": "0.1.235",
     "date": "2026-11-16",
     "fr": [

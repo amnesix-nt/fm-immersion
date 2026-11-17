@@ -33,7 +33,7 @@ import { LeaveButton, useLeaving } from './FmLeaving';
 import { TONE, useReason } from './FmMercato';
 import { Spark } from './FmProgression';
 import { useTacticEngine } from './FmTactic';
-import { Chips, CompatTag, EngineTag, engineWeighted, fitPct, Level, PlanGradeCard, signed, Tag, useCoach, useFormat, useNames, type SheetFocus } from './FmUi';
+import { Chips, CompatTag, EngineTag, engineSource, engineWeighted, fitPct, Level, PlanGradeCard, signed, Tag, useCoach, useFormat, useNames, type SheetFocus } from './FmUi';
 
 const PCT = new Set<StatKey>(['passPct', 'tacklePct', 'headerPct', 'shotsOnTargetPct', 'savePct']);
 
@@ -474,7 +474,7 @@ export function FmPlayerSheet({
       {/* Indice moteur : le poids réel de ses attributs dans le moteur de FM27 (tests de la communauté). */}
       <Section title={<>{t('fm.engine.heading')} {engineVal && <EngineTag v={engineVal} />}</>} help={t('fm.engine.help')}>
         {!engineVal ? (
-          <p className="text-sm text-brun">{p.positions.every((x) => x === 'GB') ? t('fm.engine.gk') : t('fm.engine.none')}</p>
+          <p className="text-sm text-brun">{t('fm.engine.none')}</p>
         ) : (
           <ul className="space-y-1 text-sm">
             {engineVal.strengths.length > 0 && <li>{t('fm.engine.strengths', { list: engineVal.strengths.map((x) => `${attrLabel(x.attr)} ${x.value} (${signed(Math.round(x.effect))})`).join(', ') })}</li>}
@@ -486,6 +486,7 @@ export function FmPlayerSheet({
             )}
             {!engineVal.strengths.length && !engineVal.weaknesses.length && !engineVal.belowMin.length && <li className="text-brun">{t('fm.engine.none')}</li>}
             {engineWeighted(t, engineVal) && <li className="text-xs text-brun">{engineWeighted(t, engineVal)}</li>}
+            {engineSource(t, engineVal, i18n.resolvedLanguage) && <li className="text-xs text-brun">{engineSource(t, engineVal, i18n.resolvedLanguage)}</li>}
           </ul>
         )}
       </Section>

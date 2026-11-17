@@ -3669,17 +3669,20 @@
       "weaknesses": "Costs matches: {{list}}",
       "belowMin": "Below the minimum of 6: {{list}}",
       "heading": "Meta rating",
-      "help": "Meta rating out of 20: a player with 12 everywhere gets 12, one with 15 everywhere gets 15. It says what his attributes are worth to the match engine, not to the game's stars. What his attributes really weigh in the FM27 match engine, according to FM-Arena community tests (November 2026): pace, acceleration and stamina matter most, jumping reach above 12, and he needs at least 6 in work rate, anticipation, strength, balance, concentration and natural fitness. A trend from a single series of tests, not the game's rating: the stars remain FM27's. Each attribute's weight also depends on the position, from Purity's tests: jumping reach matters most for a centre-back or a striker, stamina for a full-back, finishing for a striker. Central and wide midfielders keep the whole-team weights.",
+      "help": "Meta rating out of 20: a player with 12 everywhere gets 12, one with 15 everywhere gets 15. It says what his attributes are worth to the match engine, not to the game's stars. What his attributes really weigh in the FM27 match engine, according to FM-Arena community tests (November 2026): pace, acceleration and stamina matter most, jumping reach above 12, and he needs at least 6 in work rate, anticipation, strength, balance, concentration and natural fitness. A trend from a single series of tests, not the game's rating: the stars remain FM27's. Each attribute's weight also depends on the position, from Purity's tests: jumping reach matters most for a centre-back or a striker, stamina for a full-back, finishing for a striker. Central and wide midfielders keep the whole-team weights. Second source, FM27 Match Lab (November 2026): the game's own engine replayed outside the game over 50,000 matches, position by position. When both ratings are close you can trust them more; when they differ, it is often a technical player that the first set of tests penalises and the second rates as neutral. Goalkeepers are rated by Match Lab only: Agility and Reflexes first (they stop goals), then Aerial Reach, Acceleration and Determination. Hidden attributes are not read.",
       "none": "Nothing notable.",
-      "gk": "Goalkeepers are not covered by these tests.",
       "weighted": "Position weights: {{list}} (Purity's measurements, made with a single 3-4-3 tactic).",
       "group": {
         "ST": "striker",
         "AM": "attacking midfielder or winger",
         "WB": "full-back or wing-back",
         "CB": "centre-back",
-        "DM": "defensive midfielder"
-      }
+        "DM": "defensive midfielder",
+        "GK": "goalkeeper"
+      },
+      "keeper": "Goalkeeper: rating from Match Lab only (Agility and Reflexes first, then Aerial Reach, Acceleration and Determination).",
+      "agree": "Second source (Match Lab): {{lab}}. Both sets of tests agree.",
+      "disagree": "Second source (Match Lab): {{lab}}. The two sets of tests disagree: be careful."
     },
     "takers": {
       "title": "Set-piece takers and captain",
