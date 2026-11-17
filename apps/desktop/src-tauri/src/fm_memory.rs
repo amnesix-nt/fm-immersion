@@ -166,6 +166,12 @@ pub const KNOWN_1103_TRIAL_VTABLE: u64 = 0x4C90B78;
 pub const KNOWN_1110: Globals = Globals { database: 0x5820710, humans: 0x5810048, date: 0x57CA3B8 };
 pub const KNOWN_1110_TRIAL_VTABLE: u64 = 0x4D92BB8;
 
+/// Mise à jour 27.1.0+2505117 (Steam, 17/11/2026, build 26620374 ; game_plugin.dll de 410 993 112 octets) : relevé par
+/// `tools/scan-module.py`. La base suit `C7 44 24 5C 00 00 01 1B` ; vtable de `TRIAL_CONTRACT@db` par la RTTI.
+/// Disposition des objets supposée inchangée, à confirmer en jeu.
+pub const KNOWN_1117: Globals = Globals { database: 0x587B7B8, humans: 0x586CB38, date: 0x58268E0 };
+pub const KNOWN_1117_TRIAL_VTABLE: u64 = 0x4E01618;
+
 /// Vtable du contrat d'essai pour une version connue.
 fn trial_vtable_for(globals: Globals) -> Option<u64> {
     if globals == KNOWN {
@@ -174,6 +180,8 @@ fn trial_vtable_for(globals: Globals) -> Option<u64> {
         Some(KNOWN_1103_TRIAL_VTABLE)
     } else if globals == KNOWN_1110 {
         Some(KNOWN_1110_TRIAL_VTABLE)
+    } else if globals == KNOWN_1117 {
+        Some(KNOWN_1117_TRIAL_VTABLE)
     } else {
         None
     }
@@ -192,8 +200,9 @@ struct Sig {
     minus: u64,
 }
 
-/// L'octet après `5C 00` vaut 00 avant la version finale, 01 depuis : laissé libre.
-const SIG_DATABASE: Sig = Sig { pattern: "48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? C7 44 24 5C 00 ?? 00 1B", disp: 3, minus: 0 };
+/// Les deux octets après `5C 00` changent d'une version à l'autre (`00 00`, `01 00` à la version finale, `00 01` en
+/// 27.1.0) : laissés libres.
+const SIG_DATABASE: Sig = Sig { pattern: "48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? C7 44 24 5C 00 ?? ?? 1B", disp: 3, minus: 0 };
 const SIG_PERSONS: Sig = Sig {
     pattern: "48 8B 05 ?? ?? ?? ?? 48 8B 80 80 00 00 00 48 8B 48 08 48 3B 08 0F 85 ?? ?? ?? ??",
     disp: 3,
@@ -2283,6 +2292,36 @@ mod tests {
         code.extend(vec![0xCC; 64]);
         let g = scan_globals(&mut Cursor::new(fake_pe(&code, va))).unwrap();
         assert_eq!(g, KNOWN);
+    }
+
+    /// Octets relevés dans game_plugin.dll 27.1.0 (RVA 0x1EBA66, 0xC22EB6, 0x23249BB, 0x245CFA1).
+    #[test]
+    fn reconnait_la_version_27_1_0() {
+        let hex = |h: &str| h.split_whitespace().map(|t| u8::from_str_radix(t, 16).unwrap()).collect::<Vec<u8>>();
+        let at = |rva: u32, bytes: &str| -> Globals {
+            let mut code = hex(bytes);
+            code.extend(vec![0xCC; 32]);
+            let mut f = Cursor::new(fake_pe(&code, rva));
+            let mut found = Globals { database: 0, humans: 0, date: 0 };
+            for (sig, slot) in [(&SIG_DATABASE, 0), (&SIG_PERSONS, 0), (&SIG_HUMANS, 1), (&SIG_DATE, 2)] {
+                let pat = parse_pattern(sig.pattern);
+                let data = f.get_mut()[0x400..].to_vec();
+                if data.len() >= pat.len() && matches_at(&data, 0, &pat) {
+                    let t = (rva as i64 + sig.disp as i64 + 4 + le_i32(&data, sig.disp) as i64) as u64 - sig.minus;
+                    match slot {
+                        0 => found.database = t,
+                        1 => found.humans = t,
+                        _ => found.date = t,
+                    }
+                }
+            }
+            found
+        };
+        assert_eq!(at(0x1EBA66, "48 8d 0d 4b fd 68 05 e8 4e d1 89 00 c7 44 24 5c 00 00 01 1b").database, KNOWN_1117.database);
+        assert_eq!(at(0xC22EB6, "48 8b 05 63 89 c5 04 48 8b 80 80 00 00 00 48 8b 48 08 48 3b 08 0f 85 cf 21 00 00").database, KNOWN_1117.database);
+        assert_eq!(at(0x23249BB, "4c 8b 25 76 81 54 03 49 8b 44 24 18 49 8b 54 24 20 48 39 c2").humans, KNOWN_1117.humans);
+        assert_eq!(at(0x245CFA1, "48 8d 15 38 99 3c 03 49 0f 42 d0 0f b7 42 02").date, KNOWN_1117.date);
+        assert!(is_known(KNOWN_1117));
     }
 
     #[test]

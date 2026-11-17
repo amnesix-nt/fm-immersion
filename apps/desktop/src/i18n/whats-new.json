@@ -3,10 +3,12 @@
     "version": "0.1.243",
     "date": "2026-11-17",
     "fr": [
-      "Construire ma tactique : l'import depuis le dossier tactics lit aussi les tactiques enregistrées par d'autres outils que l'écran d'export de FM27, comme Pivot Gang Elite."
+      "Construire ma tactique : l'import depuis le dossier tactics lit aussi les tactiques enregistrées par d'autres outils que l'écran d'export de FM27, comme Pivot Gang Elite.",
+      "Lecture du CA/PA : la mise à jour 27.1.0 de FM27 est prise en charge."
     ],
     "en": [
-      "Build my tactic: importing from the tactics folder now also reads tactics saved by tools other than FM27's export screen, such as Pivot Gang Elite."
+      "Build my tactic: importing from the tactics folder now also reads tactics saved by tools other than FM27's export screen, such as Pivot Gang Elite.",
+      "CA/PA reading: FM27's 27.1.0 update is now supported."
     ]
   },
   {
