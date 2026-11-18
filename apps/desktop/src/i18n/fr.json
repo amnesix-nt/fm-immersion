@@ -4550,6 +4550,12 @@
     "cancel": "Arrêter",
     "remove": "Tout supprimer",
     "removeConfirm": "Supprimer le moteur d'images ({{total}}) ? Les photos déjà créées sont gardées.",
+    "precheck": {
+      "space": "Pas assez de place sur ce disque : {{free}} libres, il en faut environ {{needed}}. Choisis un autre dossier (plus bas) ou libère de la place.",
+      "noGpu": "Aucune carte graphique NVIDIA trouvée : le moteur photo en demande une, avec au moins 8 Go de mémoire vidéo.",
+      "vram": "Ta carte ({{name}}, {{vram}} Go) a moins de 8 Go de mémoire vidéo : le moteur photo risque de ne pas marcher.",
+      "confirm": "Télécharger quand même ?"
+    },
     "progress": "{{file}} : {{received}} sur {{size}} — {{done}} sur {{total}} au total",
     "verifying": "Chaque fichier est vérifié par SHA-256 avant d'être gardé.",
     "sources": "Fichiers publiés sur Hugging Face (Comfy-Org, lightx2v, Google) et GitHub (Comfy-Org/ComfyUI), licences Apache-2.0 et GPL-3.0.",

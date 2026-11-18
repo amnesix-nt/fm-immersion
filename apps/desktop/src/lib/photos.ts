@@ -93,6 +93,36 @@ export function usePhotosActions() {
   };
 }
 
+/** Vérification avant téléchargement (`photos_precheck`) : disque du dossier choisi et carte graphique. */
+export type PhotosPrecheck = {
+  dir: string;
+  freeBytes: number | null;
+  neededBytes: number;
+  gpuName: string | null;
+  vramMib: number | null;
+};
+
+/** Mémoire vidéo sous laquelle le moteur ne tourne pas (annoncée sur l'écran : « au moins 8 Go »). */
+export const MIN_VRAM_MIB = 8 * 1024;
+
+export type PrecheckProblem =
+  | { kind: 'space'; free: number; needed: number }
+  | { kind: 'noGpu' }
+  | { kind: 'vram'; name: string; vramMib: number };
+
+/** Ce qui risque d'empêcher le moteur de marcher sur ce PC ; liste vide si rien à signaler. */
+export function precheckProblems(p: PhotosPrecheck): PrecheckProblem[] {
+  const out: PrecheckProblem[] = [];
+  if (p.freeBytes !== null && p.freeBytes < p.neededBytes) out.push({ kind: 'space', free: p.freeBytes, needed: p.neededBytes });
+  if (p.vramMib === null) out.push({ kind: 'noGpu' });
+  else if (p.vramMib < MIN_VRAM_MIB) out.push({ kind: 'vram', name: p.gpuName ?? '', vramMib: p.vramMib });
+  return out;
+}
+
+export function precheck() {
+  return invoke<PhotosPrecheck>('photos_precheck');
+}
+
 export type MoveProgress = { done: number; total: number };
 
 /** Avancement du déplacement du dossier (null hors déplacement, ou tant que c'est un simple renommage). */

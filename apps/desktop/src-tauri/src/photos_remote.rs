@@ -592,6 +592,70 @@ pub async fn photos_remote_remove(app: tauri::AppHandle) -> Result<Status, Photo
     Ok(status(&dir, manifest()))
 }
 
+// ------------------------------------------------------------------ vérification avant téléchargement
+
+/// Vérification faite avant de lancer les ~34 Go (sur clic du joueur) : place libre sur le disque du dossier choisi et
+/// carte graphique (nvidia-smi). Ne bloque rien : l'écran Photos montre les problèmes et le joueur décide.
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Precheck {
+    pub dir: String,
+    /// Octets libres sur le disque du dossier (None si illisible).
+    pub free_bytes: Option<u64>,
+    /// Octets encore à écrire : téléchargement restant + extraction de ComfyUI.
+    pub needed_bytes: u64,
+    /// Nom et mémoire (Mio) de la carte NVIDIA qui en a le plus ; None sans carte NVIDIA lisible.
+    pub gpu_name: Option<String>,
+    pub vram_mib: Option<u64>,
+}
+
+/// Place nécessaire : ce qui reste à télécharger, plus ComfyUI une fois extrait s'il ne l'est pas encore (environ trois
+/// fois la taille de l'archive : ~2 Go compressés, ~6 Go extraits).
+pub fn needed_bytes(files: &[FileStatus], extracted: bool) -> u64 {
+    let remaining: u64 = files.iter().map(|f| f.size.saturating_sub(f.on_disk)).sum();
+    let extract: u64 = if extracted { 0 } else { files.iter().filter(|f| f.component == "comfyui").map(|f| f.size * 3).sum() };
+    remaining + extract
+}
+
+/// Premier dossier existant en remontant depuis `dir` (le dossier du moteur n'existe pas avant le téléchargement).
+fn existing_ancestor(dir: &Path) -> Option<&Path> {
+    dir.ancestors().find(|p| p.is_dir())
+}
+
+#[cfg(windows)]
+fn free_space(dir: &Path) -> Option<u64> {
+    use std::os::windows::ffi::OsStrExt;
+    use windows_sys::Win32::Storage::FileSystem::GetDiskFreeSpaceExW;
+    let base = existing_ancestor(dir)?;
+    let wide: Vec<u16> = base.as_os_str().encode_wide().chain(std::iter::once(0)).collect();
+    let mut free: u64 = 0;
+    let ok = unsafe { GetDiskFreeSpaceExW(wide.as_ptr(), &mut free, std::ptr::null_mut(), std::ptr::null_mut()) };
+    (ok != 0).then_some(free)
+}
+
+#[cfg(not(windows))]
+fn free_space(dir: &Path) -> Option<u64> {
+    existing_ancestor(dir).map(|_| u64::MAX)
+}
+
+#[tauri::command]
+pub async fn photos_precheck(app: tauri::AppHandle) -> Result<Precheck, PhotosError> {
+    let dir = photos_dir(&app)?;
+    tauri::async_runtime::spawn_blocking(move || {
+        let s = status(&dir, manifest());
+        let gpu = crate::photos_engine::gpu_info();
+        Precheck {
+            dir: s.dir.clone(),
+            free_bytes: free_space(&dir),
+            needed_bytes: needed_bytes(&s.files, crate::photos_engine::layout(&dir).is_some()),
+            gpu_name: gpu.as_ref().map(|g| g.0.clone()),
+            vram_mib: gpu.map(|g| g.1),
+        }
+    })
+    .await
+    .map_err(|e| PhotosError::Io(e.to_string()))
+}
+
 // ------------------------------------------------------------------ tests
 
 #[cfg(test)]
@@ -620,6 +684,16 @@ mod tests {
             size: data.len() as u64,
             sha256: hex(data),
         }
+    }
+
+    #[test]
+    fn place_necessaire() {
+        let f = |component: &str, size: u64, on_disk: u64| FileStatus { name: "x".into(), component: component.into(), size, on_disk, state: "partial" };
+        let files = vec![f("comfyui", 2_000, 500), f("qwen", 10_000, 4_000), f("owlv2", 1_000, 1_000)];
+        // restant 1 500 + 6 000 + 0, extraction de ComfyUI 3 x 2 000
+        assert_eq!(needed_bytes(&files, false), 13_500);
+        assert_eq!(needed_bytes(&files, true), 7_500);
+        assert_eq!(existing_ancestor(&std::env::temp_dir().join("fmi-absent").join("photos")), Some(std::env::temp_dir().as_path()));
     }
 
     #[test]

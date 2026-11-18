@@ -4550,6 +4550,12 @@
     "cancel": "Stop",
     "remove": "Delete everything",
     "removeConfirm": "Delete the image engine ({{total}})? Photos already created are kept.",
+    "precheck": {
+      "space": "Not enough space on this drive: {{free}} free, about {{needed}} needed. Choose another folder (below) or free up some space.",
+      "noGpu": "No NVIDIA graphics card found: the photo engine needs one, with at least 8 GB of video memory.",
+      "vram": "Your card ({{name}}, {{vram}} GB) has less than 8 GB of video memory: the photo engine may not work.",
+      "confirm": "Download anyway?"
+    },
     "progress": "{{file}}: {{received}} of {{size}} — {{done}} of {{total}} overall",
     "verifying": "Every file is checked by SHA-256 before being kept.",
     "sources": "Files published on Hugging Face (Comfy-Org, lightx2v, Google) and GitHub (Comfy-Org/ComfyUI), Apache-2.0 and GPL-3.0 licences.",

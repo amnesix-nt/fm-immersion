@@ -1,6 +1,6 @@
 [package]
 name = "fm-immersion"
-version = "0.1.250"
+version = "0.1.251"
 description = "FM Immersion — le compagnon de tes parties de Football Manager 27"
 authors = ["FM Immersion"]
 license = "MIT"
@@ -43,6 +43,7 @@ xxhash-rust = { version = "0.8", features = ["xxh64"] }
 windows-sys = { version = "0.61", features = [
   "Win32_Foundation",
   "Win32_Security",
+  "Win32_Storage_FileSystem",
   "Win32_System_Diagnostics_Debug",
   "Win32_System_Diagnostics_ToolHelp",
   "Win32_System_JobObjects",
