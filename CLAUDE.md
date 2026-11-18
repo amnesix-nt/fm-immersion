@@ -12,7 +12,9 @@ extraite avec son historique ; Simloom garde Planet Zoo 2 et Transport Fever 3.
 - **Tout est local** : pas de compte, pas de connexion, aucune donnée envoyée. Les parties sont dans une base
   SQLite sur le PC (`%APPDATA%\app.fmimmersion.desktop\fm-immersion.db`). Les seules requêtes réseau vont vers GitHub
   Releases : la recherche de mise à jour au démarrage, et, à la demande du joueur, le téléchargement du plugin FM27
-  (`modules/fm/bridge`, vérifié par SHA-256, voir son README), et pour les visages le manifeste de la release
+  (`modules/fm/bridge`, vérifié par SHA-256, voir son README) avec, s'il manque, **BepInEx 6.0.0-be.791** depuis
+  `builds.bepinex.dev` (`src-tauri/src/bepinex.rs` : version et SHA-256 épinglés, jamais par-dessus un BepInEx existant, aucun
+  fichier écrasé, désinstallation limitée aux fichiers listés dans `BepInEx/fm-immersion-bepinex.json`, plugins et config gardés), et pour les visages le manifeste de la release
   « v2-progression » de FM27-Photorealistic-Faces, puis le zip du pack V2 sur clic du joueur (`src-tauri/src/faces_remote.rs`,
   SHA-256 + CRC vérifiés).
   Autre téléchargement sur clic du joueur : le **moteur des photos de situation** (`src-tauri/src/photos_remote.rs`,

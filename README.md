@@ -36,6 +36,9 @@ Tes données sont dans `%APPDATA%\app.fmimmersion.desktop\fm-immersion.db` : sup
 FM Immersion ne collecte, ne stocke à distance ni n'envoie aucune donnée personnelle. Tes parties restent dans
 une base SQLite sur ton PC. FM Immersion ne se connecte qu'à GitHub (`github.com/amnesix-nt/fm-immersion/releases`) :
 pour chercher ses mises à jour au démarrage et, seulement si tu le demandes, pour télécharger le plugin FM27.
+S'il manque, BepInEx 6 (le chargeur de plugins du jeu) est téléchargé au même clic depuis son serveur officiel
+(`builds.bepinex.dev`, version 6.0.0-be.791 épinglée, vérifiée par SHA-256) et posé à côté de `fm.exe`, jamais par-dessus
+un BepInEx déjà installé ; « Désinstaller BepInEx » n'enlève que ce que FM Immersion a posé.
 L'écran Visages lit aussi le petit manifeste des packs de visages publiés au fil de la génération
 (`github.com/amnesix-nt/FM27-Photorealistic-Faces/releases`, release « v2-progression ») ; le pack lui-même (~500 Mo)
 n'est téléchargé que si tu cliques sur « Télécharger et installer », vérifié par SHA-256 avant l'installation.

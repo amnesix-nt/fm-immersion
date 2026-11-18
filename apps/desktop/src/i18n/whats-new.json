@@ -1,5 +1,15 @@
 [
   {
+    "version": "0.1.255",
+    "date": "2026-11-18",
+    "fr": [
+      "Plus besoin d'installer BepInEx à la main : dans Plugin et réglages, un seul bouton installe BepInEx puis le plugin FM27. Si BepInEx est déjà là (installé par toi ou par un autre mod), FM Immersion n'y touche pas."
+    ],
+    "en": [
+      "No need to install BepInEx by hand any more: in Plugin and settings, one button installs BepInEx then the FM27 plugin. If BepInEx is already there (installed by you or another mod), FM Immersion leaves it alone."
+    ]
+  },
+  {
     "version": "0.1.253",
     "date": "2026-11-18",
     "fr": [

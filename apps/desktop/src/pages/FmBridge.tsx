@@ -4,6 +4,16 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { GAME_DIR_KEY, useGameStatus, type BridgeStatus } from '../lib/game';
+
+/** BepInEx dans le dossier du jeu, vu par `src-tauri/src/bepinex.rs`. */
+type BepinexStatus = {
+  gameFound: boolean;
+  present: boolean;
+  ours: boolean;
+  version: string | null;
+  firstLaunch: boolean;
+  pinned: string;
+};
 const read = (k: string) => {
   try {
     return localStorage.getItem(k);
@@ -54,17 +64,34 @@ export function FmBridge({ dataFolder, onHealth }: { dataFolder: string; onHealt
   }, [status?.gameFound, gameDir]);
   const latest = useQuery({ queryKey: ['fm', 'bridge', 'latest'], queryFn: () => invoke<string>('fm_bridge_latest'), retry: false, staleTime: 10 * 60_000 });
 
+  const bepinex = useQuery({
+    queryKey: ['fm', 'bepinex', gameDir],
+    queryFn: () => invoke<BepinexStatus>('bepinex_status', { gameDir }),
+    enabled: !!gameDir,
+    refetchInterval: 15_000,
+  });
+  const refresh = () => {
+    qc.invalidateQueries({ queryKey: ['fm', 'bridge', 'status'] });
+    qc.invalidateQueries({ queryKey: ['fm', 'bepinex'] });
+  };
+  // Un seul clic : BepInEx d'abord s'il manque (version épinglée, vérifiée), puis le plugin.
   const install = useMutation({
-    mutationFn: () => invoke<BridgeStatus>('fm_bridge_install', { gameDir, dataDir: dataFolder }),
-    onSuccess: () => {
-      write(GAME_DIR_KEY, gameDir);
-      qc.invalidateQueries({ queryKey: ['fm', 'bridge', 'status'] });
+    mutationFn: async () => {
+      if (!status?.bepinex) await invoke<BepinexStatus>('bepinex_install', { gameDir });
+      return invoke<BridgeStatus>('fm_bridge_install', { gameDir, dataDir: dataFolder });
     },
+    onSuccess: () => write(GAME_DIR_KEY, gameDir),
+    onSettled: refresh,
+  });
+  const uninstallBepinex = useMutation({
+    mutationFn: () => invoke<BepinexStatus>('bepinex_uninstall', { gameDir }),
+    onSettled: refresh,
   });
 
   const installed = status?.installedVersion ?? null;
   const upToDate = !!installed && !!latest.data && !isNewer(latest.data, installed);
-  const canInstall = !!status?.gameFound && status.bepinex && !status.running && !!dataFolder && !!latest.data && !upToDate;
+  const canInstall = !!status?.gameFound && !status.running && !!dataFolder && !!latest.data && !upToDate;
+  const withBepinex = !!status?.gameFound && !status.bepinex;
   const dot = (ok: boolean | undefined, warn = false) => (
     <span className={`mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full ${ok ? 'bg-eau' : warn ? 'bg-ambre' : 'bg-corail'}`} aria-hidden />
   );
@@ -113,7 +140,25 @@ export function FmBridge({ dataFolder, onHealth }: { dataFolder: string; onHealt
           </li>
           <li className="flex gap-2">
             {dot(status.bepinex)}
-            {status.bepinex ? t('fm.bridge.bepinex') : t('fm.bridge.bepinexMissing')}
+            <span>
+              {status.bepinex
+                ? bepinex.data?.version
+                  ? t('fm.bridge.bepinexVersion', { version: bepinex.data.version })
+                  : t('fm.bridge.bepinex')
+                : t('fm.bridge.bepinexMissing')}
+              {bepinex.data?.ours && !status.running && (
+                <button
+                  type="button"
+                  className="ml-2 text-xs font-bold text-orange-fonce hover:underline"
+                  disabled={uninstallBepinex.isPending}
+                  onClick={() => {
+                    if (window.confirm(t('fm.bridge.bepinexUninstallConfirm'))) uninstallBepinex.mutate();
+                  }}
+                >
+                  {t('fm.bridge.bepinexUninstall')}
+                </button>
+              )}
+            </span>
           </li>
           <li className="flex gap-2">
             {dot(!!installed, true)}
@@ -123,6 +168,12 @@ export function FmBridge({ dataFolder, onHealth }: { dataFolder: string; onHealt
             {dot(upToDate || !latest.isError, true)}
             {latest.isError ? t('fm.bridge.offline') : upToDate ? t('fm.bridge.upToDate') : latest.data ? t('fm.bridge.latest', { version: latest.data }) : '…'}
           </li>
+          {bepinex.data?.present && bepinex.data.firstLaunch && !status.running && (
+            <li className="flex gap-2 sm:col-span-2">
+              {dot(false, true)}
+              {t('fm.bridge.bepinexFirstLaunch')}
+            </li>
+          )}
           {status.running && (
             <li className="flex gap-2 sm:col-span-2">
               {dot(false, true)}
@@ -135,11 +186,22 @@ export function FmBridge({ dataFolder, onHealth }: { dataFolder: string; onHealt
       <div className="mt-4 flex flex-wrap items-center gap-3">
         {!upToDate && (
           <button type="button" className="btn-primary" disabled={!canInstall || install.isPending} onClick={() => install.mutate()}>
-            {installed && latest.data ? t('fm.bridge.update', { version: latest.data }) : t('fm.bridge.install')}
+            {install.isPending && withBepinex
+              ? t('fm.bridge.bepinexInstalling')
+              : withBepinex
+                ? t('fm.bridge.installWithBepinex')
+                : installed && latest.data
+                  ? t('fm.bridge.update', { version: latest.data })
+                  : t('fm.bridge.install')}
           </button>
         )}
+        {withBepinex && !upToDate && <p className="w-full text-xs text-brun">{t('fm.bridge.bepinexNote', { version: bepinex.data?.pinned ?? '' })}</p>}
         {install.isSuccess && <p className="text-sm text-canard">{t('fm.bridge.done')}</p>}
         {install.isError && <p className="text-sm text-corail">{t('fm.bridge.error', { reason: String(install.error?.message ?? install.error) })}</p>}
+        {uninstallBepinex.isSuccess && <p className="text-sm text-canard">{t('fm.bridge.bepinexRemoved')}</p>}
+        {uninstallBepinex.isError && (
+          <p className="text-sm text-corail">{t('fm.bridge.error', { reason: String(uninstallBepinex.error?.message ?? uninstallBepinex.error) })}</p>
+        )}
       </div>
     </section>
   );

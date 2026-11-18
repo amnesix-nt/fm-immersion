@@ -1,4 +1,5 @@
 mod ai;
+mod bepinex;
 mod club_logo;
 mod db;
 mod discord;
@@ -61,6 +62,9 @@ pub fn run() {
             fm::fm_history_list,
             fm::fm_history_read,
             fm_bridge::fm_bridge_status,
+            bepinex::bepinex_status,
+            bepinex::bepinex_install,
+            bepinex::bepinex_uninstall,
             fm_compat::fm_compat_status,
             fm_bridge::fm_bridge_latest,
             fm_bridge::fm_bridge_install,
