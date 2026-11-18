@@ -29,6 +29,7 @@ namespace UnityEngine.UIElements
         public static FontDefinition FromFont(Font f) => throw null;
     }
     public struct StyleFontDefinition { public static implicit operator StyleFontDefinition(FontDefinition v) => throw null; }
+    public struct StyleBackground { public static implicit operator StyleBackground(Texture2D v) => throw null; }
 
     public class IStyle : Il2CppSystem.Object
     {
@@ -39,6 +40,7 @@ namespace UnityEngine.UIElements
         public StyleLength right { get => throw null; set => throw null; }
         public StyleLength bottom { get => throw null; set => throw null; }
         public StyleLength width { get => throw null; set => throw null; }
+        public StyleLength height { get => throw null; set => throw null; }
         public StyleLength minWidth { get => throw null; set => throw null; }
         public StyleLength minHeight { get => throw null; set => throw null; }
         public StyleLength marginTop { get => throw null; set => throw null; }
@@ -74,6 +76,7 @@ namespace UnityEngine.UIElements
         public StyleEnum<FontStyle> unityFontStyleAndWeight { get => throw null; set => throw null; }
         public StyleEnum<TextAnchor> unityTextAlign { get => throw null; set => throw null; }
         public StyleFontDefinition unityFontDefinition { get => throw null; set => throw null; }
+        public StyleBackground backgroundImage { get => throw null; set => throw null; }
     }
 
     public class EventCallback<T> : Il2CppSystem.MulticastDelegate
@@ -85,6 +88,7 @@ namespace UnityEngine.UIElements
     public class EventBase : Il2CppSystem.Object { public EventBase(IntPtr pointer) : base(pointer) { } }
     public class MouseEnterEvent : EventBase { public MouseEnterEvent(IntPtr pointer) : base(pointer) { } }
     public class MouseLeaveEvent : EventBase { public MouseLeaveEvent(IntPtr pointer) : base(pointer) { } }
+    public class ClickEvent : EventBase { public ClickEvent(IntPtr pointer) : base(pointer) { } }
 
     public class VisualElement : Il2CppSystem.Object
     {

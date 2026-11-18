@@ -17,6 +17,7 @@ le club et le prochain match via le système de bindings de l'interface du jeu, 
 | `src/Plugin.cs` | Point d'entrée BepInEx, boucle d'instantanés, serveur local facultatif `http://localhost:8727` (sonde, coupé par défaut) |
 | `src/FmBindingReader.cs` | Lecture groupée des bindings (chemins texte, ex. `game.GameCurrentManagerClubTeam/Club/Squad`) |
 | `src/PressWindow.cs` | Conférence de presse FM Immersion affichée par-dessus FM27 (UI Toolkit), réponses écrites pour l'appli |
+| `src/LineupWindow.cs` | Compo d'avant-match dessinée par FM Immersion, affichée par-dessus FM27 à l'entrée du match |
 | `src/Probe.cs` | Sonde de découverte (`/api/probe`, `/api/properties`, `/api/refprops`) et file du thread principal |
 | `config/chemins.json` | **Données supplémentaires sans recompiler** : chemins lus à chaque instantané (bloc `custom`) |
 
@@ -256,3 +257,12 @@ dans FM Immersion. `SelectionLoop` relit toutes les 10 s les 11 lignes de la com
 (`collecte.compoRapide` donne l'heure). Jamais pendant un match, une lecture complète, ou tant que l'écran Tactique est
 ouvert : le changement arrive une dizaine de secondes après avoir quitté cet écran. Les consignes d'équipe lues par
 `chemins.json` attendent toujours la lecture complète.
+
+**0.6.5** : compo d'avant-match dans FM27 (`src/LineupWindow.cs`). Le jour du match, FM Immersion dépose la carte qu'il a
+dessinée (le onze sur le terrain avec les photos, le schéma, le coach, le rapport sur l'adversaire) dans
+`<Dossier>\fmimmersion-compo.png` et sa fiche dans `<Dossier>\fmimmersion-compo.json` (`fmi-compo/1` : `key`, `image`,
+`seconds`, `close`), et les retire les autres jours. Le plugin relit la fiche toutes les 3 s ; au passage au match
+(`Plugin.InMatch` du direct, sinon `IsDuringMatch`), il montre l'image par-dessus le jeu, une fois par match (clé), dans
+un panneau UI Toolkit comme la conférence (ordre +90, voile sombre), décodée par `ImageConversion.LoadImage` ; un clic
+ou `seconds` secondes (20 par défaut) la ferment. Rien n'est envoyé au jeu. Clé `CompoEnJeu` (oui par défaut) pour la
+couper. Nouvelle référence : `UnityEngine.ImageConversionModule.dll` (interop BepInEx, et son modèle dans `stubs/`).

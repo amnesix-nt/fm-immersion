@@ -114,6 +114,7 @@ pub fn run() {
             fm::fm_read_request,
             fm::fm_write_coach_photo,
             fm::fm_write_press,
+            fm::fm_write_lineup,
             fm_schedule::fm_write_schedule,
             fm::fm_read_press_answer,
             facepack::fm_face,

@@ -249,6 +249,65 @@ pub fn fm_write_press(folder: String, json: Option<String>) -> Result<(), PressF
     write_press(Path::new(&folder), json.as_deref())
 }
 
+/// Compo d'avant-match pour le plugin (0.6.5) : la carte dessinée par l'interface et sa fiche (format fmi-compo/1).
+/// Noms fixes : la commande ne peut écrire aucun autre fichier.
+pub const LINEUP_FILE: &str = "fmimmersion-compo.json";
+pub const LINEUP_IMAGE: &str = "fmimmersion-compo.png";
+/// La carte fait 2400 × 1200 en PNG, moins de 2 Mo ; au-delà, ce n'est pas elle.
+const MAX_LINEUP_PNG: usize = 6 * 1024 * 1024;
+const MAX_LINEUP_JSON: usize = 16 * 1024;
+
+fn write_atomic(folder: &Path, name: &str, bytes: &[u8]) -> std::io::Result<()> {
+    let path = folder.join(name);
+    if std::fs::read(&path).map(|old| old == bytes).unwrap_or(false) {
+        return Ok(());
+    }
+    let tmp = folder.join(format!("{name}.tmp"));
+    std::fs::write(&tmp, bytes)?;
+    std::fs::rename(&tmp, &path)
+}
+
+fn remove_if_any(path: &Path) -> std::io::Result<()> {
+    match std::fs::remove_file(path) {
+        Err(e) if e.kind() != std::io::ErrorKind::NotFound => Err(e),
+        _ => Ok(()),
+    }
+}
+
+/// Dépose la carte du jour (image puis fiche : le plugin ne voit jamais une fiche sans son image), ou retire les deux.
+pub fn write_lineup(folder: &Path, json: Option<&str>, png: Option<&[u8]>) -> Result<(), PressFileError> {
+    if !folder.is_absolute() || !folder.is_dir() {
+        return Err(PressFileError::InvalidFolder);
+    }
+    match (json, png) {
+        (Some(text), Some(bytes)) => {
+            if text.len() > MAX_LINEUP_JSON || bytes.len() > MAX_LINEUP_PNG {
+                return Err(PressFileError::TooLarge);
+            }
+            if !bytes.starts_with(b"\x89PNG\r\n\x1a\n") {
+                return Err(PressFileError::BadJson("image".into()));
+            }
+            let v: serde_json::Value = serde_json::from_str(text).map_err(|e| PressFileError::BadJson(e.to_string()))?;
+            if v.get("format").and_then(|f| f.as_str()) != Some("fmi-compo/1") || v.get("key").and_then(|k| k.as_str()).map_or(true, str::is_empty) {
+                return Err(PressFileError::BadJson("format".into()));
+            }
+            write_atomic(folder, LINEUP_IMAGE, bytes)?;
+            write_atomic(folder, LINEUP_FILE, text.as_bytes())?;
+            Ok(())
+        }
+        _ => {
+            remove_if_any(&folder.join(LINEUP_FILE))?;
+            remove_if_any(&folder.join(LINEUP_IMAGE))?;
+            Ok(())
+        }
+    }
+}
+
+#[tauri::command]
+pub fn fm_write_lineup(folder: String, json: Option<String>, png: Option<Vec<u8>>) -> Result<(), PressFileError> {
+    write_lineup(Path::new(&folder), json.as_deref(), png.as_deref())
+}
+
 /// Réponses données dans FM27 (`fmimmersion-presse-reponse.json`), ou rien.
 #[tauri::command]
 pub fn fm_read_press_answer(folder: String) -> Result<Option<String>, FmError> {
@@ -457,6 +516,25 @@ mod tests {
         write_press(&dir, None).unwrap();
         assert!(!dir.join(PRESS_FILE).exists());
         write_press(&dir, None).unwrap();
+        std::fs::remove_dir_all(&dir).unwrap();
+    }
+
+    #[test]
+    fn ecrit_et_retire_la_compo_d_avant_match() {
+        let dir = std::env::temp_dir().join(format!("fmi-compo-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let json = r#"{"format":"fmi-compo/1","key":"2028-02-09|A|B","image":"fmimmersion-compo.png"}"#;
+        let png = b"\x89PNG\r\n\x1a\nimage";
+        write_lineup(&dir, Some(json), Some(png)).unwrap();
+        assert_eq!(std::fs::read_to_string(dir.join(LINEUP_FILE)).unwrap(), json);
+        assert_eq!(std::fs::read(dir.join(LINEUP_IMAGE)).unwrap(), png);
+        assert!(matches!(write_lineup(&dir, Some(json), Some(b"GIF89a")), Err(PressFileError::BadJson(_))));
+        assert!(matches!(write_lineup(&dir, Some(r#"{"format":"fmi-compo/1","key":""}"#), Some(png)), Err(PressFileError::BadJson(_))));
+        assert!(matches!(write_lineup(&dir, Some(r#"{"format":"fmi-presse/1","key":"k"}"#), Some(png)), Err(PressFileError::BadJson(_))));
+        assert!(matches!(write_lineup(Path::new("relatif"), Some(json), Some(png)), Err(PressFileError::InvalidFolder)));
+        write_lineup(&dir, None, None).unwrap();
+        assert!(!dir.join(LINEUP_FILE).exists() && !dir.join(LINEUP_IMAGE).exists());
+        write_lineup(&dir, None, None).unwrap();
         std::fs::remove_dir_all(&dir).unwrap();
     }
 

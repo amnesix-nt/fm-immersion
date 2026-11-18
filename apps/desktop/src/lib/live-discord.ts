@@ -1,4 +1,4 @@
-import { type FmLive, fmLiveSchema, gameLastMatch, isFriendly, isOwnGoal, isPenalty, liveAssists, liveCardList, type LiveCardNews, type LiveDisallowedNews, type LiveGoalNews, liveIsFresh, liveKey, liveNews, parseScorers } from '@fm-immersion/module-fm';
+import { type FmLive, fmLiveSchema, gameLastMatch, isFriendly, lineupCard, isOwnGoal, isPenalty, liveAssists, liveCardList, type LiveCardNews, type LiveDisallowedNews, type LiveGoalNews, liveIsFresh, liveKey, liveNews, parseScorers } from '@fm-immersion/module-fm';
 import { invoke } from '@tauri-apps/api/core';
 import type { TFunction } from 'i18next';
 import { useEffect, useRef } from 'react';
@@ -7,7 +7,8 @@ import { aiLiveComment, type LiveMoment } from './ai';
 import { rememberClubLooks } from './club-look';
 import { useCareer } from './career';
 import { useFmFolder } from './fm-sync';
-import { editDiscord, getLiveEnabled, getWebhook, isWebhook, postDiscord } from './discord';
+import { editDiscord, getLiveEnabled, getWebhook, isWebhook, postDiscord, sendDiscordImage } from './discord';
+import { getLineupDiscord, lineupPayload, lineupPng } from './lineup-card-live';
 
 const LIVE_RED = 0xd93c3c;
 const GOOD = 0x2e9e5b;
@@ -654,6 +655,8 @@ export async function liveStep(
   render?: LiveRender,
   ended: MatchEnded | null = null,
   lang?: string,
+  /** Au coup d'envoi d'un nouveau match, avant le tableau de score (compo d'avant-match). Une erreur n'arrête rien. */
+  kickoff?: () => Promise<void>,
 ): Promise<LiveState | null> {
   const key = liveKey(l);
   // Après le match : les chiffres du jeu arrivent avec l'instantané suivant (jusqu'à quelques minutes plus tard,
@@ -683,6 +686,7 @@ export async function liveStep(
   }
   if (!state || state.key !== key) {
     if (l.final) return { key, messageId: null, last: l, done: true }; // match déjà fini quand l'appli l'a vu
+    if (kickoff) await kickoff().catch((e) => console.warn('Compo d’avant-match :', e));
     // Un seul message par match : l'avant-match y figure jusqu'au premier but.
     const messageId = await publish(t, l, club, null, render);
     return { key, messageId, last: l, done: false };
@@ -720,10 +724,12 @@ export function useLiveDiscord() {
   const folderNow = useFmFolder(saveId);
   const folderRef = useRef(folderNow);
   folderRef.current = folderNow;
+  const saveIdRef = useRef(saveId);
+  saveIdRef.current = saveId;
   useEffect(() => {
     let state = loadState();
     // Compétition du match en cours (« Match Amical »…), lue une fois par match dans l'instantané du plugin.
-    let comp: { key: string; context: LiveContext | null } | null = null;
+    let comp: { key: string; context: LiveContext | null; snap: unknown } | null = null;
     // Chiffres du match fini : instantané relu au plus une fois par minute tant qu'ils manquent.
     let statsAt = 0;
     const render: LiveRender = async (l, club, comment) => {
@@ -761,7 +767,7 @@ export function useLiveDiscord() {
           // Couleurs et identifiants des deux équipes (calendrier de l'instantané) pour le tableau en image.
           if (snap) rememberClubLooks([snap]);
           const context = snap ? liveContext(snap) : null;
-          comp = { key, context };
+          comp = { key, context, snap };
         }
         let ended: MatchEnded | null = null;
         if (state && state.key === key && !state.done && !liveIsFresh(live.data, Date.now())) {
@@ -774,7 +780,17 @@ export function useLiveDiscord() {
           const snapRaw = await invoke<string | null>('fm_read_snapshot', { folder }).catch(() => null);
           stats = snapRaw ? lastMatchStats(JSON.parse(snapRaw), live.data) : null;
         }
-        const next = await liveStep(t, { ...live.data, competition: comp.context?.competition ?? null, context: comp.context, stats } as FmLive, club, state, Date.now(), render, ended, i18n.resolvedLanguage);
+        // Compo d'avant-match juste avant le tableau de score, si le plugin a lu le onze de ce match.
+        const snapNow = comp.snap;
+        const kickoff = getLineupDiscord()
+          ? async () => {
+              const card = lineupCard([snapNow]);
+              if (!card || (card.opponent !== live.data.home && card.opponent !== live.data.away)) return;
+              const png = await lineupPng(t, card, { lang: i18n.resolvedLanguage, saveId: saveIdRef.current });
+              await sendDiscordImage(lineupPayload(t, card), png);
+            }
+          : undefined;
+        const next = await liveStep(t, { ...live.data, competition: comp.context?.competition ?? null, context: comp.context, stats } as FmLive, club, state, Date.now(), render, ended, i18n.resolvedLanguage, kickoff);
         if (next && next !== state) {
           state = next;
           saveState(next);

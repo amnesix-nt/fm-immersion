@@ -10,6 +10,7 @@ import { useGameRequests } from './lib/game-request';
 import { useAutoBackups } from './lib/save-backup';
 import { useGazetteAuto } from './lib/gazette-auto';
 import { useLiveDiscord } from './lib/live-discord';
+import { useLineupInGame } from './lib/lineup-card-live';
 import { usePressInGame } from './lib/press-ingame';
 import { FmSave, SettingsWithoutCareer } from './pages/FmSave';
 import { Overview } from './pages/Overview';
@@ -31,6 +32,7 @@ export function App() {
   useGazetteAuto();
   useFmSync();
   usePressInGame();
+  useLineupInGame();
   useGameRequests();
   useAutoBackups();
   return (

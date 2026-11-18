@@ -6,6 +6,7 @@ import { AiLink } from '../components/AiSettingsCard';
 import { DiscordEmbed } from '../components/DiscordEmbed';
 import { aiFor } from '../lib/ai';
 import { getLiveEnabled, getWebhook, isWebhook, sendDiscord, setLiveEnabled, setWebhook } from '../lib/discord';
+import { getLineupDiscord, setLineupDiscord } from '../lib/lineup-card-live';
 import {
   autoLastCheck,
   autoLastError,
@@ -33,6 +34,7 @@ export function Discord() {
   const [editing, setEditing] = useState(!isWebhook(getWebhook()));
   const valid = isWebhook(url);
   const [live, setLive] = useState(getLiveEnabled());
+  const [lineup, setLineup] = useState(getLineupDiscord());
   const [auto, setAuto] = useState(getGazetteAuto());
   const [breaking, setBreaking] = useState(getBreakingAuto());
   const [photoMode, setMode] = useState<PhotoMode>(getPhotoMode());
@@ -174,6 +176,18 @@ export function Discord() {
                 setLive(v);
               }}
             />
+            {live && (
+              <Toggle
+                on={lineup}
+                disabled={!saved}
+                title={t('live.lineupCard.enable')}
+                help={t('live.lineupCard.enableHelp')}
+                onChange={(v) => {
+                  setLineupDiscord(v);
+                  setLineup(v);
+                }}
+              />
+            )}
             {/* Aperçu en colonne de droite sur grand écran ; ici seulement quand la page tient sur une colonne. */}
             <details className="pb-3 lg:hidden">
               <summary className="cursor-pointer text-sm font-bold text-orange-fonce">{t('discord.preview.title')}</summary>
