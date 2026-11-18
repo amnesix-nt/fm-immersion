@@ -61,6 +61,11 @@ extraite avec son historique ; Simloom garde Planet Zoo 2 et Transport Fever 3.
 - **Conférence de presse dans FM27** (`src/lib/press-ingame.ts`, plugin 0.6.2 `modules/fm/bridge/src/PressWindow.cs`) : l'appli écrit la
   conférence du moment dans `fmimmersion-presse.json` du dossier du plugin (`fm_write_press`), le plugin l'affiche par-dessus le jeu
   (UI Toolkit, FM27 n'a plus IMGUI) et écrit `fmimmersion-presse-reponse.json`, relu par l'appli. Rien n'est envoyé au jeu.
+- **Compo d'avant-match** (`modules/fm/src/lineup-card.ts`, dessin `src/lib/lineup-image.ts`, `src/lib/lineup-card-live.ts`, plugin 0.6.5
+  `modules/fm/bridge/src/LineupWindow.cs`) : le jour du match, l'appli dessine le onze sur un terrain (photos, schéma, coach, rapport sur
+  l'adversaire) et le dépose dans `fmimmersion-compo.png` + `fmimmersion-compo.json` du dossier du plugin (`fm_write_lineup`) ; le plugin
+  l'affiche par-dessus le jeu au passage au match, une fois par match. Envoyée aussi sur Discord au début du direct (réglage
+  `fmi.discord.lineup`, coché par défaut). Il faut la compo lue par le plugin (`LireCompo`).
 - **Suivi des sauvegardes** (écran `/sauvegardes`, `src/lib/save-files.ts`) : nom, taille et date des `.fm` du dossier
   `games`, lien à une carrière, alertes. **Copies de secours** (`src-tauri/src/save_backup.rs`, `src/lib/save-backup.ts`),
   coupées par défaut : copie du `.fm` dans `fm-immersion-secours\<nom>\` à côté de `games`. Jamais d'écriture dans `games` :

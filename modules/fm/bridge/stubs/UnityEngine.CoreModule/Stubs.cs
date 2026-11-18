@@ -12,6 +12,7 @@ namespace UnityEngine
         public static Il2CppArrayBase<T> FindObjectsOfType<T>() where T : Object => throw null;
         public static T Instantiate<T>(T original) where T : Object => throw null;
         public static void DontDestroyOnLoad(Object target) => throw null;
+        public static void Destroy(Object obj) => throw null;
     }
 
     public class Component : Object
@@ -44,7 +45,17 @@ namespace UnityEngine
     public class Texture : Object
     {
         public Texture(IntPtr pointer) : base(pointer) { }
+        public FilterMode filterMode { get => throw null; set => throw null; }
     }
+
+    public sealed class Texture2D : Texture
+    {
+        public Texture2D(IntPtr pointer) : base(pointer) { }
+        public Texture2D(int width, int height, TextureFormat textureFormat, bool mipChain) : base(IntPtr.Zero) => throw null;
+    }
+
+    public enum TextureFormat { Alpha8 = 1, RGB24 = 3, RGBA32 = 4, ARGB32 = 5 }
+    public enum FilterMode { Point, Bilinear, Trilinear }
 
     public class RenderTexture : Texture
     {

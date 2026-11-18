@@ -12,7 +12,7 @@
     <RootNamespace>Archivix</RootNamespace>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
-    <Version>0.6.4</Version>
+    <Version>0.6.5</Version>
     <FMDir Condition="'$(FMDir)' == ''">$(FM27_DIR)</FMDir>
     <FMDir Condition="'$(FMDir)' == ''">C:\Program Files (x86)\Steam\steamapps\common\Football Manager 27</FMDir>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
@@ -38,6 +38,7 @@
     <ProjectReference Include="stubs\UnityEngine.TextCoreTextEngineModule\UnityEngine.TextCoreTextEngineModule.csproj" Private="false" />
     <ProjectReference Include="stubs\UnityEngine.TextRenderingModule\UnityEngine.TextRenderingModule.csproj" Private="false" />
     <ProjectReference Include="stubs\Unity.InputSystem\Unity.InputSystem.csproj" Private="false" />
+    <ProjectReference Include="stubs\UnityEngine.ImageConversionModule\UnityEngine.ImageConversionModule.csproj" Private="false" />
   </ItemGroup>
   <ItemGroup Condition="'$(Stubs)' != 'true'">
     <Reference Include="$(FMDir)\BepInEx\core\BepInEx.Core.dll" Private="false" />
@@ -55,5 +56,6 @@
     <Reference Include="$(FMDir)\BepInEx\interop\UnityEngine.TextCoreTextEngineModule.dll" Private="false" />
     <Reference Include="$(FMDir)\BepInEx\interop\UnityEngine.TextRenderingModule.dll" Private="false" />
     <Reference Include="$(FMDir)\BepInEx\interop\Unity.InputSystem.dll" Private="false" />
+    <Reference Include="$(FMDir)\BepInEx\interop\UnityEngine.ImageConversionModule.dll" Private="false" />
   </ItemGroup>
 </Project>

@@ -5447,7 +5447,28 @@
     },
     "cards": "Cards",
     "redUnknown": "Sending-off",
-    "yellowUnknown": "Booking"
+    "yellowUnknown": "Booking",
+    "lineupCard": {
+      "kicker": "PRE-MATCH · LINE-UP",
+      "title": "Today's\nstarting XI",
+      "against": "vs",
+      "home": "Home",
+      "away": "Away",
+      "coach": "MANAGER",
+      "opponent": "THE OPPOSITION",
+      "position": "League position",
+      "manager": "Manager",
+      "formation": "Formation",
+      "mentality": "Mentality",
+      "watch": "ONES TO WATCH",
+      "assistant": "ASSISTANT",
+      "brand": "FM Immersion",
+      "disclaimer": "Independent project, not affiliated with Sports Interactive or SEGA",
+      "discordTitle": "Today's starting XI: {{club}} – {{opponent}}",
+      "enable": "Pre-match line-up",
+      "enableHelp": "When the live feed starts, a picture of the XI on the pitch with player photos, the formation and the scouting report on the opposition. It also shows in FM27 as the match starts. Tick “Game line-up” in Plugin and settings.",
+      "close": "Close"
+    }
   },
   "season": {
     "title": "Season review {{season}}",

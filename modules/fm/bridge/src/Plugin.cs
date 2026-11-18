@@ -18,12 +18,12 @@ namespace Archivix;
 [BepInPlugin("fr.archivix.bridge", "Archivix Bridge", Version)]
 public class Plugin : BasePlugin
 {
-    public const string Version = "0.6.4";
+    public const string Version = "0.6.5";
     internal static ManualLogSource Log = null!;
     // Dossier où le plugin écrit ses instantanés (réglage BepInEx\config\fr.archivix.bridge.cfg,
     // que FM Immersion renseigne à l'installation ; par défaut le dossier de données FM27 dans Documents).
     internal static string DataDir = null!;
-    internal static bool ReadTactic = true, ReadEffectiveness, ReadLineup, ReadExtended, ReadTargets, WriteDiscovery = true, LocalServer, ReadLive = true, PressInGame = true;
+    internal static bool ReadTactic = true, ReadEffectiveness, ReadLineup, ReadExtended, ReadTargets, WriteDiscovery = true, LocalServer, ReadLive = true, PressInGame = true, LineupInGame = true;
     bool _discovered;
     internal static int RereadSeconds = 300;
     // 0.6.3 : match en cours (tenu par LiveLoop) et lecture complète en cours. Une lecture complète lancée juste avant le
@@ -68,8 +68,11 @@ public class Plugin : BasePlugin
             "Pendant un match, écrire toutes les 15 s archivix-live.json (score, minute, buteurs) pour le direct Discord de FM Immersion.").Value;
         PressInGame = Config.Bind("Archivix", "ConferenceEnJeu", true,
             "Afficher dans FM27 les conférences de presse préparées par FM Immersion (fenêtre par-dessus le jeu, F8 pour l'ouvrir ou la fermer). Ne change rien à la partie.").Value;
+        LineupInGame = Config.Bind("Archivix", "CompoEnJeu", true,
+            "Afficher dans FM27, à l'entrée du match, la compo d'avant-match préparée par FM Immersion (image par-dessus le jeu, fermée au clic). Ne change rien à la partie.").Value;
         AddComponent<MainThread>();
         if (PressInGame) { AddComponent<PressWindow>(); PressWindow.StartWatcher(); }
+        if (LineupInGame) { AddComponent<LineupWindow>(); LineupWindow.StartWatcher(); }
         new Thread(RefreshLoop) { IsBackground = true, Name = "ArchivixRefresh" }.Start();
         new Thread(DateLoop) { IsBackground = true, Name = "ArchivixDate" }.Start();
         if (ReadLineup || ReadTactic) new Thread(SelectionLoop) { IsBackground = true, Name = "ArchivixCompo" }.Start();

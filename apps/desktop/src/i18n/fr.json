@@ -5447,7 +5447,28 @@
     },
     "cards": "Cartons",
     "redUnknown": "Expulsion",
-    "yellowUnknown": "Avertissement"
+    "yellowUnknown": "Avertissement",
+    "lineupCard": {
+      "kicker": "AVANT-MATCH · COMPO",
+      "title": "Le onze\ndu jour",
+      "against": "contre",
+      "home": "Domicile",
+      "away": "Extérieur",
+      "coach": "ENTRAÎNEUR",
+      "opponent": "L'ADVERSAIRE",
+      "position": "Classement",
+      "manager": "Entraîneur",
+      "formation": "Système",
+      "mentality": "Mentalité",
+      "watch": "À SURVEILLER",
+      "assistant": "L'ADJOINT",
+      "brand": "FM Immersion",
+      "disclaimer": "Projet indépendant, sans lien avec Sports Interactive ni SEGA",
+      "discordTitle": "Le onze du jour : {{club}} – {{opponent}}",
+      "enable": "Compo d'avant-match",
+      "enableHelp": "Au début du direct, une image du onze sur le terrain avec les photos des joueurs, le schéma et le rapport sur l'adversaire. Elle s'affiche aussi dans FM27 à l'entrée du match. Il faut cocher « Compo du jeu » dans Plugin et réglages.",
+      "close": "Fermer"
+    }
   },
   "season": {
     "title": "Bilan de la saison {{season}}",

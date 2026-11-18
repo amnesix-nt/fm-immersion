@@ -1,5 +1,15 @@
 [
   {
+    "version": "0.1.254",
+    "date": "2026-11-18",
+    "fr": [
+      "Nouveau : la compo d'avant-match. Le jour du match, ton onze s'affiche sur un terrain avec la photo de chaque joueur, ton schéma et le rapport sur l'adversaire. Tu la vois dans FM27 à l'entrée du match, et elle part sur ton salon Discord au début du direct (case à cocher dans Gazette et Discord). Il faut cocher « Compo du jeu » dans Plugin et réglages et mettre à jour le plugin."
+    ],
+    "en": [
+      "New: the pre-match line-up. On match day, your XI appears on a pitch with each player's photo, your formation and the scouting report on the opposition. You see it in FM27 as the match starts, and it goes to your Discord channel when the live feed begins (tick box in Gazette and Discord). Tick “Game line-up” in Plugin and settings and update the plugin."
+    ]
+  },
+  {
     "version": "0.1.253",
     "date": "2026-11-18",
     "fr": [
