@@ -300,7 +300,7 @@ pub fn start(photos_dir: &Path) -> Result<u16, PhotosError> {
 /// Windows l'arrête même quand l'appli est fermée brutalement (gestionnaire des tâches, plantage), là où
 /// `RunEvent::Exit` n'est pas appelé.
 #[cfg(windows)]
-fn tie_to_app(child: &std::process::Child) {
+pub(crate) fn tie_to_app(child: &std::process::Child) {
     use std::os::windows::io::AsRawHandle;
     use std::sync::OnceLock;
     use windows_sys::Win32::System::JobObjects::{
@@ -332,7 +332,7 @@ fn tie_to_app(child: &std::process::Child) {
 }
 
 #[cfg(not(windows))]
-fn tie_to_app(_child: &std::process::Child) {}
+pub(crate) fn tie_to_app(_child: &std::process::Child) {}
 
 /// Arrête ComfyUI s'il tourne (appelé aussi à la fermeture de l'appli).
 pub fn stop() {

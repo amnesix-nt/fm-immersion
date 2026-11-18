@@ -45,6 +45,10 @@ moteur d'images que tu télécharges une fois, seulement si tu cliques sur « T�
 lightx2v et google, adresses fixes épinglées à une révision, ~34 Go, chaque fichier vérifié par SHA-256). Aucune image ni donnée
 de ta partie ne leur est envoyée ; Hugging Face voit alors ton adresse IP, comme GitHub. Une fois installé, ComfyUI tourne
 sur ton PC seulement (`127.0.0.1`, mode hors ligne, sans nœud tiers) et s'arrête avec l'appli.
+Le labo de tactiques (Tactique › Plus › Labo de tactiques) utilise FM Tactics Lab, outil indépendant que tu télécharges une fois,
+seulement si tu cliques sur « Télécharger FM Tactics Lab » : l'EXE officiel depuis `github.com/lqf0624/fm-tactics-lab/releases`
+(version épinglée, ~23 Mo, vérifié par SHA-256). Il fait jouer tes tactiques avec le moteur de match de ton jeu installé, sur ton PC
+seulement (`127.0.0.1`), n'écrit rien dans le jeu ni dans tes sauvegardes, et s'arrête avec l'appli.
 Si tu relies un salon Discord (lien webhook, écran Live Discord), seul ce salon reçoit des messages, et seulement ce que tu as choisi : la gazette quand tu cliques sur « Envoyer sur Discord » ou, si tu coches « Envoyer ma gazette automatiquement chaque semaine », dès qu'une semaine de jeu est finie ; les dépêches (recrue, départ d'un titulaire, blessure longue, affiche des grands matchs) quand tu cliques sur « Envoyer la dépêche » ou, si tu coches « Envoyer les dépêches automatiquement », le jour où le plugin les voit ; le direct de tes matchs (un encart modifié à chaque temps fort) si tu coches « Raconter mes matchs en direct sur Discord » ; un certificat de défi (pseudo choisi, clubs, résultats des matchs, âges et nationalités des joueurs alignés) seulement quand tu cliques sur « Partager sur Discord ».
 GitHub voit alors ton adresse IP, comme pour toute visite de son site.
 

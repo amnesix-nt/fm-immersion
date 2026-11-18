@@ -34,6 +34,14 @@ extraite avec son historique ; Simloom garde Planet Zoo 2 et Transport Fever 3.
   `photos_library_find`) et réutilisée ; sans photo ou en cas d'échec, la dépêche garde le portrait. Même chose pour la une de la
   gazette (`sceneForHeadline` : victoire → joueur du match bras levés, défaite → coach mains sur la tête, blessure, recrue, départ,
   buteur, avenir du coach ; clé `gazette|save|numéro|semaine`), en bandeau sous le chapô dans `gazette-page.ts`.
+  Autre téléchargement sur clic du joueur : **FM Tactics Lab** (`src-tauri/src/tactics_lab.rs`, écran Labo de tactiques
+  `src/pages/FmLab.tsx`, `src/lib/tactics-lab.ts`, `modules/fm/src/tactics-lab.ts`) : l'EXE officiel de
+  github.com/lqf0624/fm-tactics-lab (version épinglée avec taille et SHA-256, liée à une version exacte de FM27 : à mettre à
+  jour à chaque patch du jeu), rangé dans `%LOCALAPPDATA%\app.fmimmersion.desktop\tactics-lab`, jamais embarqué (adaptateurs
+  natifs hors licence MIT). `--self-test` extrait son moteur et vérifie le jeu ; l'appli lance ensuite son serveur
+  (`python\python.exe source\desktop_server.py --port`, 127.0.0.1, job Windows) et ne l'appelle que par une liste fermée de
+  routes (`route_allowed`). Tournoi aller-retour entre tactiques du dossier `tactics`, effectif neutre identique (protocole
+  des tests du 17-18/11/2026), note /20 = 10 + (pts/match − 1,35) / 0,05.
   Exception choisie par le joueur : le **Live Discord** envoie une gazette à son salon par le lien webhook qu'il a
   collé (`src-tauri/src/discord.rs`, seulement vers `discord.com/api/webhooks/`, seulement ce qu'il a choisi : gazette sur son clic ou chaque semaine s'il a coché l'envoi automatique, dépêches (`modules/fm/src/breaking.ts`) sur son clic ou à leur date s'il l'a coché,
   direct de ses matchs s'il l'a activé), et un certificat de

@@ -13,6 +13,7 @@ mod fm_compat;
 mod fm_memory;
 mod fm_schedule;
 mod fm_tactics;
+mod tactics_lab;
 mod images;
 mod photos_engine;
 mod photos_pipeline;
@@ -46,6 +47,13 @@ pub fn run() {
             fm::fm_list_saves,
             fm_tactics::fm_list_tactic_files,
             fm_tactics::fm_read_tactic_file,
+            fm_tactics::fm_read_tactic_raw,
+            tactics_lab::lab_status,
+            tactics_lab::lab_install,
+            tactics_lab::lab_start,
+            tactics_lab::lab_stop,
+            tactics_lab::lab_remove,
+            tactics_lab::lab_call,
             save_backup::fm_backup_list,
             save_backup::fm_backup_make,
             save_backup::fm_backup_open,
@@ -121,6 +129,7 @@ pub fn run() {
                 ai::unload_all();
                 // Le moteur des photos (ComfyUI) ne survit pas à l'appli.
                 photos_engine::stop();
+                tactics_lab::stop();
             }
         });
 }

@@ -7,7 +7,7 @@ export const CLUB_PAGES = ['tactic', 'squad', 'results', 'mercato'] as const;
 export type ClubPage = (typeof CLUB_PAGES)[number];
 
 export const PARTS: Record<ClubPage, readonly string[]> = {
-  tactic: ['tactic', 'ideal', 'instructions', 'builder', 'opponent', 'depth', 'calendar', 'style', 'effectiveness', 'project', 'training', 'staff'],
+  tactic: ['tactic', 'ideal', 'instructions', 'builder', 'lab', 'opponent', 'depth', 'calendar', 'style', 'effectiveness', 'project', 'training', 'staff'],
   squad: ['squad', 'playtime', 'dressing', 'progression', 'roles', 'compare', 'numbers', 'loans', 'academy', 'seasons'],
   results: ['results', 'diagnosis', 'stats', 'analysis'],
   mercato: ['mercato', 'scouting', 'targets', 'finances', 'wages', 'contracts'],
@@ -18,7 +18,7 @@ export const PARTS: Record<ClubPage, readonly string[]> = {
  * L'ordre suit la maquette.
  */
 export const TABS: Record<ClubPage, readonly (readonly string[])[]> = {
-  tactic: ['tactic', 'ideal', 'instructions', 'builder', 'opponent', 'calendar', 'training', 'depth', 'style', 'effectiveness', 'project', 'staff'].map((v) => [v]),
+  tactic: ['tactic', 'ideal', 'instructions', 'builder', 'lab', 'opponent', 'calendar', 'training', 'depth', 'style', 'effectiveness', 'project', 'staff'].map((v) => [v]),
   squad: ['squad', 'seasons', 'academy', 'loans', 'numbers', 'playtime', 'dressing', 'progression', 'roles', 'compare'].map((v) => [v]),
   results: [['results'], ['diagnosis'], ['stats'], ['analysis']],
   mercato: [['mercato'], ['scouting'], ['targets'], ['finances'], ['wages'], ['contracts']],
