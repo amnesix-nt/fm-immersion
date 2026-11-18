@@ -186,20 +186,31 @@ pub fn fm_list_tactic_files(folder: String) -> Vec<FmTacticFile> {
     tactics_dir(Path::new(&folder)).map(|d| list_tactic_files(&d)).unwrap_or_default()
 }
 
-/// Contenu `.tac` d'une tactique du dossier, par nom de fichier (sans chemin).
-#[tauri::command]
-pub fn fm_read_tactic_file(folder: String, name: String) -> Result<Vec<u8>, String> {
+/// Fichier `.fmf` du dossier, par nom de fichier (sans chemin), tel quel.
+fn read_fmf(folder: &str, name: &str) -> Result<Vec<u8>, String> {
     let ok_name = !name.is_empty() && !name.contains(['/', '\\', ':']) && name != "." && name != "..";
-    if !ok_name || !Path::new(&name).extension().is_some_and(|x| x.eq_ignore_ascii_case("fmf")) {
+    if !ok_name || !Path::new(name).extension().is_some_and(|x| x.eq_ignore_ascii_case("fmf")) {
         return Err("nom de fichier invalide".into());
     }
-    let dir = tactics_dir(Path::new(&folder)).ok_or("dossier du plugin inconnu")?;
-    let path = dir.join(&name);
+    let dir = tactics_dir(Path::new(folder)).ok_or("dossier du plugin inconnu")?;
+    let path = dir.join(name);
     let meta = std::fs::metadata(&path).map_err(|e| e.to_string())?;
     if meta.len() > MAX_FILE {
         return Err("fichier trop gros".into());
     }
-    tac_of_fmf(&std::fs::read(&path).map_err(|e| e.to_string())?)
+    std::fs::read(&path).map_err(|e| e.to_string())
+}
+
+/// Contenu `.tac` d'une tactique du dossier, par nom de fichier (sans chemin).
+#[tauri::command]
+pub fn fm_read_tactic_file(folder: String, name: String) -> Result<Vec<u8>, String> {
+    tac_of_fmf(&read_fmf(&folder, &name)?)
+}
+
+/// Fichier `.fmf` brut d'une tactique du dossier, pour le labo de tactiques (qui le fait lire par le jeu).
+#[tauri::command]
+pub fn fm_read_tactic_raw(folder: String, name: String) -> Result<Vec<u8>, String> {
+    read_fmf(&folder, &name)
 }
 
 #[cfg(test)]
@@ -251,6 +262,7 @@ mod tests {
         assert_eq!(tac.len(), 1431);
         assert!(fm_read_tactic_file(plugin.to_string_lossy().into_owned(), "..\\games\\x.fmf".into()).is_err());
         assert!(fm_read_tactic_file(plugin.to_string_lossy().into_owned(), "config.xml".into()).is_err());
+        assert_eq!(fm_read_tactic_raw(plugin.to_string_lossy().into_owned(), "Pivot Gang.fmf".into()).unwrap(), PIVOT_GANG);
         std::fs::remove_dir_all(&root).ok();
     }
 }

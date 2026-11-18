@@ -77,6 +77,7 @@ import { FmDiagnosis } from './FmDiagnosis';
 import { SquadBoard } from './FmSquadBoard';
 import { FmStyle } from './FmStyle';
 import { FmBuilder } from './FmBuilder';
+import { FmLab } from './FmLab';
 import { FmIdeal } from './FmIdeal';
 import { FmAcademy } from './FmAcademy';
 import { FmSeasons, SeasonInputsContext } from './FmSeasons';
@@ -274,6 +275,8 @@ export function FmSave({ page }: { page?: 'home' | 'settings' }) {
         return <FmIdeal snap={snapshot.data} players={players} folder={folder} go={go} />;
       case 'builder':
         return <FmBuilder snap={snapshot.data} players={players} folder={folder} />;
+      case 'lab':
+        return <FmLab folder={folder} />;
       case 'style':
         return <FmStyle players={players} folder={folder} />;
       case 'effectiveness':

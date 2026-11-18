@@ -644,7 +644,8 @@
       "builder": "Build",
       "academy": "Academy",
       "ideal": "My ideal tactic",
-      "seasons": "Seasons"
+      "seasons": "Seasons",
+      "lab": "Tactics lab"
     },
     "home": {
       "todo": "To deal with",
@@ -1897,7 +1898,8 @@
       "builder": "Your tactic from scratch: positions and roles in and out of possession, style, and what holds up or doesn't.",
       "academy": "Your reserve and youth teams: overview, decisions to make and best prospects.",
       "ideal": "Say what you like to play: the app looks for the FM27 tactic closest to it with your squad.",
-      "seasons": "Your eleven over the next three seasons, academy included: who matures, which slot a youngster will hold, when not to buy."
+      "seasons": "Your eleven over the next three seasons, academy included: who matures, which slot a youngster will hold, when not to buy.",
+      "lab": "Play your tactics against each other with FM27's match engine: table, rating out of 20, home, away and opponents."
     },
     "nextStep": "Next step: {{view}}",
     "opp": {
@@ -2719,7 +2721,8 @@
       "contracts": "Contracts",
       "academy": "Academy",
       "ideal": "My ideal tactic",
-      "seasons": "Seasons"
+      "seasons": "Seasons",
+      "lab": "Lab"
     },
     "subtabs": {
       "squad": "Players",
@@ -4375,6 +4378,52 @@
       "contract": "contract {{date}}",
       "recruitStarter": "Starter: {{list}}",
       "recruitBackup": "backup: {{list}}"
+    },
+    "lab": {
+      "engine": {
+        "title": "Match engine",
+        "intro": "FM Tactics Lab plays your tactics against each other with FM27's real match engine, without opening the game.",
+        "help": "Free, independent tool (github.com/lqf0624/fm-tactics-lab), downloaded from its official page when you click, then verified. It uses the engine of your installed game: supported version is {{build}}. Steam must be running. Nothing is written to the game or your saves, and FM27 must stay closed during tests.",
+        "install": "Download FM Tactics Lab {{version}} ({{mb}} MB)",
+        "downloading": "Downloading… {{pct}}%",
+        "checking": "Checking against your game…",
+        "ready": "FM Tactics Lab {{version}} ready",
+        "stop": "Stop the engine",
+        "incompatible": "Not compatible with your game version (supported: {{build}})",
+        "recheck": "Check again",
+        "remove": "Remove the tool",
+        "noGame": "FM27 folder not found: set it in Faces or Plugin and settings."
+      },
+      "run": {
+        "title": "Tactics tournament",
+        "intro": "Tick at least two tactics from your tactics folder. Each one hosts every other, with the same average squad on both sides: only the game plan changes.",
+        "none": "No tactics in your tactics folder. Export a tactic from FM27 to test it.",
+        "matches": "Matches per fixture",
+        "go_one": "Start ({{count}} match)",
+        "go_other": "Start ({{count}} matches)",
+        "pairs_one": "{{count}} fixture",
+        "pairs_other": "{{count}} fixtures, home and away",
+        "cancel": "Stop the tournament",
+        "importing": "The game is reading {{name}}…",
+        "playing": "{{pair}} · {{done}} / {{total}} matches",
+        "eta": "~{{min}} min left",
+        "failed": "The tournament stopped: {{error}}",
+        "cancelled": "Tournament stopped. Finished fixtures stay in the table."
+      },
+      "results": {
+        "title": "Table",
+        "intro": "{{matches}} matches per fixture, home and away. Same squad for every tactic: this compares tactics, not your team.",
+        "partial": "Tournament running or interrupted: table from the fixtures played so far ({{matches}} matches each).",
+        "help": "The rating out of 20 is 10 for 1.35 points per match (the level of a field of good tactics) and gains a point every 0.05. The ± is the margin: two tactics whose ranges overlap are not really separated. More matches per fixture shrink the margin.",
+        "tactic": "Tactic",
+        "rating": "Rating /20",
+        "ppm": "Pts/match",
+        "home": "Home",
+        "away": "Away",
+        "goals": "Goals",
+        "xg": "xG",
+        "matrix": "Points per match against each opponent (row against column)"
+      }
     }
   },
   "modes": {

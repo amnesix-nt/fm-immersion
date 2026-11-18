@@ -644,7 +644,8 @@
       "builder": "Construire",
       "academy": "Académie",
       "ideal": "Ma tactique idéale",
-      "seasons": "Saisons"
+      "seasons": "Saisons",
+      "lab": "Labo de tactiques"
     },
     "home": {
       "todo": "À traiter",
@@ -1897,7 +1898,8 @@
       "builder": "Ta tactique de zéro : postes et rôles avec et sans ballon, style, et ce qui tient ou coince.",
       "academy": "La réserve et les équipes de jeunes : bilan, décisions à prendre et meilleurs espoirs.",
       "ideal": "Dis ce que tu aimes jouer : l'appli cherche la tactique FM27 qui s'en approche le plus avec ton effectif.",
-      "seasons": "Ton onze sur les trois prochaines saisons, jeunes du centre compris : qui arrive, quel poste un jeune tiendra, quand ne pas acheter."
+      "seasons": "Ton onze sur les trois prochaines saisons, jeunes du centre compris : qui arrive, quel poste un jeune tiendra, quand ne pas acheter.",
+      "lab": "Fais jouer tes tactiques entre elles avec le moteur de match de FM27 : classement, note sur 20, domicile, extérieur et adversaires."
     },
     "nextStep": "Étape suivante : {{view}}",
     "opp": {
@@ -2719,7 +2721,8 @@
       "contracts": "Contrats",
       "academy": "Académie",
       "ideal": "Ma tactique idéale",
-      "seasons": "Saisons"
+      "seasons": "Saisons",
+      "lab": "Labo"
     },
     "subtabs": {
       "squad": "Joueurs",
@@ -4375,6 +4378,52 @@
       "contract": "contrat {{date}}",
       "recruitStarter": "Titulaire : {{list}}",
       "recruitBackup": "doublure : {{list}}"
+    },
+    "lab": {
+      "engine": {
+        "title": "Moteur de match",
+        "intro": "FM Tactics Lab fait jouer tes tactiques entre elles avec le vrai moteur de match de FM27, sans ouvrir le jeu.",
+        "help": "Outil libre et indépendant (github.com/lqf0624/fm-tactics-lab), téléchargé depuis sa page officielle sur ton clic, puis vérifié. Il utilise le moteur de ton jeu installé : la version prise en charge est la {{build}}. Steam doit être ouvert. Rien n'est écrit dans le jeu ni dans tes sauvegardes, et FM27 doit rester fermé pendant les tests.",
+        "install": "Télécharger FM Tactics Lab {{version}} ({{mb}} Mo)",
+        "downloading": "Téléchargement… {{pct}} %",
+        "checking": "Vérification avec ton jeu…",
+        "ready": "FM Tactics Lab {{version}} prêt",
+        "stop": "Arrêter le moteur",
+        "incompatible": "Pas compatible avec ta version du jeu (prise en charge : {{build}})",
+        "recheck": "Vérifier à nouveau",
+        "remove": "Supprimer l'outil",
+        "noGame": "Dossier de FM27 introuvable : indique-le dans Visages ou Plugin et réglages."
+      },
+      "run": {
+        "title": "Tournoi de tactiques",
+        "intro": "Coche au moins deux tactiques de ton dossier tactics. Chacune reçoit chacune des autres, avec le même effectif moyen des deux côtés : seul le plan de jeu change.",
+        "none": "Aucune tactique dans ton dossier tactics. Exporte une tactique depuis FM27 pour la tester.",
+        "matches": "Matchs par rencontre",
+        "go_one": "Lancer ({{count}} match)",
+        "go_other": "Lancer ({{count}} matchs)",
+        "pairs_one": "{{count}} rencontre",
+        "pairs_other": "{{count}} rencontres, aller et retour",
+        "cancel": "Arrêter le tournoi",
+        "importing": "Lecture de {{name}} par le jeu…",
+        "playing": "{{pair}} · {{done}} / {{total}} matchs",
+        "eta": "encore ~{{min}} min",
+        "failed": "Le tournoi s'est arrêté : {{error}}",
+        "cancelled": "Tournoi arrêté. Les rencontres finies restent dans le classement."
+      },
+      "results": {
+        "title": "Classement",
+        "intro": "{{matches}} matchs par rencontre, aller et retour. Effectif identique pour toutes : ça compare les tactiques, pas ton équipe.",
+        "partial": "Tournoi en cours ou interrompu : classement sur les rencontres déjà jouées ({{matches}} matchs chacune).",
+        "help": "La note sur 20 vaut 10 pour 1,35 point par match (le niveau d'un plateau de bonnes tactiques) et gagne un point tous les 0,05. Le ± donne la marge : deux tactiques dont les écarts se chevauchent ne sont pas vraiment départagées. Plus de matchs par rencontre réduit la marge.",
+        "tactic": "Tactique",
+        "rating": "Note /20",
+        "ppm": "Pts/match",
+        "home": "Domicile",
+        "away": "Extérieur",
+        "goals": "Buts",
+        "xg": "xG",
+        "matrix": "Points par match contre chaque adversaire (ligne contre colonne)"
+      }
     }
   },
   "modes": {
