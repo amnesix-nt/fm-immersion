@@ -39,6 +39,7 @@ export * from './game-stars';
 export * from './lineup';
 export * from './tactic-slots';
 export * from './tactic-file';
+export * from './tactics-lab';
 export * from './game-instructions';
 export * from './tactic-advice';
 export * from './lineup-advice';

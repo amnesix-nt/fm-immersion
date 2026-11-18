@@ -1,12 +1,22 @@
 [
   {
-    "version": "0.1.252",
+    "version": "0.1.255",
     "date": "2026-11-18",
     "fr": [
       "Plus besoin d'installer BepInEx à la main : dans Plugin et réglages, un seul bouton installe BepInEx puis le plugin FM27. Si BepInEx est déjà là (installé par toi ou par un autre mod), FM Immersion n'y touche pas."
     ],
     "en": [
       "No need to install BepInEx by hand any more: in Plugin and settings, one button installs BepInEx then the FM27 plugin. If BepInEx is already there (installed by you or another mod), FM Immersion leaves it alone."
+    ]
+  },
+  {
+    "version": "0.1.253",
+    "date": "2026-11-18",
+    "fr": [
+      "Nouveau dans Tactique › Plus : le labo de tactiques. Choisis des tactiques de ton dossier tactics, l'appli les fait jouer entre elles avec le vrai moteur de match de FM27 (grâce à l'outil gratuit FM Tactics Lab, téléchargé sur ton clic), puis te montre le classement, une note sur 20, le domicile, l'extérieur et les résultats contre chaque adversaire."
+    ],
+    "en": [
+      "New in Tactic › More: the tactics lab. Pick tactics from your tactics folder and the app plays them against each other with FM27's real match engine (through the free FM Tactics Lab tool, downloaded when you click), then shows the table, a rating out of 20, home, away and results against each opponent."
     ]
   },
   {
