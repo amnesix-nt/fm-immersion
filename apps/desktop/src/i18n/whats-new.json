@@ -1,6 +1,6 @@
 [
   {
-    "version": "0.1.251",
+    "version": "0.1.253",
     "date": "2026-11-18",
     "fr": [
       "Nouveau dans Tactique › Plus : le labo de tactiques. Choisis des tactiques de ton dossier tactics, l'appli les fait jouer entre elles avec le vrai moteur de match de FM27 (grâce à l'outil gratuit FM Tactics Lab, téléchargé sur ton clic), puis te montre le classement, une note sur 20, le domicile, l'extérieur et les résultats contre chaque adversaire."
