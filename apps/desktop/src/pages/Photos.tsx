@@ -9,6 +9,8 @@ import { useCareer } from '../lib/career';
 import { fmData } from '../lib/data';
 import {
   formatBytes,
+  precheck,
+  precheckProblems,
   useEngineActions,
   useEngineProgress,
   useEngineStatus,
@@ -53,6 +55,23 @@ export function Photos() {
   useEffect(() => () => void (testImage && URL.revokeObjectURL(testImage)), [testImage]);
 
   const download = useMutation({ mutationFn: files.download });
+  // Avant les ~34 Go : carte graphique et place sur le disque. Les problèmes sont montrés, le joueur décide.
+  const startDownload = async () => {
+    let problems: string[] = [];
+    try {
+      problems = precheckProblems(await precheck()).map((p) =>
+        p.kind === 'space'
+          ? t('photos.precheck.space', { free: fmt(p.free), needed: fmt(p.needed) })
+          : p.kind === 'noGpu'
+            ? t('photos.precheck.noGpu')
+            : t('photos.precheck.vram', { name: p.name, vram: (p.vramMib / 1024).toFixed(0) }),
+      );
+    } catch {
+      problems = [];
+    }
+    if (problems.length && !window.confirm(`${problems.join('\n\n')}\n\n${t('photos.precheck.confirm')}`)) return;
+    download.mutate();
+  };
   const remove = useMutation({ mutationFn: files.remove });
   const install = useMutation({ mutationFn: actions.install });
   const stop = useMutation({ mutationFn: actions.stop });
@@ -143,7 +162,7 @@ export function Photos() {
 
         <div className="mt-4 flex flex-wrap gap-3">
           {(state === 'missing' || state === 'partial') && !downloading && (
-            <button type="button" className="btn-primary" onClick={() => download.mutate()} disabled={busy}>
+            <button type="button" className="btn-primary" onClick={() => void startDownload()} disabled={busy}>
               {t(state === 'partial' ? 'photos.resume' : 'photos.download')}
             </button>
           )}

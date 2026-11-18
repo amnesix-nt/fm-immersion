@@ -244,8 +244,46 @@ fn log_tail(photos_dir: &Path) -> String {
     lines[from..].join("\n")
 }
 
-/// Lance ComfyUI s'il ne tourne pas déjà, attend qu'il réponde, renvoie son port.
+/// Intervalle de la garde FM27 (voir `watch_game`).
+const GAME_WATCH: Duration = Duration::from_secs(5);
+static WATCHING: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
+/// Garde FM27 : tant que le moteur tourne, regarde toutes les `GAME_WATCH` si `fm.exe` démarre ; si oui, arrête le
+/// moteur et décharge le modèle d'IA d'Ollama. Un ComfyUI qui garde ses modèles en mémoire vidéo pendant le chargement
+/// du jeu le fige (constaté le 17/11/2026 sur une carte de 16 Go). Un seul fil à la fois, qui s'arrête avec le moteur.
+fn watch_game() {
+    use std::sync::atomic::Ordering;
+    if WATCHING.swap(true, Ordering::SeqCst) {
+        return;
+    }
+    std::thread::spawn(|| {
+        loop {
+            std::thread::sleep(GAME_WATCH);
+            if running_port().is_none() {
+                break;
+            }
+            if crate::fm_bridge::game_running(Path::new("")) {
+                stop();
+                crate::ai::unload_all();
+                break;
+            }
+        }
+        WATCHING.store(false, Ordering::SeqCst);
+    });
+}
+
+/// Lance ComfyUI s'il ne tourne pas déjà, attend qu'il réponde, renvoie son port. Refusé tant que FM27 est lancé :
+/// le moteur lui prendrait la mémoire vidéo (voir `watch_game`).
 pub fn start(photos_dir: &Path) -> Result<u16, PhotosError> {
+    if crate::fm_bridge::game_running(Path::new("")) {
+        return Err(PhotosError::Io("FM27 est lancé : le moteur photo attend que le jeu soit fermé, pour lui laisser la mémoire de la carte graphique.".into()));
+    }
+    let port = start_engine(photos_dir)?;
+    watch_game();
+    Ok(port)
+}
+
+fn start_engine(photos_dir: &Path) -> Result<u16, PhotosError> {
     let mut guard = ENGINE.lock().map_err(|_| io("verrou du moteur"))?;
     if let Some(r) = guard.as_mut() {
         match r.child.try_wait() {
@@ -611,6 +649,36 @@ fn gpu_memory() -> Option<(u64, u64)> {
     None
 }
 
+/// Sortie de `nvidia-smi --query-gpu=name,memory.total --format=csv,noheader,nounits` : (nom, Mio) de la carte qui a le
+/// plus de mémoire ; None si illisible (pas de carte NVIDIA, pilote absent).
+pub fn parse_gpu_info(text: &str) -> Option<(String, u64)> {
+    text.lines()
+        .filter_map(|l| {
+            let (name, mem) = l.rsplit_once(',')?;
+            Some((name.trim().to_string(), mem.trim().parse::<u64>().ok()?))
+        })
+        .filter(|(name, _)| !name.is_empty())
+        .max_by_key(|&(_, mem)| mem)
+}
+
+/// Carte NVIDIA de ce PC (nom, mémoire en Mio), pour la vérification avant téléchargement.
+#[cfg(windows)]
+pub fn gpu_info() -> Option<(String, u64)> {
+    use std::os::windows::process::CommandExt;
+    const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+    let out = std::process::Command::new("nvidia-smi")
+        .args(["--query-gpu=name,memory.total", "--format=csv,noheader,nounits"])
+        .creation_flags(CREATE_NO_WINDOW)
+        .output()
+        .ok()?;
+    parse_gpu_info(&String::from_utf8_lossy(&out.stdout))
+}
+
+#[cfg(not(windows))]
+pub fn gpu_info() -> Option<(String, u64)> {
+    None
+}
+
 /// La carte graphique est-elle déjà prise par un autre logiciel ? Demandé avant une photo faite toute seule (jamais
 /// avant un clic du joueur) : la photo attend plutôt que de faire planter l'autre travail par manque de mémoire.
 /// Vrai tant que FM27 est lancé : un match 3D prend toute la carte, et le moteur, s'il tourne, est arrêté et le modèle
@@ -698,6 +766,14 @@ mod tests {
         assert_eq!(parse_gpu_memory("300, 4096\n9000, 16303\n"), Some((9000, 16303)));
         assert_eq!(parse_gpu_memory("NVIDIA-SMI has failed"), None);
         assert_eq!(parse_gpu_memory(""), None);
+    }
+
+    #[test]
+    fn nom_et_memoire_de_la_carte() {
+        assert_eq!(parse_gpu_info("NVIDIA GeForce RTX 5070 Ti, 16303\r\n"), Some(("NVIDIA GeForce RTX 5070 Ti".into(), 16303)));
+        assert_eq!(parse_gpu_info("NVIDIA GeForce GTX 1060 6GB, 6144\nNVIDIA RTX A4000, 16376\n"), Some(("NVIDIA RTX A4000".into(), 16376)));
+        assert_eq!(parse_gpu_info("NVIDIA-SMI has failed because it couldn't communicate with the NVIDIA driver."), None);
+        assert_eq!(parse_gpu_info(""), None);
     }
 
     #[test]

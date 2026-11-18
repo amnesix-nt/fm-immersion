@@ -1,5 +1,17 @@
 [
   {
+    "version": "0.1.254",
+    "date": "2026-11-18",
+    "fr": [
+      "Photos de situation : avant de télécharger le moteur d'images, l'appli vérifie ta carte graphique et la place sur ton disque, et te prévient s'il y a un souci.",
+      "Le moteur photo s'arrête dès que tu lances FM27, et ne démarre pas tant que le jeu est ouvert : il laisse toute la mémoire de ta carte graphique au jeu."
+    ],
+    "en": [
+      "Situation photos: before downloading the image engine, the app checks your graphics card and the space on your drive, and warns you if something is wrong.",
+      "The photo engine stops as soon as you launch FM27 and won't start while the game is open: it leaves all of your graphics card's memory to the game."
+    ]
+  },
+  {
     "version": "0.1.253",
     "date": "2026-11-18",
     "fr": [
