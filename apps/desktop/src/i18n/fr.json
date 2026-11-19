@@ -644,6 +644,7 @@
       "builder": "Construire",
       "academy": "Académie",
       "ideal": "Ma tactique idéale",
+      "formations": "Schémas selon l'effectif",
       "seasons": "Saisons",
       "lab": "Labo de tactiques"
     },
@@ -1898,6 +1899,7 @@
       "builder": "Ta tactique de zéro : postes et rôles avec et sans ballon, style, et ce qui tient ou coince.",
       "academy": "La réserve et les équipes de jeunes : bilan, décisions à prendre et meilleurs espoirs.",
       "ideal": "Dis ce que tu aimes jouer : l'appli cherche la tactique FM27 qui s'en approche le plus avec ton effectif.",
+      "formations": "Chaque schéma classé selon le meilleur onze que ton effectif peut y aligner : note de chaque ligne et poste le plus faible.",
       "seasons": "Ton onze sur les trois prochaines saisons, jeunes du centre compris : qui arrive, quel poste un jeune tiendra, quand ne pas acheter.",
       "lab": "Fais jouer tes tactiques entre elles avec le moteur de match de FM27 : classement, note sur 20, domicile, extérieur et adversaires."
     },
@@ -2721,6 +2723,7 @@
       "contracts": "Contrats",
       "academy": "Académie",
       "ideal": "Ma tactique idéale",
+      "formations": "Schémas",
       "seasons": "Saisons",
       "lab": "Labo"
     },
@@ -4424,6 +4427,38 @@
         "xg": "xG",
         "matrix": "Points par match contre chaque adversaire (ligne contre colonne)"
       }
+    },
+    "formations": {
+      "title": "Quel schéma pour ton effectif ?",
+      "intro": "Avec ton effectif actuel (blessés et suspendus exclus), le {{form}} en {{style}} donne le meilleur onze.",
+      "playedBest": "Ton schéma dans FM27, le {{form}}, est déjà le meilleur.",
+      "played": "Ton schéma dans FM27, le {{form}}, arrive {{rank}}e, à {{gap}} pt du premier.",
+      "how": "Pour chaque schéma, l'appli construit le meilleur onze de ton effectif dans chacun de ses styles (adéquation de chaque joueur à ses rôles, forme du jour, équilibre de l'équipe, exigence du style) et garde le meilleur : c'est le même calcul que dans Composition. Les notes de ligne sont l'adéquation moyenne des joueurs de la défense (gardien compris), du milieu et de l'attaque, sur 20. Le poste le plus faible est celui où ton onze a le moins bon joueur, ou personne : c'est là qu'un renfort ou un joueur à faire progresser changerait le plus ce schéma. Changer de schéma a un coût dans FM27 (les joueurs repartent de bas en familiarité tactique) : un écart de moins d'un point ne vaut pas toujours le changement.",
+      "nobody": "personne",
+      "holes_one": "{{count}} poste vide",
+      "holes_other": "{{count}} postes vides",
+      "inGame": "dans FM27",
+      "chosen": "dans Composition",
+      "showXi": "Voir le onze",
+      "hideXi": "Masquer",
+      "open": "Ouvrir dans Composition",
+      "col": {
+        "form": "Schéma",
+        "style": "Meilleur style",
+        "score": "Note",
+        "scoreHelp": "Note d'équipe sur 20 du meilleur onze dans ce schéma, la même qu'en Composition.",
+        "def": "Déf.",
+        "mid": "Milieu",
+        "att": "Att.",
+        "weak": "Poste le plus faible"
+      }
+    },
+    "trainFirst": {
+      "title": "Quoi entraîner en premier",
+      "help": "Les attributs où un point de plus fait le plus monter sa note méta, à son poste. Les gains ne sont pas les mêmes partout : la vitesse rapporte beaucoup jusqu'à 12 puis moins, le volume de jeu ne rapporte plus rien au-dessus de 12. À choisir comme concentration de l'entraînement individuel dans FM27.",
+      "gain": "+{{gain}} méta / point",
+      "gainTitle": "Note méta gagnée pour un point de plus dans cet attribut.",
+      "note": "D'après les tests d'attributs de la communauté (FM-Arena, Match Lab) : une tendance, pas la note du jeu."
     }
   },
   "modes": {

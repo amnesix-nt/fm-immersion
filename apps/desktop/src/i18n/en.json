@@ -644,6 +644,7 @@
       "builder": "Build",
       "academy": "Academy",
       "ideal": "My ideal tactic",
+      "formations": "Formations for your squad",
       "seasons": "Seasons",
       "lab": "Tactics lab"
     },
@@ -1898,6 +1899,7 @@
       "builder": "Your tactic from scratch: positions and roles in and out of possession, style, and what holds up or doesn't.",
       "academy": "Your reserve and youth teams: overview, decisions to make and best prospects.",
       "ideal": "Say what you like to play: the app looks for the FM27 tactic closest to it with your squad.",
+      "formations": "Every formation ranked by the best XI your squad can field in it: rating of each line and weakest position.",
       "seasons": "Your eleven over the next three seasons, academy included: who matures, which slot a youngster will hold, when not to buy.",
       "lab": "Play your tactics against each other with FM27's match engine: table, rating out of 20, home, away and opponents."
     },
@@ -2721,6 +2723,7 @@
       "contracts": "Contracts",
       "academy": "Academy",
       "ideal": "My ideal tactic",
+      "formations": "Formations",
       "seasons": "Seasons",
       "lab": "Lab"
     },
@@ -4424,6 +4427,38 @@
         "xg": "xG",
         "matrix": "Points per match against each opponent (row against column)"
       }
+    },
+    "formations": {
+      "title": "Which formation suits your squad?",
+      "intro": "With your current squad (injured and suspended players left out), {{form}} with {{style}} gives the best XI.",
+      "playedBest": "Your FM27 formation, {{form}}, is already the best.",
+      "played": "Your FM27 formation, {{form}}, ranks #{{rank}}, {{gap}} pt behind the top one.",
+      "how": "For each formation, the app builds your squad's best XI in each of its styles (how well each player fits their roles, current form, team balance, how demanding the style is) and keeps the best one: the same calculation as in Lineup. Line ratings are the average fit of the defence (keeper included), midfield and attack, out of 20. The weakest position is where your XI has its worst player, or nobody: that's where a signing or a player to develop would change this formation the most. Switching formation has a cost in FM27 (players' tactical familiarity starts low again): a gap of less than one point isn't always worth the change.",
+      "nobody": "nobody",
+      "holes_one": "{{count}} empty position",
+      "holes_other": "{{count}} empty positions",
+      "inGame": "in FM27",
+      "chosen": "in Lineup",
+      "showXi": "Show XI",
+      "hideXi": "Hide",
+      "open": "Open in Lineup",
+      "col": {
+        "form": "Formation",
+        "style": "Best style",
+        "score": "Rating",
+        "scoreHelp": "Team rating out of 20 of the best XI in this formation, the same as in Lineup.",
+        "def": "Def.",
+        "mid": "Mid.",
+        "att": "Att.",
+        "weak": "Weakest position"
+      }
+    },
+    "trainFirst": {
+      "title": "What to train first",
+      "help": "The attributes where one more point raises the player's meta rating the most, at their position. Gains differ: pace pays off a lot up to 12 then less, work rate adds nothing above 12. Pick it as the individual training focus in FM27.",
+      "gain": "+{{gain}} meta / point",
+      "gainTitle": "Meta rating gained for one more point in this attribute.",
+      "note": "Based on the community's attribute tests (FM-Arena, Match Lab): a trend, not the game's rating."
     }
   },
   "modes": {

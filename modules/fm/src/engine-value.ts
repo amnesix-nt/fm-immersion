@@ -270,23 +270,20 @@ function keeperValue(attributes: Record<string, number>): EngineValue | null {
 }
 
 /**
- * Indice moteur d'un joueur, pondéré selon ses postes (ou `at`, le poste visé, par exemple pour une recrue). Un
- * gardien (tous ses postes, ou `at`, en GB) est noté par Match Lab seul. Null si ses attributs ne sont pas lus.
+ * Indice et note méta d'un joueur de champ, sans arrondi (null sous MIN_READ attributs lus). La note méta est la valeur X
+ * telle qu'un joueur à X partout, sur les mêmes attributs lus et avec les mêmes poids, ait le même indice : X croît
+ * avec l'indice, on la cherche par dichotomie.
  */
-export function engineValue(p: Pick<FmPlayer, 'attributes' | 'positions'>, at?: PosCode): EngineValue | null {
-  if (at === 'GB' || (!at && p.positions.length > 0 && p.positions.every((pos) => pos === 'GB'))) return keeperValue(p.attributes);
-  const positions = at ? [at] : p.positions;
-  const weights = positionWeights(positions);
+function fieldMeta(attributes: Record<string, number>, weights: Record<string, number>): { factors: EngineFactor[]; index: number; meta: number } | null {
   const factors: EngineFactor[] = [];
   for (const attr of Object.keys(ENGINE_GAINS)) {
-    const value = p.attributes[attr];
+    const value = attributes[attr];
     if (value == null) continue;
     const effect = attributeEffect(attr, value);
     if (effect != null) factors.push({ attr, value, effect: effect * (weights[attr] ?? 1) });
   }
   if (factors.length < MIN_READ) return null;
   const index = factors.reduce((s, f) => s + f.effect, 0);
-  // Joueur « à X partout » sur les mêmes attributs lus et au même poste : X croît avec l'indice, on le cherche par dichotomie.
   const uniform = (x: number) => factors.reduce((s, f) => s + (attributeEffect(f.attr, x) ?? 0) * (weights[f.attr] ?? 1), 0);
   let lo = 1;
   let hi = 20;
@@ -298,7 +295,21 @@ export function engineValue(p: Pick<FmPlayer, 'attributes' | 'positions'>, at?: 
       if (uniform(mid) < index) lo = mid;
       else hi = mid;
     }
-  const meta = Math.round(((lo + hi) / 2) * 10) / 10;
+  return { factors, index, meta: (lo + hi) / 2 };
+}
+
+/**
+ * Indice moteur d'un joueur, pondéré selon ses postes (ou `at`, le poste visé, par exemple pour une recrue). Un
+ * gardien (tous ses postes, ou `at`, en GB) est noté par Match Lab seul. Null si ses attributs ne sont pas lus.
+ */
+export function engineValue(p: Pick<FmPlayer, 'attributes' | 'positions'>, at?: PosCode): EngineValue | null {
+  if (at === 'GB' || (!at && p.positions.length > 0 && p.positions.every((pos) => pos === 'GB'))) return keeperValue(p.attributes);
+  const positions = at ? [at] : p.positions;
+  const weights = positionWeights(positions);
+  const raw = fieldMeta(p.attributes, weights);
+  if (!raw) return null;
+  const { factors, index } = raw;
+  const meta = Math.round(raw.meta * 10) / 10;
   const round = (f: EngineFactor) => ({ ...f, effect: Math.round(f.effect * 10) / 10 });
   const lab = labMeta(p.attributes, engineGroups(positions));
   return {
@@ -349,4 +360,49 @@ export function engineTier(index: number): EngineTier {
 export function fitMetaScore(fit: number | null | undefined, meta: number | null | undefined): number | null {
   if (fit != null && meta != null) return (fit + meta) / 2;
   return fit ?? meta ?? null;
+}
+
+export interface TrainGain {
+  attr: string;
+  value: number;
+  /** Note méta gagnée pour un point de plus dans cet attribut (sur 20, sans arrondi). */
+  gain: number;
+}
+
+/** Nombre d'attributs proposés dans « Quoi entraîner en premier ». */
+export const TRAIN_TOP = 5;
+
+/**
+ * « Quoi entraîner en premier » : pour chaque attribut qui compte dans le moteur (indice moteur, ou Match Lab pour un
+ * gardien), la note méta gagnée si le joueur prenait un point de plus, à son poste (ou `at`). Les courbes ne sont pas
+ * droites (la vitesse rapporte plus de 6 à 12 qu'au-delà, le volume de jeu ne rapporte plus rien après 12) : le gain
+ * dépend donc de la valeur actuelle. Du plus rentable au moins rentable, gains nuls ou négatifs écartés. Null si les
+ * attributs ne sont pas lus.
+ */
+export function trainingGains(p: Pick<FmPlayer, 'attributes' | 'positions'>, at?: PosCode, top = TRAIN_TOP): TrainGain[] | null {
+  const ev = engineValue(p, at);
+  if (!ev) return null;
+  const out: TrainGain[] = [];
+  if (ev.keeper) {
+    // Moyenne pondérée : un point de plus rapporte son poids sur la somme des poids lus.
+    const read = Object.entries(LAB_GK).filter(([a]) => p.attributes[a] != null && Number.isFinite(p.attributes[a]));
+    const den = read.reduce((s, [, c]) => s + c, 0);
+    for (const [attr, c] of read) {
+      const value = p.attributes[attr]!;
+      if (value < 20 && den > 0) out.push({ attr, value, gain: (c * (Math.min(20, value + 1) - Math.max(1, value))) / den });
+    }
+  } else {
+    const weights = positionWeights(at ? [at] : p.positions);
+    const base = fieldMeta(p.attributes, weights);
+    if (!base) return null;
+    for (const f of base.factors) {
+      if (f.value >= 20) continue;
+      const next = fieldMeta({ ...p.attributes, [f.attr]: Math.min(20, f.value + 1) }, weights);
+      if (next) out.push({ attr: f.attr, value: f.value, gain: next.meta - base.meta });
+    }
+  }
+  return out
+    .filter((g) => g.gain > 0.005)
+    .sort((a, b) => b.gain - a.gain)
+    .slice(0, top);
 }
