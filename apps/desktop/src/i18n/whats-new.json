@@ -1,5 +1,17 @@
 [
   {
+    "version": "0.1.256",
+    "date": "2026-11-19",
+    "fr": [
+      "Nouveau dans Tactique : « Schémas », dans le menu Plus. Tous les schémas sont classés selon le meilleur onze que ton effectif peut y aligner, avec la note de la défense, du milieu et de l'attaque, et le poste le plus faible de chacun.",
+      "Sur la fiche d'un joueur, « Quoi entraîner en premier » montre les attributs où un point de plus le fait le plus progresser à son poste."
+    ],
+    "en": [
+      "New in Tactics: \"Formations\", in the More menu. Every formation is ranked by the best XI your squad can field in it, with the rating of the defence, midfield and attack, and the weakest position of each.",
+      "On a player's page, \"What to train first\" shows the attributes where one more point helps them the most at their position."
+    ]
+  },
+  {
     "version": "0.1.255",
     "date": "2026-11-19",
     "fr": [

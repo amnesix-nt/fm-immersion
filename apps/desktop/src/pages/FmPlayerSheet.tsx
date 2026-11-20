@@ -2,6 +2,7 @@ import { roleCeiling,
   ATTR_GROUPS,
   buildProject,
   engineValue,
+  trainingGains,
   HIDDEN_ATTRS,
   hiddenNotes,
   levelSeries,
@@ -183,6 +184,8 @@ export function FmPlayerSheet({
   const project = useMemo(() => buildProject(engine, players.filter((x) => Object.keys(x.attributes).length && !leavingIds.has(x.id)), coach), [engine, players, coach, leavingIds]);
   const fitProject = useMemo(() => advice?.compat ?? (project && p && hasAttrs ? projectCompat(engine, project, p) : null), [advice, project, p, hasAttrs, engine]);
   const engineVal = useMemo(() => (p ? engineValue(p) : null), [p]);
+  // Quoi entraîner en premier : la note méta gagnée par point d'attribut, à son poste.
+  const gains = useMemo(() => (p ? trainingGains(p) : null), [p]);
   const series = useMemo(() => levelSeries(history, id), [history, id]);
   const caSeries = useMemo(() => history.map((h) => h.players.find((x) => x.id === id)?.ca ?? null), [history, id]);
   const seasons = useMemo(() => (external ? [] : playerSeasons(entries, id)), [external, entries, id]);
@@ -520,6 +523,25 @@ export function FmPlayerSheet({
           </ul>
         )}
       </Section>
+      {/* Quoi entraîner en premier : les attributs où un point de plus rapporte le plus de note méta, à son poste. */}
+      {gains && gains.length > 0 && (
+        <Section title={t('fm.trainFirst.title')} help={t('fm.trainFirst.help')}>
+          <ol className="space-y-1 text-sm">
+            {gains.map((g, i) => (
+              <li key={g.attr} className="flex items-baseline justify-between gap-3">
+                <span>
+                  <span className="mr-1 text-brun">{i + 1}.</span>
+                  <span className="font-semibold">{attrLabel(g.attr)}</span> <span className="text-brun">({nf(0).format(g.value)})</span>
+                </span>
+                <span className="whitespace-nowrap font-bold text-eau-fonce" title={t('fm.trainFirst.gainTitle')}>
+                  {t('fm.trainFirst.gain', { gain: nf(2).format(g.gain) })}
+                </span>
+              </li>
+            ))}
+          </ol>
+          <p className="mt-2 text-xs text-brun">{t('fm.trainFirst.note')}</p>
+        </Section>
+      )}
     </>
   ) : (
     <p className="card p-4 text-sm text-brun">{t('fm.sheet.noAttrs')}</p>
